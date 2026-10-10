@@ -106,6 +106,9 @@ interface LifeStore {
 
   // Achievements (auto-calculated)
   checkAchievements: () => void;
+
+  // Auth
+  clearStore: () => void;
 }
 
 export const useLifeStore = create<LifeStore>((set, get) => ({
@@ -134,6 +137,30 @@ export const useLifeStore = create<LifeStore>((set, get) => ({
   },
 
   toggleSidebar: () => set(s => ({ sidebarCollapsed: !s.sidebarCollapsed })),
+  clearStore: () => set({
+    hydrated: false,
+    tasks: [],
+    goals: [],
+    projects: [],
+    habits: [],
+    learningPaths: [],
+    journalEntries: [],
+    subjects: [],
+    exams: [],
+    expenses: [],
+    loans: [],
+    settings: {
+      id: '',
+      displayName: '',
+      email: '',
+      dailyReminder: true,
+      goalAlerts: true,
+      accentColor: '#F7E8A4',
+      budgets: {},
+      createdAt: '',
+      updatedAt: '',
+    },
+  }),
   updateSettings: async (updates) => {
     const updated = await api.put<Settings>('/api/settings', updates);
     set(s => ({ settings: { ...s.settings, ...updated } }));

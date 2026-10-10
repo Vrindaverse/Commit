@@ -24,15 +24,18 @@ function SettingRow({ label, description, children }: { label: string; descripti
 export default function SettingsPage() {
   const settings = useLifeStore(s => s.settings);
   const updateSettings = useLifeStore(s => s.updateSettings);
+  const clearStore = useLifeStore(s => s.clearStore);
   const router = useRouter();
 
   const handleLogout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
+      clearStore();
       router.push('/login');
       router.refresh();
     } catch {
       // fallback
+      clearStore();
       window.location.href = '/login';
     }
   };

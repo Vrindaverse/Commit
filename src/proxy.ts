@@ -5,10 +5,6 @@ import { verifySessionToken } from '@/lib/auth/token';
 const PUBLIC_ROUTES = new Set([
   '/login',
   '/signup',
-  '/verify',
-  '/verify-email',
-  '/forgot-password',
-  '/reset-password',
 ]);
 
 export default async function proxy(req: NextRequest) {

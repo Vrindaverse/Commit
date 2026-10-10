@@ -139,12 +139,6 @@ export function LoginForm({ next }: { next?: string }) {
         <span className="text-[10px] font-bold uppercase tracking-wider text-[#2D2D2D]/60">
           Password
         </span>
-        <Link
-          href="/forgot-password"
-          className="text-xs font-bold text-[#2D2D2D]/60 hover:text-[#2A2A2A] underline underline-offset-2"
-        >
-          Forgot password?
-        </Link>
       </div>
       <div className="mb-5">
         <PasswordInput

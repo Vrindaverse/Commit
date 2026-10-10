@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CheckSquare, Target, Flame, BookOpen } from "lucide-react";
+import { CheckSquare, Target, Flame, BookOpen, Sparkles, ArrowRight } from "lucide-react";
 import { LoginForm } from "@/components/auth/forms";
 
 export const metadata: Metadata = {
@@ -21,12 +21,12 @@ function FeatureRow({
 }: (typeof HIGHLIGHTS)[number]) {
   return (
     <div className="flex items-center gap-3">
-      <div className="w-9 h-9 shrink-0 rounded-xl border-[2px] border-[#FFFDF8] bg-[#F7E8A4] text-[#2A2A2A] flex items-center justify-center">
+      <div className="w-9 h-9 shrink-0 rounded-xl border-[2px] border-[#2D2D2D] bg-[#F7E8A4] text-[#2A2A2A] flex items-center justify-center">
         <Icon size={16} />
       </div>
       <div className="min-w-0">
-        <p className="text-sm font-extrabold text-[#FFFDF8] leading-tight">{title}</p>
-        <p className="text-[11px] font-medium text-[#B8B2A8] leading-snug">{note}</p>
+        <p className="text-sm font-extrabold text-[#2A2A2A] leading-tight">{title}</p>
+        <p className="text-[11px] font-medium text-[#5C5C5C] leading-snug">{note}</p>
       </div>
     </div>
   );
@@ -40,67 +40,83 @@ export default async function LoginPage({
   const { next } = await searchParams;
 
   return (
-    <div className="w-full max-w-3xl animate-fade-up">
-      <div className="neo-card overflow-hidden grid md:grid-cols-2">
-        <div className="relative bg-[#2D2D2D] p-7 flex flex-col gap-6 md:rounded-l-[17px]">
-          <div className="pointer-events-none absolute inset-0 overflow-hidden md:rounded-l-[17px]">
-            <div className="absolute -top-12 -right-12 w-44 h-44 rounded-full border-[3px] border-dashed border-[#F7E8A4]/50 animate-spin-slow" />
-            <div className="pointer-events-none absolute -top-10 -right-10 w-36 h-36 rounded-full border-[3px] border-[#F7E8A4]/70" />
-            <div className="pointer-events-none absolute -top-2 -right-6 w-24 h-24 rounded-full border-[3px] border-[#B8D8F8]/50" />
-            <div className="pointer-events-none absolute top-16 -right-4 w-10 h-10 rounded-full bg-[#CDEAC0]/60" />
-            <div className="pointer-events-none absolute bottom-10 -left-6 w-20 h-20 rounded-full bg-[#B8D8F8]/20" />
-          </div>
-
-          <div className="flex items-center gap-3 relative animate-fade-up delay-1">
-            <div className="w-10 h-10 rounded-xl border-[3px] border-[#FFFDF8] bg-[#F7E8A4] flex items-center justify-center text-lg font-extrabold flex-shrink-0">
-              L
+    <div className="min-h-screen w-full bg-[#F8F5F0] flex items-center justify-center p-4 md:p-8">
+      <div className="w-full max-w-4xl animate-fade-up">
+        <div className="neo-card overflow-hidden grid md:grid-cols-2">
+          <div className="relative bg-gradient-to-br from-[#F7E8A4] via-[#FFFDF8] to-[#B8D8F8] p-7 md:p-8 flex flex-col gap-6 md:rounded-l-[20px]">
+            <div className="pointer-events-none absolute inset-0 overflow-hidden md:rounded-l-[20px] opacity-60">
+              <div className="absolute -top-12 -right-12 w-44 h-44 rounded-full border-[3px] border-dashed border-[#2D2D2D]/30 animate-spin-slow" />
+              <div className="pointer-events-none absolute -top-10 -right-10 w-36 h-36 rounded-full border-[3px] border-[#2D2D2D]/40" />
+              <div className="pointer-events-none absolute -top-2 -right-6 w-24 h-24 rounded-full border-[3px] border-[#CDEAC0]/50" />
+              <div className="pointer-events-none absolute top-16 -right-4 w-10 h-10 rounded-full bg-[#CDEAC0]/60" />
+              <div className="pointer-events-none absolute bottom-10 -left-6 w-20 h-20 rounded-full bg-[#B8D8F8]/40" />
             </div>
-            <div>
-              <h1 className="text-lg font-extrabold leading-tight text-[#FFFDF8]">Commit</h1>
-              <p className="text-[10px] text-[#B8B2A8] font-semibold">Personal Command Center</p>
-            </div>
-          </div>
 
-          <div className="relative animate-fade-up delay-2">
-            <h2 className="text-2xl font-extrabold leading-[1.1] text-[#FFFDF8]">
-              Your life,
-              <br />
-              in command.
-            </h2>
-            <p className="mt-2 text-[13px] font-medium text-[#B8B2A8] leading-relaxed">
-              Goals, tasks, habits and learning — one friendly console to keep it all moving.
-            </p>
-          </div>
-
-          <div className="space-y-3 relative mt-auto pt-2">
-            {HIGHLIGHTS.map((item, i) => (
-              <div key={item.title} className={`animate-fade-up delay-${i + 2}`}>
-                <FeatureRow {...item} />
+            <div className="flex items-center gap-3 relative animate-fade-up delay-1">
+              <div className="w-10 h-10 rounded-xl border-[3px] border-[#2D2D2D] bg-[#F7E8A4] flex items-center justify-center text-lg font-extrabold flex-shrink-0">
+                L
               </div>
-            ))}
+              <div>
+                <h1 className="text-lg font-extrabold leading-tight text-[#2A2A2A]">Commit</h1>
+                <p className="text-[10px] text-[#5C5C5C] font-semibold">Personal Command Center</p>
+              </div>
+            </div>
+
+            <div className="relative animate-fade-up delay-2">
+              <h2 className="text-2xl md:text-3xl font-extrabold leading-[1.1] text-[#2A2A2A]">
+                Your life,
+                <br />
+                in command.
+              </h2>
+              <p className="mt-2 text-[13px] font-medium text-[#5C5C5C] leading-relaxed">
+                Goals, tasks, habits and learning — one friendly console to keep it all moving.
+              </p>
+            </div>
+
+            <div className="space-y-3 relative mt-auto pt-2">
+              {HIGHLIGHTS.map((item, i) => (
+                <div key={item.title} className={`animate-fade-up delay-${i + 2}`}>
+                  <FeatureRow {...item} />
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-2 text-xs font-bold text-[#5C5C5C] pt-2 border-t-[2px] border-[#2D2D2D]/30 animate-fade-up delay-4">
+              <Sparkles size={14} />
+              <span>Built with care. No black. Just vibes.</span>
+            </div>
+          </div>
+
+          <div className="bg-[#FFFDF8] p-7 md:p-8 flex flex-col">
+            <div className="mb-6 animate-fade-up delay-1">
+              <h2 className="text-xl md:text-2xl font-extrabold text-[#2A2A2A]">Welcome back</h2>
+              <p className="text-xs font-medium text-[#5C5C5C] mt-1">
+                Sign in to continue to your dashboard.
+              </p>
+            </div>
+
+            <div className="animate-fade-up delay-2">
+              <LoginForm next={next} />
+            </div>
+
+            <div className="mt-auto pt-6 border-t-[3px] border-[#2D2D2D] animate-fade-up delay-3">
+              <p className="text-xs font-bold text-[#5C5C5C] text-center">
+                New here?{" "}
+                <Link href="/signup" className="text-[#2A2A2A] underline underline-offset-2 hover:text-[#F7E8A4] transition-colors">
+                  Create an account
+                </Link>
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="bg-[#FFFDF8] p-7 md:p-8 flex flex-col">
-          <div className="mb-6 animate-fade-up delay-1">
-            <h2 className="text-xl font-extrabold text-[#2A2A2A]">Welcome back</h2>
-            <p className="text-xs font-medium text-[#5C5C5C] mt-1">
-              Sign in to continue to your dashboard.
-            </p>
-          </div>
-
-          <div className="animate-fade-up delay-2">
-            <LoginForm next={next} />
-          </div>
-
-          <div className="mt-auto pt-6 border-t-[3px] border-[#2D2D2D] animate-fade-up delay-3">
-            <p className="text-xs font-bold text-[#5C5C5C] text-center">
-              New here?{" "}
-              <Link href="/signup" className="text-[#2A2A2A] underline underline-offset-2">
-                Create an account
-              </Link>
-            </p>
-          </div>
+        <div className="mt-6 text-center animate-fade-up delay-4">
+          <p className="text-[11px] font-medium text-[#5C5C5C]">
+            By continuing, you agree to our{" "}
+            <Link href="/terms" className="underline underline-offset-2 hover:text-[#2A2A2A]">Terms</Link>
+            {" "}and{" "}
+            <Link href="/privacy" className="underline underline-offset-2 hover:text-[#2A2A2A]">Privacy Policy</Link>
+          </p>
         </div>
       </div>
     </div>

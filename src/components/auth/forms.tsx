@@ -17,7 +17,7 @@ function Field({
 }) {
   return (
     <label className="block mb-4">
-      <span className="block text-[10px] font-bold uppercase tracking-wider text-[#5C5C5C] mb-1.5">
+      <span className="block text-[10px] font-bold uppercase tracking-wider text-[#2D2D2D]/60 mb-1.5">
         {label}
       </span>
       {children}
@@ -28,7 +28,7 @@ function Field({
 function FieldError({ message }: { message: string }) {
   return (
     <div
-      className="text-xs font-bold text-[#B85042] border-[2px] border-[#2D2D2D] bg-[#F8C8C8] rounded-lg px-3 py-2 mb-4"
+      className="text-xs font-bold text-[#B85042] border-[2px] border-[#2D2D2D] bg-[#FFF0F0] rounded-lg px-3 py-2 mb-4"
       role="alert"
     >
       {message}
@@ -62,7 +62,7 @@ function PasswordInput({
       <button
         type="button"
         onClick={() => setShow((s) => !s)}
-        className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center text-[#5C5C5C] hover:text-[#2A2A2A] hover:bg-[#F0ECE4] transition-colors cursor-pointer"
+        className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center text-[#2D2D2D]/50 hover:text-[#2A2A2A] hover:bg-[#F0ECE4] transition-colors cursor-pointer"
         aria-label={show ? 'Hide password' : 'Show password'}
         tabIndex={-1}
       >
@@ -85,7 +85,7 @@ function EmailInput({
     <div className="relative">
       <Mail
         size={16}
-        className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5C5C5C] pointer-events-none"
+        className="absolute left-3 top-1/2 -translate-y-1/2 text-[#2D2D2D]/50 pointer-events-none"
       />
       <input
         type="email"
@@ -167,12 +167,12 @@ export function LoginForm({ next }: { next?: string }) {
         <EmailInput value={email} onChange={setEmail} autoComplete="email" />
       </Field>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-[#5C5C5C]">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-[#2D2D2D]/60">
           Password
         </span>
         <Link
           href="/forgot-password"
-          className="text-xs font-bold text-[#5C5C5C] hover:text-[#2A2A2A] underline underline-offset-2"
+          className="text-xs font-bold text-[#2D2D2D]/60 hover:text-[#2A2A2A] underline underline-offset-2"
         >
           Forgot password?
         </Link>
@@ -416,7 +416,7 @@ export function ForgotPasswordForm() {
       <Field label="Email">
         <EmailInput value={email} onChange={setEmail} autoComplete="email" />
       </Field>
-      <p className="text-[11px] font-medium text-[#5C5C5C] mb-5">
+      <p className="text-[11px] font-medium text-[#2D2D2D]/60 mb-5">
         If an account exists for this email, we&apos;ll send a reset code.
       </p>
       <button

@@ -1,10 +1,11 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Settings, Palette, Download, Check, RotateCcw } from 'lucide-react';
+import { Settings, Palette, Download, Check, RotateCcw, LogOut } from 'lucide-react';
 import NeoCard from '@/components/shared/neo-card';
 import PageHeader from '@/components/shared/page-header';
 import { useLifeStore } from '@/store/use-store';
+import { useRouter } from 'next/navigation';
 
 const accentColors = ['#F7E8A4', '#B8D8F8', '#CDEAC0', '#F8C8C8', '#DCCEF5', '#FFD8BE'];
 
@@ -23,6 +24,18 @@ function SettingRow({ label, description, children }: { label: string; descripti
 export default function SettingsPage() {
   const settings = useLifeStore(s => s.settings);
   const updateSettings = useLifeStore(s => s.updateSettings);
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      router.push('/login');
+      router.refresh();
+    } catch {
+      // fallback
+      window.location.href = '/login';
+    }
+  };
 
   const handleExport = async () => {
     const endpoints = ['tasks', 'goals', 'projects', 'habits', 'learning', 'subjects', 'exams', 'journal', 'login-logs'];
@@ -102,6 +115,18 @@ export default function SettingsPage() {
           <SettingRow label="Factory Reset" description="Clear all data and start fresh">
             <button onClick={handleReset} className="neo-button px-4 py-1.5 text-xs bg-[#F8C8C8] flex items-center gap-1">
               <RotateCcw size={12} /> Reset
+            </button>
+          </SettingRow>
+        </NeoCard>
+
+        <NeoCard color="#B8D8F8">
+          <div className="flex items-center gap-3 mb-6">
+            <LogOut size={18} />
+            <h2 className="text-base font-extrabold">Account</h2>
+          </div>
+          <SettingRow label="Sign Out" description="Log out of your account">
+            <button onClick={handleLogout} className="neo-button px-4 py-1.5 text-xs bg-[#B8D8F8] flex items-center gap-1">
+              <LogOut size={12} /> Sign out
             </button>
           </SettingRow>
         </NeoCard>

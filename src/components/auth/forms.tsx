@@ -92,7 +92,7 @@ function EmailInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="you@example.com"
-        className="neo-input w-full text-sm font-bold pl-10"
+        className="neo-input w-full text-sm font-bold pl-11"
         autoComplete={autoComplete}
         required
       />

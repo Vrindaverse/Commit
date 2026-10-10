@@ -125,8 +125,9 @@
 }
 
 .neo-input {
-  @apply rounded-xl border-[3px] border-[#2D2D2D] bg-[#FFFDF8] px-4 py-2;
+  @apply rounded-xl border-[3px] border-[#2D2D2D] bg-[#FFFDF8] px-4 py-3;
   transition: box-shadow 0.2s ease;
+  line-height: 1.5;
 }
 
 .neo-input:focus {

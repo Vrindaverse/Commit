@@ -427,7 +427,18 @@ export default function Sidebar() {
         </div>
       )}
 
-      {/* Mobile hamburger — opens the navigation drawer */}
+
+
+        {/* Mobile streak badge — scrolls with page */}
+        {mounted && (
+          <div className="md:hidden absolute top-4 right-4 z-50">
+            <button onClick={() => setShowStreak(true)} aria-label={"Login streak: " + streak + " day" + (streak === 1 ? "" : "s")} className="rounded-xl border-[3px] border-[#2D2D2D] bg-[#CDEAC0] px-3 py-1.5 flex items-center gap-1.5 shadow-[2px_2px_0px_0px_var(--neo-shadow)] hover:bg-[#b8d8b0] transition-colors">
+              <FlameIcon size={14} />
+              <span className="text-xs font-extrabold">{streak}</span>
+            </button>
+          </div>
+        )}
+            {/* Mobile hamburger — opens the navigation drawer */}
       <button
         onClick={() => setMobileOpen(true)}
         aria-label="Open navigation menu"

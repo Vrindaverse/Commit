@@ -132,15 +132,23 @@ function SubjectModal({ subjectId, onClose }: { subjectId: string; onClose: () =
         className="w-full max-w-lg"
       >
         <NeoCard color={subject.color}>
-          <div className="flex items-start gap-4 mb-5">
-            <div className="w-14 h-14 rounded-xl border-[3px] border-[#2D2D2D] flex items-center justify-center flex-shrink-0" style={{ backgroundColor: subject.color }}>
-              <GraduationCap size={24} />
+<div className="flex items-start gap-4 mb-5">
+              <div className="w-14 h-14 rounded-xl border-[3px] border-[#2D2D2D] flex items-center justify-center flex-shrink-0" style={{ backgroundColor: subject.color }}>
+                <GraduationCap size={24} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-xl font-extrabold truncate">{subject.name}</h2>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border-[2px] border-[#2D2D2D] bg-[#FFFDF8] inline-block mt-0.5">{subject.code}</span>
+              </div>
+              <button
+                type="button"
+                aria-label="Close subject details"
+                onClick={onClose}
+                className="p-2 -mr-1 rounded-xl border-[2.5px] border-[#2D2D2D] bg-[#FFFDF8] text-[#5C5C5C] hover:text-[#2A2A2A] hover:bg-[#F0ECE4] flex items-center justify-center min-h-[44px] min-w-[44px] transition-all active:translate-y-0.5 shadow-[3px_3px_0px_0px_var(--neo-shadow)]"
+              >
+                <X size={16} />
+              </button>
             </div>
-            <div className="flex-1 min-w-0">
-              <h2 className="text-xl font-extrabold truncate">{subject.name}</h2>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border-[2px] border-[#2D2D2D] bg-[#FFFDF8] inline-block mt-0.5">{subject.code}</span>
-            </div>
-          </div>
 
           <div className="mb-5">
             <div className="flex justify-between items-center mb-1">

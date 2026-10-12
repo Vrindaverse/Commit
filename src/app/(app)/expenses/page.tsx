@@ -82,6 +82,14 @@ const LOAN_META: Record<LoanKind, { label: string; color: string; icon: React.Re
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const HEAT_COLORS = ['#F0ECE4', '#CDEAC0', '#F7E8A4', '#FFD8BE', '#F8C8C8'];
 
+// Solid, single-border action buttons with a hard offset shadow.
+const ACTION_BTN =
+  'px-4 py-3 text-sm font-bold flex items-center justify-center gap-2 whitespace-nowrap min-h-[48px] rounded-[15px] border-[2.5px] border-[#303030] text-[#2A2A2A] transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-none';
+
+// Consistent compact close (X) button used across all popups.
+const CLOSE_BTN =
+  'p-2 rounded-xl border-[2.5px] border-[#303030] bg-[#FFFDF8] text-[#5C5C5C] hover:text-[#2A2A2A] hover:bg-[#F0ECE4] flex items-center justify-center min-h-[44px] min-w-[44px] transition-all active:translate-y-0.5 active:shadow-none shadow-[3px_3px_0px_0px_var(--neo-shadow)]';
+
 // Haptic feedback helper
 const triggerHapticFeedback = () => {
    // Check if Vibration API is available and supported
@@ -244,13 +252,18 @@ return (
     <form onSubmit={handleSubmit} className="neo-card p-4 sm:p-6 tint-peach">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-extrabold">{initial ? 'Edit Transaction' : 'New Transaction'}</h2>
-         <Button variant="outline" size="xs" onClick={(e) => {
-     triggerHapticFeedback();
-     setIsLoading(false);
-     onCancel();
-   }}>
-          <X size={14} />
-        </Button>
+<button
+          type="button"
+          aria-label="Close transaction form"
+          onClick={() => {
+            triggerHapticFeedback();
+            setIsLoading(false);
+            onCancel();
+          }}
+          className={CLOSE_BTN}
+        >
+          <X size={16} />
+        </button>
       </div>
 
       <div className="inline-flex rounded-xl border-[3px] border-[#2D2D2D] overflow-hidden mb-4 w-full">
@@ -435,8 +448,8 @@ function BudgetEditor({
     <div className="neo-card p-6 mb-8 tint-blue">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-extrabold">Monthly Budgets & Savings Goal</h2>
-        <button type="button" onClick={onClose} className="neo-button p-2 bg-[#FFFDF8]">
-          <X size={14} />
+        <button type="button" aria-label="Close budgets" onClick={onClose} className={CLOSE_BTN}>
+          <X size={16} />
         </button>
       </div>
 
@@ -556,7 +569,7 @@ return (
     <form onSubmit={handleSubmit} className="neo-card p-4 sm:p-6 tint-teal">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-extrabold">{initial ? 'Edit Loan' : 'New Loan'}</h2>
-        <button type="button" onClick={(e) => {
+        <button type="button" onClick={() => {
     triggerHapticFeedback();
     onCancel();
   }} className="neo-button p-2 bg-[#FFFDF8] min-h-[44px] min-w-[44px]">
@@ -836,41 +849,11 @@ export default function ExpensesPage() {
   const [filterCategory, setFilterCategory] = useState<ExpenseCategory | ''>('');
   const [sort, setSort] = useState<SortKey>('date-desc');
 
-   // Touch state for swipe-to-dismiss modal
-   const [touchStartY, setTouchStartY] = useState<number>(0);
-   const [dragOffset, setDragOffset] = useState<number>(0);
-   const [isDragging, setIsDragging] = useState<boolean>(false);
-   
-   // Touch state for budgets dialog swipe-to-dismiss
-   const [budgetTouchStartY, setBudgetTouchStartY] = useState<number>(0);
-   const [budgetDragOffset, setBudgetDragOffset] = useState<number>(0);
-   const [budgetIsDragging, setBudgetIsDragging] = useState<boolean>(false);
-   
-    // Touch state for loans dialog swipe-to-dismiss
-    const [loansTouchStartY, setLoansTouchStartY] = useState<number>(0);
-    const [loansDragOffset, setLoansDragOffset] = useState<number>(0);
-    const [loansIsDragging, setLoansIsDragging] = useState<boolean>(false);
-
-    // Loading state for form submission
+   // Loading state for form submission
     const [isAdding, setIsAdding] = useState(false);
 
     // Confirmation dialog for deletion
     const [deleteTarget, setDeleteTarget] = useState<{ kind: 'expense' | 'loan'; id: string; label: string } | null>(null);
-
-   const resetTouchState = () => {
-     setIsDragging(false);
-     setDragOffset(0);
-   };
-   
-   const resetBudgetTouchState = () => {
-     setBudgetIsDragging(false);
-     setBudgetDragOffset(0);
-   };
-   
-   const resetLoansTouchState = () => {
-     setLoansIsDragging(false);
-     setLoansDragOffset(0);
-   };
 
    // Haptic feedback helper
    const triggerHapticFeedback = () => {
@@ -1282,44 +1265,14 @@ export default function ExpensesPage() {
                     onClick={() => {
                       triggerHapticFeedback();
                       setShowLoans(true); setShowForm(false); setShowBudgets(false); }}
-                    className={`neo-button px-4 py-3 text-sm font-bold flex items-center gap-2 whitespace-nowrap min-h-[48px] tint-teal ${showLoans ? 'bg-[#BFE3E0]' : 'bg-[#FFFDF8]'}`}
+                    className={`${ACTION_BTN} bg-[#BFE3E0] shadow-[4px_4px_0px_0px_#93CFC9]`}
                   >
                     <HandCoins size={16} /> Loans
                   </button>
                 </DialogTrigger>
-<DialogContent 
+<DialogContent
                   showCloseButton={false}
                   className="sm:max-w-lg max-w-[95vw] p-0 overflow-hidden"
-                  style={{ transform: `translateY(${loansDragOffset}px)` }}
-                  onTouchStart={(e) => {
-                    if (e.touches.length === 1) {
-                      setLoansTouchStartY(e.touches[0].clientY);
-                      setLoansIsDragging(true);
-                    }
-                  }}
-                  onTouchMove={(e) => {
-                    if (!loansIsDragging || e.touches.length !== 1) return;
-                    
-                    const touchY = e.touches[0].clientY;
-                    const diff = touchY - loansTouchStartY;
-                    
-                    // Only respond to downward swipes (positive diff)
-                    if (diff > 0) {
-                      e.preventDefault(); // Prevent scrolling
-                      setLoansDragOffset(diff);
-                    }
-                  }}
-                  onTouchEnd={(e) => {
-                    if (loansIsDragging) {
-                      const diff = (e.changedTouches[0]?.clientY || 0) - loansTouchStartY;
-                      // If dragged more than 50px down, close the modal
-                      if (diff > 50) {
-                        setShowLoans(false);
-                      }
-                      resetLoansTouchState();
-                    }
-                  }}
-                  onTouchCancel={resetLoansTouchState}
                 >
                   <div className="neo-card p-6 mb-8 tint-teal">
                     <div className="flex items-center justify-between mb-4">
@@ -1328,17 +1281,23 @@ export default function ExpensesPage() {
                       </h2>
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={(e) => {
+                          onClick={() => {
                             triggerHapticFeedback();
                             setEditingLoan(null); setShowLoanForm((v) => !v); }}
                           className="neo-button px-4 py-3 text-sm bg-[#CDEAC0] tint-green flex items-center gap-2 min-h-[48px]"
                         >
                           <Plus size={15} /> {showLoanForm ? 'Cancel' : 'Add loan'}
                         </button>
-                        <button type="button" onClick={(e) => {
-                          triggerHapticFeedback();
-                          setShowLoans(false); }} className="neo-button p-2 bg-[#FFFDF8] min-h-[44px] min-w-[44px]">
-                          <X size={14} />
+                        <button
+                          type="button"
+                          aria-label="Close loans"
+                          onClick={() => {
+                            triggerHapticFeedback();
+                            setShowLoans(false);
+                          }}
+                          className={CLOSE_BTN}
+                        >
+                          <X size={16} />
                         </button>
                       </div>
                        </div>
@@ -1410,7 +1369,7 @@ export default function ExpensesPage() {
               <Check size={14} />
             </button>
 <button
-  onClick={(e) => {
+  onClick={() => {
     triggerHapticFeedback();
     setEditingLoan(l); setShowLoanForm(true); }}
   className="p-1.5 rounded-lg text-[#5C5C5C] hover:text-[#2A2A2A] hover:bg-[#F0ECE4] transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
@@ -1471,44 +1430,14 @@ export default function ExpensesPage() {
                     onClick={() => {
                       triggerHapticFeedback();
                       setShowBudgets(true); setShowForm(false); setShowLoans(false); }}
-                    className={`neo-button px-4 py-3 text-sm font-bold flex items-center gap-2 whitespace-nowrap min-h-[48px] tint-blue ${showBudgets ? 'bg-[#B8D8F8]' : 'bg-[#FFFDF8]'}`}
+                    className={`${ACTION_BTN} bg-[#B8D8F8] shadow-[4px_4px_0px_0px_#8FBCEA]`}
                   >
                     <SlidersHorizontal size={16} /> Budgets
                   </button>
                 </DialogTrigger>
-                <DialogContent 
+                <DialogContent
                   showCloseButton={false}
                   className="sm:w-[500px] max-w-[95vw] p-0 overflow-hidden"
-                  style={{ transform: `translateY(${budgetDragOffset}px)` }}
-                  onTouchStart={(e) => {
-                    if (e.touches.length === 1) {
-                      setBudgetTouchStartY(e.touches[0].clientY);
-                      setBudgetIsDragging(true);
-                    }
-                  }}
-                  onTouchMove={(e) => {
-                    if (!budgetIsDragging || e.touches.length !== 1) return;
-                    
-                    const touchY = e.touches[0].clientY;
-                    const diff = touchY - budgetTouchStartY;
-                    
-                    // Only respond to downward swipes (positive diff)
-                    if (diff > 0) {
-                      e.preventDefault(); // Prevent scrolling
-                      setBudgetDragOffset(diff);
-                    }
-                  }}
-                  onTouchEnd={(e) => {
-                    if (budgetIsDragging) {
-                      const diff = (e.changedTouches[0]?.clientY || 0) - budgetTouchStartY;
-                      // If dragged more than 50px down, close the modal
-                      if (diff > 50) {
-                        setShowBudgets(false);
-                      }
-                      resetBudgetTouchState();
-                    }
-                  }}
-                  onTouchCancel={resetBudgetTouchState}
                 >
                   <BudgetEditor budgets={budgets} onChange={setBudget} onClose={() => setShowBudgets(false)} />
                 </DialogContent>
@@ -1527,48 +1456,15 @@ export default function ExpensesPage() {
                      triggerHapticFeedback();
                      startAdd();
                    }}
-                   className="neo-button px-4 py-3 text-sm font-bold bg-[#CDEAC0] flex items-center gap-2 whitespace-nowrap tint-green text-[#2A2A2A] min-h-[48px]"
+                   className={`${ACTION_BTN} bg-[#C6E8B8] shadow-[4px_4px_0px_0px_#8BCB78]`}
                    aria-label="Add new transaction"
                  >
                    <Plus size={16} /> Add
                  </button>
                </DialogTrigger>
-              <DialogContent 
+              <DialogContent
                 showCloseButton={false}
                 className="sm:max-w-lg max-w-[95vw] p-0 overflow-hidden"
-                style={{ transform: `translateY(${dragOffset}px)` }}
-                onTouchStart={(e) => {
-                  if (e.touches.length === 1) {
-                    setTouchStartY(e.touches[0].clientY);
-                    setIsDragging(true);
-                  }
-                }}
-                onTouchMove={(e) => {
-                  if (!isDragging || e.touches.length !== 1) return;
-                  
-                  const touchY = e.touches[0].clientY;
-                  const diff = touchY - touchStartY;
-                  
-                  // Only respond to downward swipes (positive diff)
-                  if (diff > 0) {
-                    e.preventDefault(); // Prevent scrolling
-                    setDragOffset(diff);
-                    // Optional: add visual feedback here
-                  }
-                }}
-                onTouchEnd={(e) => {
-                  if (isDragging) {
-                    const diff = (e.changedTouches[0]?.clientY || 0) - touchStartY;
-                    // If dragged more than 50px down, close the modal
-                    if (diff > 50) {
-                      setShowForm(false);
-                      setEditing(null);
-                      setPrefillDate(undefined);
-                    }
-                    resetTouchState();
-                  }
-                }}
-                onTouchCancel={resetTouchState}
               >
                <TransactionForm
                    initial={editing ?? undefined}
@@ -1588,7 +1484,6 @@ export default function ExpensesPage() {
                      setPrefillDate(undefined);
                    }}
                   />
-                <div className="text-xs text-center text-[#5C5C5C] mt-4">Swipe to dismiss</div>
               </DialogContent>
             </Dialog>
           </div>
@@ -1612,14 +1507,14 @@ export default function ExpensesPage() {
           ))}
         </div>
 <div className="flex items-center gap-1">
-           <button onClick={(e) => {
+           <button onClick={() => {
              triggerHapticFeedback();
              shiftPeriod(-1); }} className="neo-button p-1.5 bg-[#FFFDF8]" aria-label="Previous period">
              <ChevronLeft size={14} />
            </button>
            <span className="text-sm font-extrabold px-2 min-w-[120px] sm:min-w-[160px] text-center">{range.label}</span>
            <button
-             onClick={(e) => {
+             onClick={() => {
                triggerHapticFeedback();
                shiftPeriod(1); }}
              disabled={range.start >= dayKey(new Date())}
@@ -1768,7 +1663,7 @@ export default function ExpensesPage() {
                   Set a monthly budget and savings goal to stay on track.
                 </p>
 <button
-  onClick={(e) => {
+  onClick={() => {
     triggerHapticFeedback();
     setShowBudgets(true); setShowForm(false); setShowLoans(false); }}
   className="neo-button px-4 py-3 text-sm bg-[#F7E8A4] w-fit tint-yellow min-h-[48px]"
@@ -2034,20 +1929,20 @@ export default function ExpensesPage() {
              title={`Calendar · ${format(calMonth, 'MMMM yyyy')}`}
              action={
                <div className="flex items-center gap-1">
-                 <button onClick={(e) => {
+                 <button onClick={() => {
                    triggerHapticFeedback();
                    setCalMonth((m) => addMonths(m, -1)); }} className="neo-button p-1.5 bg-[#FFFDF8]" aria-label="Previous month">
                    <ChevronLeft size={13} />
                  </button>
                  <button
-                   onClick={(e) => {
+                   onClick={() => {
                      triggerHapticFeedback();
                      setCalMonth(startOfMonth(new Date())); setSelectedDay(dayKey(new Date())); }}
                    className="neo-button px-2.5 py-1.5 text-[11px] bg-[#FFFDF8]"
                  >
                    Today
                  </button>
-                 <button onClick={(e) => {
+                 <button onClick={() => {
                    triggerHapticFeedback();
                    setCalMonth((m) => addMonths(m, 1)); }} className="neo-button p-1.5 bg-[#FFFDF8]" aria-label="Next month">
                    <ChevronRight size={13} />
@@ -2270,7 +2165,7 @@ export default function ExpensesPage() {
                 No category budgets set. Add limits to track where your money goes.
               </p>
 <button
-  onClick={(e) => {
+  onClick={() => {
     triggerHapticFeedback();
     setShowBudgets(true); setShowForm(false); setShowLoans(false); }}
   className="neo-button px-4 py-3 text-sm bg-[#F7E8A4] tint-yellow min-h-[48px]"
@@ -2434,7 +2329,7 @@ export default function ExpensesPage() {
                             </p>
                             <div className="flex items-center gap-1 shrink-0">
 <button
-  onClick={(e) => {
+  onClick={() => {
     triggerHapticFeedback();
     setEditing(t); setPrefillDate(undefined); setShowBudgets(false); setShowLoans(false); setShowForm(true); }}
   className="p-1.5 rounded-lg text-[#5C5C5C] hover:text-[#2A2A2A] hover:bg-[#F0ECE4] transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
@@ -2489,7 +2384,7 @@ export default function ExpensesPage() {
         }}
       >
         <DialogContent showCloseButton={false} className="sm:max-w-sm p-0 overflow-hidden">
-          <div className="neo-card p-5 tint-pink">
+          <div className="neo-card p-5 tint-pink relative">
             <div className="flex items-center gap-3 mb-3">
               <span className="w-10 h-10 rounded-xl border-[3px] border-[#2D2D2D] bg-[#F8C8C8] flex items-center justify-center shrink-0">
                 <Trash2 size={18} />
@@ -2500,6 +2395,14 @@ export default function ExpensesPage() {
                 </h2>
                 <p className="text-xs font-bold text-[#5C5C5C] truncate">{deleteTarget?.label}</p>
               </div>
+              <button
+                type="button"
+                aria-label="Close delete confirmation"
+                onClick={() => setDeleteTarget(null)}
+                className={`${CLOSE_BTN} ml-auto shrink-0 shadow-none`}
+              >
+                <X size={16} />
+              </button>
             </div>
             <p className="text-xs font-medium text-[#5C5C5C] mb-4">
               This action can&apos;t be undone.

@@ -168,6 +168,7 @@ function HabitCalendar({ habits }: { habits: { id: string; name: string; color: 
   const toggleHabitLog = useLifeStore(s => s.toggleHabitLog);
   const today = new Date();
   const todayStr = today.toISOString().split('T')[0];
+  const todayLabel = today.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
   const [viewDate, setViewDate] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
   const [selectedDay, setSelectedDay] = useState<string | null>(todayStr);
 
@@ -194,18 +195,32 @@ function HabitCalendar({ habits }: { habits: { id: string; name: string; color: 
 
   const dayHabits = selectedDay ? habitMap[Number(selectedDay.split('-')[2])] || [] : [];
 
+  const todayHabits = habits.map(h => ({
+    id: h.id,
+    name: h.name,
+    color: h.color,
+    done: (h.logs.find(l => l.date === todayStr)?.count ?? 0) > 0,
+  }));
+
+  const activeRows = selectedDay === todayStr ? todayHabits : dayHabits;
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
-          <button onClick={() => setViewDate(new Date(year, month - 1, 1))} className="neo-button p-1.5 bg-[#FFFDF8]"><ChevronLeft size={16} /></button>
+          <button onClick={() => setViewDate(new Date(year, month - 1, 1))} className="neo-button p-1.5 bg-[#FFFDF8]" aria-label="Previous month"><ChevronLeft size={16} /></button>
           <h3 className="text-base font-extrabold min-w-[130px] sm:min-w-[180px] text-center">{monthName}</h3>
-          <button onClick={() => setViewDate(new Date(year, month + 1, 1))} className="neo-button p-1.5 bg-[#FFFDF8]"><ChevronRight size={16} /></button>
+          <button onClick={() => setViewDate(new Date(year, month + 1, 1))} className="neo-button p-1.5 bg-[#FFFDF8]" aria-label="Next month"><ChevronRight size={16} /></button>
         </div>
-        {!isCurrentMonth && (
-          <button onClick={() => setViewDate(new Date(today.getFullYear(), today.getMonth(), 1))} className="neo-button px-3 py-1 text-xs bg-[#F7E8A4] font-extrabold">Today</button>
+        {isCurrentMonth ? (
+          <span className="neo-button px-3 py-1 text-xs bg-[#F7E8A4] font-extrabold flex items-center gap-1.5 pointer-events-none">
+            <Check size={12} /> Today
+          </span>
+        ) : (
+          <button onClick={() => setViewDate(new Date(today.getFullYear(), today.getMonth(), 1))} className="neo-button px-3 py-1 text-xs bg-[#F7E8A4] font-extrabold">Jump to today</button>
         )}
       </div>
+      <p className="text-xs font-bold text-[#5C5C5C] mb-3">Today is {todayLabel}</p>
       <div className="grid grid-cols-7 gap-1 mb-1">
         {['S', 'M', 'T', 'W', 'Th', 'F', 'S'].map((d, i) => (
           <div key={`h-${i}`} className="text-center text-[10px] font-extrabold text-[#5C5C5C] py-1">{d}</div>
@@ -225,11 +240,11 @@ function HabitCalendar({ habits }: { habits: { id: string; name: string; color: 
               whileTap={{ scale: 0.95 }}
               onClick={() => setSelectedDay(dateStr)}
               className={`relative rounded-lg border-[2px] border-[#2D2D2D] p-1.5 text-center text-xs font-bold transition-colors min-h-[48px]
-                ${isSelected ? 'ring-[3px] ring-[#2D2D2D]' : ''}
+                ${isSelected || isToday ? 'ring-[3px] ring-[#2D2D2D]' : ''}
                 ${isToday ? 'bg-[#F7E8A4]' : isSelected ? 'bg-[#B8D8F8]' : 'bg-[#FFFDF8]'}
                 hover:bg-[#F0ECE4]`}
             >
-              <span>{day}</span>
+              <span className={`${isToday ? 'inline-flex w-5 h-5 leading-none items-center justify-center rounded-full bg-[#2D2D2D] text-[#FFFDF8]' : ''}`}>{day}</span>
               {dayData.length > 0 && (
                 <div className="flex flex-wrap justify-center gap-[2px] mt-1">
                   {dayData.slice(0, 4).map(h => (
@@ -258,27 +273,37 @@ function HabitCalendar({ habits }: { habits: { id: string; name: string; color: 
           exit={{ opacity: 0, y: -10 }}
           className="border-t-[2px] border-[#2D2D2D] pt-4"
         >
-          <h4 className="text-sm font-extrabold mb-3">
-            {selectedDay === todayStr ? "Today's Log" : selectedDay}
+          <h4 className="text-sm font-extrabold mb-3 flex items-center flex-wrap gap-2">
+            {selectedDay === todayStr ? (
+              <>
+                <span className="text-[10px] font-extrabold uppercase tracking-wide px-2 py-0.5 rounded-lg border-[2px] border-[#2D2D2D] bg-[#F7E8A4]">Today</span>
+                <span>Today&apos;s Log</span>
+              </>
+            ) : (
+              selectedDay
+            )}
           </h4>
-          {dayHabits.length === 0 ? (
+          {activeRows.length === 0 ? (
             <p className="text-xs text-[#5C5C5C] font-medium py-4 text-center">No habits logged for this day</p>
           ) : (
             <div className="space-y-2">
-              {dayHabits.map(h => (
+              {activeRows.map(h => (
                 <button
                   key={h.id}
                   onClick={() => toggleHabitLog(h.id, selectedDay!)}
-                  className="flex items-center gap-3 w-full text-left p-2.5 rounded-xl border-[2px] border-[#2D2D2D] bg-[#FFFDF8] hover:bg-[#F0ECE4] transition-colors"
+                  aria-pressed={h.done}
+                  className="flex items-center gap-3 w-full text-left p-2.5 min-h-[48px] rounded-xl border-[2px] border-[#2D2D2D] bg-[#FFFDF8] hover:bg-[#F0ECE4] transition-colors"
                 >
                   <div
-                    className={`w-5 h-5 rounded-lg border-[2px] border-[#2D2D2D] flex items-center justify-center transition-colors ${h.done ? 'bg-[#CDEAC0]' : ''}`}
+                    className={`w-6 h-6 rounded-lg border-[2px] border-[#2D2D2D] flex items-center justify-center shrink-0 transition-colors ${h.done ? 'bg-[#CDEAC0]' : ''}`}
                     style={{ backgroundColor: h.done ? '#CDEAC0' : h.color }}
                   >
-                    {h.done && <Check size={12} />}
+                    {h.done && <Check size={14} />}
                   </div>
                   <span className="text-xs font-bold flex-1">{h.name}</span>
-                  <span className="text-[10px] font-bold text-[#5C5C5C]">{h.done ? 'Done' : 'Missed'}</span>
+                  <span className={`text-[10px] font-extrabold ${h.done ? 'text-[#4C8C4A]' : 'text-[#5C5C5C]'}`}>
+                    {h.done ? 'Done' : 'Not done'}
+                  </span>
                 </button>
               ))}
             </div>

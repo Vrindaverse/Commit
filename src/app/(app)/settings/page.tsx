@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Settings, Palette, Download, Check, RotateCcw, LogOut } from 'lucide-react';
+import { Settings, Palette, Download, Check, RotateCcw, LogOut, User, Mail, Phone, Code2 } from 'lucide-react';
 import NeoCard from '@/components/shared/neo-card';
 import PageHeader from '@/components/shared/page-header';
 import { useLifeStore } from '@/store/use-store';
@@ -142,6 +142,49 @@ export default function SettingsPage() {
             <button onClick={handleLogout} className="neo-button px-4 py-1.5 text-xs bg-[#B8D8F8] flex items-center gap-1">
               <LogOut size={12} /> Sign out
             </button>
+          </SettingRow>
+        </NeoCard>
+
+        <NeoCard color="#CDEAC0">
+          <div className="flex items-center gap-3 mb-6">
+            <User size={18} />
+            <h2 className="text-base font-extrabold">About</h2>
+          </div>
+          <div className="flex items-center gap-4 mb-5">
+            <div className="w-14 h-14 rounded-2xl border-[3px] border-[#2D2D2D] bg-[#CDEAC0] flex items-center justify-center shrink-0 text-xl font-extrabold">
+              NM
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-extrabold">NIKHIL MAHALIK</p>
+              <p className="text-xs text-[#5C5C5C] font-bold">aka Vrinda</p>
+              <p className="text-xs text-[#5C5C5C] font-medium mt-0.5">Creator &amp; Developer of Commit</p>
+            </div>
+          </div>
+          <SettingRow label="Email" description="Say hello or send feedback">
+            <a
+              href="mailto:vrindaverse78@gmail.com"
+              className="neo-button px-4 py-1.5 text-xs bg-[#FFFDF8] flex items-center gap-2"
+            >
+              <Mail size={12} /> vrindaverse78@gmail.com
+            </a>
+          </SettingRow>
+          <SettingRow label="Phone" description="Call or WhatsApp">
+            <a
+              href="tel:+919149411249"
+              className="neo-button px-4 py-1.5 text-xs bg-[#FFFDF8] flex items-center gap-2"
+            >
+              <Phone size={12} /> +91 91494 11249
+            </a>
+          </SettingRow>
+          <SettingRow label="GitHub" description="See more projects">
+            <a
+              href="https://github.com/Vrindaverse"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="neo-button px-4 py-1.5 text-xs bg-[#FFFDF8] flex items-center gap-2"
+            >
+              <Code2 size={12} /> @Vrindaverse
+            </a>
           </SettingRow>
         </NeoCard>
       </div>

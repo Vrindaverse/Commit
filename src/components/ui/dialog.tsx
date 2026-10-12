@@ -19,12 +19,12 @@ function DialogTrigger({
 }) {
   if (asChild) {
     // We expect a single child
-    const childrenArray = React.Children.toArray(props.children);
+    const { children, ...cloneProps } = props;
+    const childrenArray = React.Children.toArray(children);
     if (childrenArray.length === 1) {
       const child = childrenArray[0] as React.ReactElement;
-      return React.cloneElement(child, {
-        ...props,
-      });
+      // Do NOT forward `children` — it would nest the child inside itself.
+      return React.cloneElement(child, cloneProps);
     } else {
       // If there are not exactly one child, we fall back to the default trigger
       console.warn('DialogTrigger with asChild expects exactly one child');
@@ -51,7 +51,7 @@ function DialogOverlay({
     <DialogPrimitive.Backdrop
       data-slot="dialog-overlay"
       className={cn(
-        "fixed inset-0 isolate z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+        "fixed inset-0 isolate z-50 bg-[#2D2D2D]/40 duration-100 supports-backdrop-filter:backdrop-blur-[2px] data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
         className
       )}
       {...props}
@@ -84,14 +84,13 @@ function DialogContent({
             data-slot="dialog-close"
             render={
               <Button
+                aria-label="Close dialog"
                 variant="ghost"
-                className="absolute top-2 right-2"
-                size="icon-sm"
+                className="absolute top-3 right-3 z-10 size-9 cursor-pointer rounded-full border-2 border-[#2D2D2D]/80 bg-[#F8F5F0] text-[#2A2A2A] shadow-[2px_2px_0px_0px_var(--neo-shadow)] transition-all hover:bg-[#F0ECE4] hover:shadow-[3px_3px_0px_0px_var(--neo-shadow)] active:translate-y-0.5 active:shadow-none [&_svg]:size-4"
               />
             }
           >
-            <XIcon
-            />
+            <XIcon />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>
         )}

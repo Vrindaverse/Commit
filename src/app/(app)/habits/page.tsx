@@ -7,6 +7,7 @@ import { Flame, Plus, X, Check, CalendarDays, Sparkles, TrendingUp, ChevronLeft,
 import NeoCard from '@/components/shared/neo-card';
 import PageHeader from '@/components/shared/page-header';
 import { useLifeStore, genId } from '@/store/use-store';
+import { localDateKey } from '@/lib/date';
 import type { Habit, HabitCategory } from '@/types';
 
 const HabitChart = dynamic(() => import('@/components/charts/habit-chart'), {
@@ -37,14 +38,15 @@ function HabitCategoryBadge({ category, className = '' }: { category?: HabitCate
 }
 
 function todayKey() {
-  return new Date().toISOString().split('T')[0];
+  return localDateKey();
 }
 
 function calcRate(logs: { date: string; count: number }[], days: number): number {
   const cutoff = new Date();
+  cutoff.setHours(0, 0, 0, 0);
   cutoff.setDate(cutoff.getDate() - days);
   const recent = logs.filter(l => {
-    const d = new Date(l.date);
+    const d = new Date(`${l.date}T00:00:00`);
     return d >= cutoff && d <= new Date();
   });
   if (recent.length === 0) return 0;
@@ -57,7 +59,7 @@ function generateLogs(days: number): { date: string; count: number }[] {
   for (let i = days; i >= 0; i--) {
     const date = new Date();
     date.setDate(date.getDate() - i);
-    logs.push({ date: date.toISOString().split('T')[0], count: 0 });
+    logs.push({ date: localDateKey(date), count: 0 });
   }
   return logs;
 }
@@ -82,7 +84,7 @@ function TodayCheckIn({ habits }: { habits: Habit[] }) {
 
   return (
     <NeoCard color="#CDEAC0" className="mb-6">
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
         <div>
           <h2 className="text-sm font-extrabold flex items-center gap-2">
             <Check size={16} /> Today&apos;s Check-in
@@ -91,7 +93,7 @@ function TodayCheckIn({ habits }: { habits: Habit[] }) {
         </div>
         <button
           onClick={toggleAll}
-          className={`neo-button px-3 py-2 text-xs font-extrabold flex items-center gap-1.5 ${allDone ? 'bg-[#FFFDF8]' : 'bg-[#F7E8A4]'}`}
+          className={`neo-button px-3 py-2 text-xs font-extrabold flex items-center gap-1.5 w-full sm:w-auto ${allDone ? 'bg-[#FFFDF8]' : 'bg-[#F7E8A4]'}`}
         >
           {allDone ? <X size={13} /> : <Check size={13} />} {allDone ? 'Unmark all' : 'Mark all done'}
         </button>
@@ -104,15 +106,15 @@ function TodayCheckIn({ habits }: { habits: Habit[] }) {
               key={h.id}
               onClick={() => toggleHabitLog(h.id, today)}
               aria-pressed={done}
-              className="flex items-center gap-3 w-full text-left p-2.5 min-h-[48px] rounded-xl border-[2px] border-[#2D2D2D] bg-[#FFFDF8] hover:bg-[#F0ECE4] transition-colors"
+              className="flex items-center gap-3 w-full text-left p-3 min-h-[52px] rounded-xl border-[2px] border-[#2D2D2D] bg-[#FFFDF8] hover:bg-[#F0ECE4] transition-colors"
             >
               <div
-                className={`w-6 h-6 rounded-lg border-[2px] border-[#2D2D2D] flex items-center justify-center shrink-0 transition-colors ${done ? 'bg-[#CDEAC0]' : ''}`}
+                className={`w-7 h-7 rounded-lg border-[2px] border-[#2D2D2D] flex items-center justify-center shrink-0 transition-all ${done ? 'bg-[#CDEAC0] shadow-[1px_1px_0px_0px_#2D2D2D]' : 'shadow-[1px_1px_0px_0px_#2D2D2D]'}`}
                 style={{ backgroundColor: done ? '#CDEAC0' : h.color }}
               >
-                {done && <Check size={14} />}
+                {done && <Check size={16} strokeWidth={3} />}
               </div>
-              <span className="text-xs font-bold flex-1 min-w-0 truncate">{h.name}</span>
+              <span className="text-xs font-bold flex-1 min-w-0 truncate pr-2">{h.name}</span>
               <HabitCategoryBadge category={h.category} />
             </button>
           );
@@ -133,7 +135,7 @@ function ContributionGrid({
 }) {
   const toggleHabitLog = useLifeStore(s => s.toggleHabitLog);
   const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
+  const todayStr = localDateKey(today);
 
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - lookback);
@@ -142,7 +144,7 @@ function ContributionGrid({
   const filtered: { date: string; count: number }[] = [];
   const cursor = new Date(cutoff);
   while (cursor <= today) {
-    const key = cursor.toISOString().split('T')[0];
+    const key = localDateKey(cursor);
     filtered.push(logMap.get(key) || { date: key, count: 0 });
     cursor.setDate(cursor.getDate() + 1);
   }
@@ -266,7 +268,7 @@ function ContributionGrid({
 function HabitCalendar({ habits }: { habits: { id: string; name: string; color: string; logs: { date: string; count: number }[] }[] }) {
   const toggleHabitLog = useLifeStore(s => s.toggleHabitLog);
   const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
+  const todayStr = localDateKey(today);
   const todayLabel = today.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
   const [viewDate, setViewDate] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
   const [selectedDay, setSelectedDay] = useState<string | null>(todayStr);
@@ -305,7 +307,12 @@ function HabitCalendar({ habits }: { habits: { id: string; name: string; color: 
 
   const isHabitDone = (h: { logs: { date: string; count: number }[] }, dateStr: string) =>
     (h.logs.find(l => l.date === dateStr)?.count ?? 0) > 0;
+  const someDoneForDay = (dateStr: string) => habits.some(h => isHabitDone(h, dateStr));
   const allDoneForDay = (dateStr: string) => habits.length > 0 && habits.every(h => isHabitDone(h, dateStr));
+  const hasHabitsForDay = (dateStr: string) => {
+    const day = Number(dateStr.split('-')[2]);
+    return habitMap[day] && habitMap[day].length > 0;
+  };
   const toggleAllForDay = (dateStr: string) => {
     const all = allDoneForDay(dateStr);
     habits.forEach(h => {
@@ -314,65 +321,95 @@ function HabitCalendar({ habits }: { habits: { id: string; name: string; color: 
     });
   };
 
+  const getDayCellStyle = (dateStr: string, isToday: boolean, isSelected: boolean) => {
+    const allDone = allDoneForDay(dateStr);
+    const someDone = someDoneForDay(dateStr);
+    const hasHabits = hasHabitsForDay(dateStr);
+
+    if (isSelected) return 'bg-[#B8D8F8] ring-[3px] ring-[#2D2D2D]';
+    if (isToday) return 'bg-[#F7E8A4] ring-[3px] ring-[#2D2D2D]';
+    if (allDone) return 'bg-[#CDEAC0]';
+    if (someDone) return 'bg-[#F8E8D0]';
+    if (hasHabits) return 'bg-[#FFFDF8]';
+    return 'bg-[#F0ECE4]';
+  };
+
+  const getDayIndicators = (day: number) => {
+    const dayData = habitMap[day] || [];
+    if (dayData.length === 0) return null;
+    return dayData.slice(0, 5).map(h => (
+      <div
+        key={h.id}
+        className="w-1.5 h-1.5 rounded-full border-[1.5px] border-[#2D2D2D] flex-shrink-0"
+        style={{ backgroundColor: h.done ? h.color : '#F0ECE4' }}
+        title={`${h.name}: ${h.done ? 'Done' : 'Missed'}`}
+      />
+    ));
+  };
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-1">
-        <div className="flex items-center gap-2">
-          <button onClick={() => setViewDate(new Date(year, month - 1, 1))} className="neo-button p-1.5 bg-[#FFFDF8]" aria-label="Previous month"><ChevronLeft size={16} /></button>
-          <h3 className="text-base font-extrabold min-w-[130px] sm:min-w-[180px] text-center">{monthName}</h3>
-          <button onClick={() => setViewDate(new Date(year, month + 1, 1))} className="neo-button p-1.5 bg-[#FFFDF8]" aria-label="Next month"><ChevronRight size={16} /></button>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3 p-2 rounded-xl border-[2px] border-[#2D2D2D] bg-[#FFFDF8]">
+        <div className="flex items-center gap-2 flex-wrap">
+          <button onClick={() => setViewDate(new Date(year, month - 1, 1))} className="neo-button p-2 bg-[#FFFDF8]" aria-label="Previous month"><ChevronLeft size={18} /></button>
+          <h3 className="text-base font-extrabold min-w-[140px] sm:min-w-[180px] text-center flex-1">{monthName}</h3>
+          <button onClick={() => setViewDate(new Date(year, month + 1, 1))} className="neo-button p-2 bg-[#FFFDF8]" aria-label="Next month"><ChevronRight size={18} /></button>
         </div>
-        {isCurrentMonth ? (
-          <span className="neo-button px-3 py-1 text-xs bg-[#F7E8A4] font-extrabold flex items-center gap-1.5 pointer-events-none">
-            <Check size={12} /> Today
-          </span>
-        ) : (
-          <button onClick={() => setViewDate(new Date(today.getFullYear(), today.getMonth(), 1))} className="neo-button px-3 py-1 text-xs bg-[#F7E8A4] font-extrabold">Jump to today</button>
-        )}
+        <div className="flex items-center gap-2 flex-wrap">
+          {isCurrentMonth ? (
+            <span className="neo-button px-3 py-1.5 text-xs bg-[#F7E8A4] font-extrabold flex items-center gap-1.5 pointer-events-none">
+              <Check size={12} /> Today
+            </span>
+          ) : (
+            <button onClick={() => setViewDate(new Date(today.getFullYear(), today.getMonth(), 1))} className="neo-button px-3 py-1.5 text-xs bg-[#F7E8A4] font-extrabold">Jump to today</button>
+          )}
+        </div>
       </div>
-      <p className="text-xs font-bold text-[#5C5C5C] mb-3">Today is {todayLabel}</p>
-      <div className="grid grid-cols-7 gap-1 mb-1">
+      <p className="text-xs font-bold text-[#5C5C5C] mb-2 text-center sm:text-left">Today is {todayLabel}</p>
+      <div className="grid grid-cols-7 gap-1.5 mb-1">
         {['S', 'M', 'T', 'W', 'Th', 'F', 'S'].map((d, i) => (
-          <div key={`h-${i}`} className="text-center text-[10px] font-extrabold text-[#5C5C5C] py-1">{d}</div>
+          <div key={`h-${i}`} className="text-center text-[10px] font-extrabold text-[#5C5C5C] py-1.5">{d}</div>
         ))}
       </div>
-      <div className="grid grid-cols-7 gap-1 mb-4">
-        {Array.from({ length: firstDay }).map((_, i) => <div key={`e-${i}`} />)}
+      <div className="grid grid-cols-7 gap-1.5 mb-4">
+        {Array.from({ length: firstDay }).map((_, i) => (
+          <div key={`e-${i}`} className="min-h-[44px]" />
+        ))}
         {days.map(day => {
           const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
           const isToday = dateStr === todayStr;
           const isSelected = dateStr === selectedDay;
-          const dayData = habitMap[day] || [];
-          const allDone = allDoneForDay(dateStr);
+          const cellStyle = getDayCellStyle(dateStr, isToday, isSelected);
+          const indicators = getDayIndicators(day);
+
           return (
             <motion.button
               key={day}
-              whileHover={{ scale: 1.06 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => { setSelectedDay(dateStr); toggleAllForDay(dateStr); }}
-              title={`${dateStr} · tap to mark all habits ${allDone ? 'undone' : 'done'}`}
-              className={`relative rounded-lg border-[2px] border-[#2D2D2D] p-1.5 text-center text-xs font-bold transition-colors min-h-[48px]
-                ${isSelected || isToday ? 'ring-[3px] ring-[#2D2D2D]' : ''}
-                ${isToday ? 'bg-[#F7E8A4]' : isSelected ? 'bg-[#B8D8F8]' : 'bg-[#FFFDF8]'}
-                hover:bg-[#F0ECE4]`}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setSelectedDay(dateStr)}
+              title={isSelected ? `${dateStr} · Selected` : `${dateStr} · Tap to view`}
+              className={`relative rounded-lg border-[2px] border-[#2D2D2D] p-2 text-center text-xs font-bold transition-all min-h-[44px] flex flex-col items-center justify-between ${cellStyle} hover:bg-[#F0ECE4] hover:shadow-[2px_2px_0px_0px_#2D2D2D]`}
             >
               <span className="flex items-center justify-center gap-1">
-                <span className={`${isToday ? 'inline-flex w-5 h-5 leading-none items-center justify-center rounded-full bg-[#2D2D2D] text-[#FFFDF8]' : ''}`}>{day}</span>
-                {allDone && <Check size={12} strokeWidth={3} className="text-[#4C8C4A]" />}
+                {isToday && (
+                  <span className="inline-flex w-6 h-6 leading-none items-center justify-center rounded-full bg-[#2D2D2D] text-[#FFFDF8] text-[11px] font-extrabold">
+                    {day}
+                  </span>
+                )}
+                {!isToday && <span className="text-[#2A2A2A]">{day}</span>}
               </span>
-              {dayData.length > 0 && (
-                <div className="flex flex-wrap justify-center gap-[2px] mt-1">
-                  {dayData.slice(0, 4).map(h => (
-                    <div
-                      key={h.id}
-                      className={`w-2 h-2 rounded-sm border-[1.5px] border-[#2D2D2D]`}
-                      style={{ backgroundColor: h.done ? h.color : '#F0ECE4' }}
-                      title={`${h.name}: ${h.done ? 'Done' : 'Missed'}`}
-                    />
-                  ))}
-                  {dayData.length > 4 && (
-                    <span className="text-[7px] font-extrabold text-[#5C5C5C]">+{dayData.length - 4}</span>
+              {indicators && (
+                <div className="flex flex-wrap justify-center gap-1 mt-1.5 min-h-[10px]">
+                  {indicators}
+                  {habitMap[day] && habitMap[day].length > 5 && (
+                    <span className="text-[8px] font-extrabold text-[#5C5C5C] self-center">+{habitMap[day].length - 5}</span>
                   )}
+                </div>
+              )}
+              {allDoneForDay(dateStr) && !isSelected && !isToday && (
+                <div className="absolute bottom-1 right-1">
+                  <Check size={10} strokeWidth={3} className="text-[#4C8C4A]" />
                 </div>
               )}
             </motion.button>
@@ -388,7 +425,7 @@ function HabitCalendar({ habits }: { habits: { id: string; name: string; color: 
           exit={{ opacity: 0, y: -10 }}
           className="border-t-[2px] border-[#2D2D2D] pt-4"
         >
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
             <h4 className="text-sm font-extrabold flex items-center flex-wrap gap-2">
               {selectedDay === todayStr ? (
                 <>
@@ -396,39 +433,42 @@ function HabitCalendar({ habits }: { habits: { id: string; name: string; color: 
                   <span>Today&apos;s Log</span>
                 </>
               ) : (
-                selectedDay
+                <span>{new Date(selectedDay + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
               )}
             </h4>
             {selectedDay && habits.length > 0 && (
               <button
                 onClick={() => toggleAllForDay(selectedDay)}
-                className={`neo-button px-2.5 py-1 text-[10px] font-extrabold flex items-center gap-1 ${allDoneForDay(selectedDay) ? 'bg-[#FFFDF8]' : 'bg-[#CDEAC0]'}`}
+                className={`neo-button px-3 py-1.5 text-[11px] font-extrabold flex items-center gap-1.5 ${allDoneForDay(selectedDay) ? 'bg-[#FFFDF8]' : 'bg-[#CDEAC0]'}`}
               >
-                {allDoneForDay(selectedDay) ? <X size={11} /> : <Check size={11} />}
-                {allDoneForDay(selectedDay) ? 'Unmark all' : 'Mark all'}
+                {allDoneForDay(selectedDay) ? <X size={12} /> : <Check size={12} />}
+                {allDoneForDay(selectedDay) ? 'Unmark all' : 'Mark all done'}
               </button>
             )}
           </div>
           {activeRows.length === 0 ? (
-            <p className="text-xs text-[#5C5C5C] font-medium py-4 text-center">No habits logged for this day</p>
+            <div className="text-center py-6">
+              <p className="text-sm text-[#5C5C5C] font-medium">No habits scheduled for this day</p>
+              <p className="text-xs text-[#5C5C5C] mt-1">Tap a date to log habits</p>
+            </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
               {activeRows.map(h => (
                 <button
                   key={h.id}
                   onClick={() => toggleHabitLog(h.id, selectedDay!)}
                   aria-pressed={h.done}
-                  className="flex items-center gap-3 w-full text-left p-2.5 min-h-[48px] rounded-xl border-[2px] border-[#2D2D2D] bg-[#FFFDF8] hover:bg-[#F0ECE4] transition-colors"
+                  className="flex items-center gap-3 w-full text-left p-3 min-h-[52px] rounded-xl border-[2px] border-[#2D2D2D] bg-[#FFFDF8] hover:bg-[#F0ECE4] transition-colors"
                 >
                   <div
-                    className={`w-6 h-6 rounded-lg border-[2px] border-[#2D2D2D] flex items-center justify-center shrink-0 transition-colors ${h.done ? 'bg-[#CDEAC0]' : ''}`}
+                    className={`w-7 h-7 rounded-lg border-[2px] border-[#2D2D2D] flex items-center justify-center shrink-0 transition-all ${h.done ? 'bg-[#CDEAC0] shadow-[1px_1px_0px_0px_#2D2D2D]' : 'shadow-[1px_1px_0px_0px_#2D2D2D]'}`}
                     style={{ backgroundColor: h.done ? '#CDEAC0' : h.color }}
                   >
-                    {h.done && <Check size={14} />}
+                    {h.done && <Check size={16} strokeWidth={3} />}
                   </div>
-                  <span className="text-xs font-bold flex-1">{h.name}</span>
-                  <span className={`text-[10px] font-extrabold ${h.done ? 'text-[#4C8C4A]' : 'text-[#5C5C5C]'}`}>
-                    {h.done ? 'Done' : 'Not done'}
+                  <span className="text-xs font-bold flex-1 min-w-0 truncate pr-2">{h.name}</span>
+                  <span className={`text-[10px] font-extrabold whitespace-nowrap shrink-0 ${h.done ? 'text-[#4C8C4A]' : 'text-[#5C5C5C]'}`}>
+                    {h.done ? 'Done' : 'Pending'}
                   </span>
                 </button>
               ))}
@@ -557,7 +597,7 @@ export default function HabitsPage() {
 
   const activeHabit = habits.find(h => h.id === selectedHabit) || habits[0];
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = localDateKey();
 
   const isTodayDone = activeHabit
     ? (activeHabit.logs.find(l => l.date === today)?.count ?? 0) > 0
@@ -616,11 +656,11 @@ export default function HabitsPage() {
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); toggleHabitLog(habit.id, today); }}
-                    className={`w-10 h-10 rounded-xl border-[3px] border-[#2D2D2D] flex items-center justify-center mx-auto mb-2 transition-all hover:scale-110 ${doneToday ? 'bg-[#CDEAC0]' : ''}`}
+                    className={`w-12 h-12 rounded-xl border-[3px] border-[#2D2D2D] flex items-center justify-center mx-auto mb-3 transition-all hover:scale-110 ${doneToday ? 'bg-[#CDEAC0] shadow-[2px_2px_0px_0px_#2D2D2D]' : 'shadow-[2px_2px_0px_0px_#2D2D2D]'}`}
                     style={{ backgroundColor: doneToday ? '#CDEAC0' : habit.color }}
                     title={doneToday ? 'Mark as not done' : 'Mark as done today'}
                   >
-                    {doneToday ? <Check size={18} /> : <Flame size={18} />}
+                    {doneToday ? <Check size={20} strokeWidth={3} /> : <Flame size={20} />}
                   </button>
                   <h3 className="text-xs font-extrabold mb-1 truncate">{habit.name}</h3>
                   <HabitCategoryBadge category={habit.category} className="mb-1.5" />
@@ -638,7 +678,7 @@ export default function HabitsPage() {
 
           <div className="flex gap-2 mb-6">
             {(['grid', 'calendar', 'graph'] as const).map(v => (
-              <button key={v} onClick={() => setView(v)} className={`neo-button px-4 py-2 text-xs flex items-center gap-2 ${view === v ? 'bg-[#2D2D2D] text-[#FFFDF8]' : 'bg-[#FFFDF8]'}`}>
+              <button key={v} onClick={() => setView(v)} className={`neo-button px-4 py-2 text-xs flex items-center gap-2 ${view === v ? 'bg-[#2D2D2D] text-[#FFFDF8] shadow-[2px_2px_0px_0px_#2D2D2D]' : 'bg-[#FFFDF8] hover:bg-[#F0ECE4]'}`}>
                 {v === 'grid' ? <Grid3x3 size={14} /> : v === 'calendar' ? <CalendarDays size={14} /> : <BarChart3 size={14} />}
                 {v === 'grid' ? 'Grid' : v === 'calendar' ? 'Calendar' : 'Graph'}
               </button>

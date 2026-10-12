@@ -1,14 +1,12 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Flame, Plus, X, Check, CalendarDays, Sparkles, TrendingUp, ChevronLeft, ChevronRight, BarChart3, Grid3x3, Star, Sun, CircleDot } from 'lucide-react';
 import NeoCard from '@/components/shared/neo-card';
 import PageHeader from '@/components/shared/page-header';
 import { useLifeStore, genId } from '@/store/use-store';
 import { localDateKey } from '@/lib/date';
-import type { Habit, HabitCategory } from '@/types';
 
 const HabitChart = dynamic(() => import('@/components/charts/habit-chart'), {
   ssr: false,
@@ -257,7 +255,7 @@ function ContributionGrid({
                   );
                 })}
               </div>
-            ))
+            )
           )}
         </div>
       </div>
@@ -368,13 +366,15 @@ function HabitCalendar({ habits }: { habits: { id: string; name: string; color: 
       <p className="text-xs font-bold text-[#5C5C5C] mb-2 text-center sm:text-left">Today is {todayLabel}</p>
       <div className="grid grid-cols-7 gap-1.5 mb-1">
         {['S', 'M', 'T', 'W', 'Th', 'F', 'S'].map((d, i) => (
-          <div key={`h-${i}`} className="text-center text-[10px] font-extrabold text-[#5C5C5C] py-1.5">{d}</div>
+          <div key={`h-${i}`} className="text-center text-[10px] font-extrabold text-[#5C5C5C] py-1.5 select-none">{d}</div>
         ))}
       </div>
       <div className="grid grid-cols-7 gap-1.5 mb-4">
         {Array.from({ length: firstDay }).map((_, i) => (
           <div key={`e-${i}`} className="min-h-[44px]" />
         ))}
+      </div>
+      <div className="grid grid-cols-7 gap-1.5 mb-4">
         {days.map(day => {
           const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
           const isToday = dateStr === todayStr;
@@ -462,14 +462,11 @@ function HabitCalendar({ habits }: { habits: { id: string; name: string; color: 
                 >
                   <div
                     className={`w-7 h-7 rounded-lg border-[2px] border-[#2D2D2D] flex items-center justify-center shrink-0 transition-all ${h.done ? 'bg-[#CDEAC0] shadow-[1px_1px_0px_0px_#2D2D2D]' : 'shadow-[1px_1px_0px_0px_#2D2D2D]'}`}
-                    style={{ backgroundColor: h.done ? '#CDEAC0' : h.color }}
                   >
-                    {h.done && <Check size={16} strokeWidth={3} />}
+                    {done && <Check size={16} strokeWidth={3} />}
                   </div>
                   <span className="text-xs font-bold flex-1 min-w-0 truncate pr-2">{h.name}</span>
-                  <span className={`text-[10px] font-extrabold whitespace-nowrap shrink-0 ${h.done ? 'text-[#4C8C4A]' : 'text-[#5C5C5C]'}`}>
-                    {h.done ? 'Done' : 'Pending'}
-                  </span>
+                  <HabitCategoryBadge category={h.category} />
                 </button>
               ))}
             </div>
@@ -517,7 +514,6 @@ function HabitGraph({ logs, color }: { habitId: string; logs: { date: string; co
 function AddHabitForm({ onDone }: { onDone: () => void }) {
   const addHabit = useLifeStore(s => s.addHabit);
   const [name, setName] = useState('');
-  const [selectedColor, setSelectedColor] = useState('#B8D8F8');
   const [category, setCategory] = useState<HabitCategory>('when-free');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -526,7 +522,7 @@ function AddHabitForm({ onDone }: { onDone: () => void }) {
     addHabit({
       id: genId(),
       name: name.trim(),
-      color: selectedColor,
+      color: colorOptions[0],
       category,
       streak: 0,
       logs: generateLogs(90),
@@ -558,8 +554,8 @@ function AddHabitForm({ onDone }: { onDone: () => void }) {
             key={c.key}
             type="button"
             onClick={() => setCategory(c.key)}
-            aria-pressed={category === c.key}
-            className={`rounded-xl border-[2px] border-[#2D2D2D] px-2 py-2 text-left transition-all ${category === c.key ? 'shadow-[2px_2px_0px_0px_var(--neo-shadow)] -translate-y-0.5' : 'opacity-80 hover:opacity-100'}`}
+            aria-pressed={(category ?? 'other') === c.key}
+            className={`rounded-xl border-[2px] border-[#2D2D2D] px-2 py-0.5 text-[10px] font-extrabold text-[#2A2A2A] transition-all ${category === c.key ? 'shadow-[2px_2px_0px_0px_var(--neo-shadow)] -translate-y-0.5' : 'opacity-70 hover:opacity-100'}`}
             style={{ backgroundColor: c.color }}
           >
             <span className="flex items-center gap-1 text-[11px] font-extrabold text-[#2A2A2A]">{c.icon} {c.label}</span>
@@ -715,29 +711,27 @@ export default function HabitsPage() {
                           }}
                           className="text-xl font-extrabold bg-[#FFFDF8] border-[2px] border-[#2D2D2D] rounded-lg px-2 py-0.5 w-full"
                           autoFocus
-                        />
-                      ) : (
-                        <h2
-                          className="text-xl font-extrabold cursor-pointer hover:text-[#5C5C5C] transition-colors truncate"
-                          onClick={() => { setEditingHabit(activeHabit.id); setEditName(activeHabit.name); }}
-                          title="Click to rename"
-                        >
-                          {activeHabit.name}
-                        </h2>
-                      )}
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        ) : (
+                          <h2
+                            className="text-xl font-extrabold cursor-pointer hover:text-[#5C5C5C] transition-colors truncate"
+                            onClick={() => { setEditingHabit(activeHabit.id); setEditName(activeHabit.name); }}
+                            title="Click to rename"
+                          >
+                            {activeHabit.name}
+                          </h2>
+                        )}
                         <p className="text-sm text-[#5C5C5C] font-medium">{isTodayDone ? 'Done today!' : 'Not logged yet today'}</p>
                         <HabitCategoryBadge category={activeHabit.category} />
                         <span className="text-[10px] font-bold text-[#5C5C5C] uppercase tracking-wide">Today · {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
                       </div>
                       <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                        <span className="text-[10px] font-extrabold uppercase tracking-wide text-[#5C5C5C]">Category</span>
+                        <p className="text-[10px] font-extrabold uppercase tracking-wide text-[#5C5C5C]">Category</p>
                         {HABIT_CATEGORIES.map(c => (
                           <button
                             key={c.key}
                             onClick={() => updateHabit(activeHabit.id, { category: c.key })}
                             aria-pressed={(activeHabit.category ?? 'other') === c.key}
-                            className={`rounded-lg border-[2px] border-[#2D2D2D] px-2 py-0.5 text-[10px] font-extrabold text-[#2A2A2A] transition-all ${(activeHabit.category ?? 'other') === c.key ? 'shadow-[2px_2px_0px_0px_var(--neo-shadow)] -translate-y-0.5' : 'opacity-70 hover:opacity-100'}`}
+                            className={`rounded-xl border-[2px] border-[#2D2D2D] px-2 py-0.5 text-[10px] font-extrabold text-[#2A2A2A] transition-all ${(activeHabit.category ?? 'other') === c.key ? 'shadow-[2px_2px_0px_0px_var(--neo-shadow)] -translate-y-0.5' : 'opacity-70 hover:opacity-100'}`}
                             style={{ backgroundColor: c.color }}
                           >
                             {c.label}
@@ -793,34 +787,33 @@ export default function HabitsPage() {
                 </NeoCard>
               </motion.div>
             )}
+          </div>
 
-            {view === 'calendar' && (
-              <motion.div key="calendar" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                <NeoCard color={activeHabit.color}>
-                  <HabitCalendar habits={habits} />
-                </NeoCard>
-              </motion.div>
-            )}
+          {view === 'calendar' && (
+            <motion.div key="calendar" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+              <NeoCard color={activeHabit.color}>
+                <HabitCalendar habits={habits} />
+              </NeoCard>
+            </motion.div>
+          )}
 
-            {view === 'graph' && (
-              <motion.div key="graph" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                <NeoCard color={activeHabit.color}>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-xl border-[3px] border-[#2D2D2D] flex items-center justify-center" style={{ backgroundColor: activeHabit.color }}>
-                      {<Flame size={20} />}
-                    </div>
-                    <div>
-                      <h3 className="text-base font-extrabold">{activeHabit.name} — Trends</h3>
-                      <p className="text-xs text-[#5C5C5C] font-medium">Weekly completion over the last 12 weeks</p>
-                    </div>
+          {view === 'graph' && (
+            <motion.div key="graph" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+              <NeoCard color={activeHabit.color}>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-xl border-[3px] border-[#2D2D2D] flex items-center justify-center" style={{ backgroundColor: activeHabit.color }}>
+                    {<Flame size={20} />}
                   </div>
-                  <HabitGraph habitId={activeHabit.id} logs={activeHabit.logs} color={activeHabit.color} />
+                  <div>
+                    <h3 className="text-base font-extrabold">{activeHabit.name} — Trends</h3>
+                    <p className="text-xs text-[#5C5C5C] font-medium">Weekly completion over the last 12 weeks</p>
+                  </div>
                 </NeoCard>
               </motion.div>
             )}
-          </AnimatePresence>
+          </>
         </>
-      )}
+      </>
     </div>
   );
 }

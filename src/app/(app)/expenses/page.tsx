@@ -177,67 +177,71 @@ function TransactionForm({
     onCancel();
   };
 
-  return (
-     <form onSubmit={handleSubmit} className="neo-card p-6 mb-8 tint-peach">
-       <div className="flex items-center justify-between mb-4">
-         <h2 className="text-lg font-extrabold">{initial ? 'Edit Transaction' : 'New Transaction'}</h2>
-         <Button variant="outline" size="xs" onClick={onCancel}>
-           <X size={14} />
-         </Button>
-       </div>
+return (
+    <form onSubmit={handleSubmit} className="neo-card p-4 sm:p-6 tint-peach">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-extrabold">{initial ? 'Edit Transaction' : 'New Transaction'}</h2>
+        <Button variant="outline" size="xs" onClick={(e) => {
+    triggerHapticFeedback();
+    onCancel();
+  }}>
+          <X size={14} />
+        </Button>
+      </div>
 
-       <div className="inline-flex rounded-xl border-[3px] border-[#2D2D2D] overflow-hidden mb-4">
-         {(['expense', 'income'] as TransactionType[]).map((t) => (
-           <Button
-             key={t}
-             variant="default"
-             size="xs"
-             onClick={() => switchType(t)}
-             className={`px-5 py-2 text-sm font-extrabold capitalize transition-colors ${
-               type === t
-                 ? t === 'income'
-                   ? 'bg-[#CDEAC0] text-[#2A2A2A]'
-                   : 'bg-[#F8C8C8] text-[#2A2A2A]'
-                 : 'bg-[#FFFDF8] text-[#5C5C5C]'}
-             `}
-           >
-             {t === 'income' ? 'Income' : 'Expense'}
-           </Button>
-         ))}
-       </div>
+      <div className="inline-flex rounded-xl border-[3px] border-[#2D2D2D] overflow-hidden mb-4 w-full">
+        {(['expense', 'income'] as TransactionType[]).map((t) => (
+          <Button
+            key={t}
+            variant="default"
+            size="xs"
+            onClick={() => switchType(t)}
+            className={`flex-1 px-4 py-3 text-sm font-extrabold capitalize transition-colors min-h-[48px] ${
+              type === t
+                ? t === 'income'
+                  ? 'bg-[#CDEAC0] text-[#2A2A2A]'
+                  : 'bg-[#F8C8C8] text-[#2A2A2A]'
+                : 'bg-[#FFFDF8] text-[#5C5C5C]'}
+            `}
+          >
+            {t === 'income' ? 'Income' : 'Expense'}
+          </Button>
+        ))}
+      </div>
 
-       <div className="mb-4">
-         <label className="text-xs font-bold text-[#5C5C5C] block mb-2">Category</label>
-         <div className="flex gap-2 flex-wrap">
-           {cats.map((key) => {
-             const c = CATEGORY_META[key];
-             return (
-               <Button
-                 key={key}
-                 variant="default"
-                 size="xs"
-                 onClick={() => setCategory(key)}
-                 className={`flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-xl border-[3px] border-[#2D2D2D] transition-all ${
-                   category === key ? 'shadow-[3px_3px_0px_0px_var(--neo-shadow)]' : ''
-                 }`}
-                 style={{ backgroundColor: category === key ? c.color : '#FFFDF8' }}
-               >
-                 {c.icon}
-                 {c.label}
-               </Button>
-             );
-           })}
-         </div>
+      <div className="mb-4">
+        <label className="text-xs font-bold text-[#5C5C5C] block mb-2">Category</label>
+        <div className="flex gap-2 flex-wrap">
+          {cats.map((key) => {
+            const c = CATEGORY_META[key];
+            return (
+              <Button
+                key={key}
+                variant="default"
+                size="xs"
+                onClick={() => setCategory(key)}
+                className={`flex items-center gap-1.5 text-xs font-bold px-3 py-3 rounded-xl border-[3px] border-[#2D2D2D] transition-all min-h-[44px] ${
+                  category === key ? 'shadow-[3px_3px_0px_0px_var(--neo-shadow)]' : ''
+                }`}
+                style={{ backgroundColor: category === key ? c.color : '#FFFDF8' }}
+              >
+                {c.icon}
+                {c.label}
+              </Button>
+            );
+          })}
         </div>
+      </div>
 
-       <div className="space-y-3">
-        <div className="flex flex-col sm:flex-row gap-3">
+      <div className="space-y-3">
+        <div className="flex flex-col gap-3">
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder={type === 'income' ? 'Where did it come from?' : 'What did you spend on?'}
-            className="neo-input flex-1 text-sm font-bold"
+            className="neo-input flex-1 text-sm font-bold min-h-[48px]"
             required
+            autoFocus
           />
           <input
             type="number"
@@ -247,29 +251,29 @@ function TransactionForm({
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="0.00"
-            className="neo-input sm:w-40 text-sm font-bold"
+            className="neo-input w-full text-sm font-bold min-h-[48px]"
             required
           />
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col gap-3">
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="neo-input text-sm font-bold w-full sm:w-52"
+            className="neo-input text-sm font-bold w-full min-h-[48px]"
             required
           />
-            <div className="w-full sm:w-40">
-              <Select
-                value={account}
-                onValueChange={(value) => setAccount(value as Account)}
-              >
-                {ACCOUNTS.map((a) => (
-                  <SelectItem key={a} value={a}>{ACCOUNT_META[a].label}</SelectItem>
-                ))}
-              </Select>
-            </div>
+          <div className="w-full">
+            <Select
+              value={account}
+              onValueChange={(value) => setAccount(value as Account)}
+            >
+              {ACCOUNTS.map((a) => (
+                <SelectItem key={a} value={a}>{ACCOUNT_META[a].label}</SelectItem>
+              ))}
+            </Select>
+          </div>
         </div>
 
         <textarea
@@ -277,7 +281,7 @@ function TransactionForm({
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Notes (optional)"
           rows={2}
-          className="neo-input w-full text-sm resize-none"
+          className="neo-input w-full text-sm resize-none min-h-[60px]"
         />
 
         <label className="flex items-center gap-2 cursor-pointer select-none w-fit">
@@ -292,14 +296,15 @@ function TransactionForm({
           </span>
         </label>
 
-         <Button
-           type="submit"
-           variant="default"
-           size="default"
-           className={`px-6 py-2 text-sm w-full sm:w-auto ${type === 'income' ? 'bg-[#CDEAC0] tint-green' : 'bg-[#F7E8A4] tint-yellow'}`}
-         >
-           {initial ? 'Save Changes' : type === 'income' ? 'Add Income' : 'Add Expense'}
-         </Button>
+        <Button
+          type="submit"
+          variant="default"
+          size="default"
+          className={`px-6 py-3 text-sm w-full min-h-[48px] ${type === 'income' ? 'bg-[#CDEAC0] tint-green' : 'bg-[#F7E8A4] tint-yellow'}`}
+          onClick={triggerHapticFeedback}
+        >
+          {initial ? 'Save Changes' : type === 'income' ? 'Add Income' : 'Add Expense'}
+        </Button>
       </div>
     </form>
   );
@@ -451,22 +456,25 @@ function LoanForm({
     onCancel();
   };
 
-  return (
-    <form onSubmit={handleSubmit} className="neo-card p-6 mb-8 tint-teal">
+return (
+    <form onSubmit={handleSubmit} className="neo-card p-4 sm:p-6 tint-teal">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-extrabold">{initial ? 'Edit Loan' : 'New Loan'}</h2>
-        <button type="button" onClick={onCancel} className="neo-button p-2 bg-[#FFFDF8]">
+        <button type="button" onClick={(e) => {
+    triggerHapticFeedback();
+    onCancel();
+  }} className="neo-button p-2 bg-[#FFFDF8] min-h-[44px] min-w-[44px]">
           <X size={14} />
         </button>
       </div>
 
-      <div className="inline-flex rounded-xl border-[3px] border-[#2D2D2D] overflow-hidden mb-4">
+      <div className="inline-flex rounded-xl border-[3px] border-[#2D2D2D] overflow-hidden mb-4 w-full">
         {(['borrowed', 'lent'] as LoanKind[]).map((k) => (
           <button
             key={k}
             type="button"
             onClick={() => setKind(k)}
-            className={`px-5 py-2 text-sm font-extrabold capitalize transition-colors ${
+            className={`flex-1 px-4 py-3 text-sm font-extrabold capitalize transition-colors min-h-[48px] ${
               kind === k ? (k === 'borrowed' ? 'bg-[#F8C8C8] text-[#2A2A2A]' : 'bg-[#CDEAC0] text-[#2A2A2A]') : 'bg-[#FFFDF8] text-[#5C5C5C]'
             }`}
           >
@@ -476,59 +484,60 @@ function LoanForm({
       </div>
 
       <div className="space-y-3">
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col gap-3">
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder={kind === 'borrowed' ? 'What did you borrow for?' : 'What did you lend for?'}
-            className="neo-input flex-1 text-sm font-bold"
+            className="neo-input flex-1 text-sm font-bold min-h-[48px]"
             required
+            autoFocus
           />
           <input
             value={counterparty}
             onChange={(e) => setCounterparty(e.target.value)}
             placeholder={kind === 'borrowed' ? 'Lender' : 'Borrower'}
-            className="neo-input sm:w-44 text-sm font-bold"
+            className="neo-input w-full text-sm font-bold min-h-[48px]"
           />
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col gap-3">
           <input
             type="number"
             inputMode="decimal"
             min="0"
-            step="0.01"
+            step="0.00"
             value={principal}
             onChange={(e) => setPrincipal(e.target.value)}
             placeholder={kind === 'borrowed' ? 'Amount borrowed' : 'Amount lent'}
-            className="neo-input flex-1 text-sm font-bold"
+            className="neo-input flex-1 text-sm font-bold min-h-[48px]"
             required
           />
           <input
             type="number"
             inputMode="decimal"
             min="0"
-            step="0.01"
+            step="0.00"
             value={paid}
             onChange={(e) => setPaid(e.target.value)}
             placeholder={kind === 'borrowed' ? 'Repaid so far' : 'Recovered so far'}
-            className="neo-input flex-1 text-sm font-bold"
+            className="neo-input flex-1 text-sm font-bold min-h-[48px]"
           />
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col gap-3">
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="neo-input text-sm font-bold w-full sm:w-52"
+            className="neo-input text-sm font-bold w-full min-h-[48px]"
             required
           />
           <input
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className="neo-input text-sm font-bold w-full sm:w-52"
+            className="neo-input text-sm font-bold w-full min-h-[48px]"
           />
         </div>
 
@@ -537,10 +546,10 @@ function LoanForm({
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Notes (optional)"
           rows={2}
-          className="neo-input w-full text-sm resize-none"
+          className="neo-input w-full text-sm resize-none min-h-[60px]"
         />
 
-        <button type="submit" className={`neo-button px-6 py-2 text-sm w-full sm:w-auto ${kind === 'borrowed' ? 'bg-[#F8C8C8] tint-pink' : 'bg-[#CDEAC0] tint-green'}`}>
+        <button type="submit" className={`neo-button px-6 py-3 text-sm w-full min-h-[48px] ${kind === 'borrowed' ? 'bg-[#F8C8C8] tint-pink' : 'bg-[#CDEAC0] tint-green'}`} onClick={triggerHapticFeedback}>
           {initial ? 'Save Loan' : 'Add Loan'}
         </button>
       </div>
@@ -730,6 +739,79 @@ export default function ExpensesPage() {
   const [filterType, setFilterType] = useState<'all' | TransactionType>('all');
   const [filterCategory, setFilterCategory] = useState<ExpenseCategory | ''>('');
   const [sort, setSort] = useState<SortKey>('date-desc');
+  // Touch state for swipe-to-dismiss modal
+  const [touchStartY, setTouchStartY] = useState<number>(0);
+  const [dragOffset, setDragOffset] = useState<number>(0);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  
+  // Touch state for budgets dialog swipe-to-dismiss
+  const [budgetTouchStartY, setBudgetTouchStartY] = useState<number>(0);
+  const [budgetDragOffset, setBudgetDragOffset] = useState<number>(0);
+  const [budgetIsDragging, setBudgetIsDragging] = useState<boolean>(false);
+  
+  // Touch state for loans dialog swipe-to-dismiss
+  const [loansTouchStartY, setLoansTouchStartY] = useState<number>(0);
+  const [loansDragOffset, setLoansDragOffset] = useState<number>(0);
+  const [loansIsDragging, setLoansIsDragging] = useState<boolean>(false);
+
+  const resetTouchState = () => {
+    setIsDragging(false);
+    setDragOffset(0);
+  };
+  
+  const resetBudgetTouchState = () => {
+    setBudgetIsDragging(false);
+    setBudgetDragOffset(0);
+  };
+  
+  const resetLoansTouchState = () => {
+    setLoansIsDragging(false);
+    setLoansDragOffset(0);
+  };
+
+  // Haptic feedback helper
+  const triggerHapticFeedback = () => {
+    // Check if Vibration API is available and supported
+    if ('vibrate' in navigator) {
+      try {
+        navigator.vibrate(10); // 10ms vibration
+      } catch (e) {
+        // Vibration API might not be available or permitted
+        console.warn('Vibration API not available:', e);
+      }
+    }
+  };
+  // Touch state for swipe-to-dismiss modal
+  const [touchStartY, setTouchStartY] = useState<number>(0);
+  const [dragOffset, setDragOffset] = useState<number>(0);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+
+  const resetTouchState = () => {
+    setIsDragging(false);
+    setDragOffset(0);
+  };
+
+  // Haptic feedback helper
+  const triggerHapticFeedback = () => {
+    // Check if Vibration API is available and supported
+    if ('vibrate' in navigator) {
+      try {
+        navigator.vibrate(10); // 10ms vibration
+      } catch (e) {
+        // Vibration API might not be available or permitted
+        console.warn('Vibration API not available:', e);
+      }
+    }
+  };
+  // Touch state for swipe-to-dismiss modal
+  const [touchStartY, setTouchStartY] = useState<number>(0);
+  const [dragOffset, setDragOffset] = useState<number>(0);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+
+  const resetTouchState = () => {
+    setIsDragging(false);
+    setDragOffset(0);
+  };
 
   const range = useMemo(() => rangeFor(period, anchor), [period, anchor]);
   const prevRange = useMemo(
@@ -1112,11 +1194,20 @@ export default function ExpensesPage() {
           icon={<Wallet size={20} />}
         />
           <div className="flex items-center gap-2">
-            {showLoans && (
-              <Dialog>
-                <DialogTrigger>
+{showLoans && (
+              <Dialog
+                open={showLoans}
+                onOpenChange={(open) => {
+                  if (!open) {
+                    setShowLoans(false);
+                  }
+                }}
+              >
+                <DialogTrigger asChild>
                   <Button
-                    onClick={() => { setShowLoans(true); setShowForm(false); setShowBudgets(false); }}
+                    onClick={(e) => {
+                      triggerHapticFeedback();
+                      setShowLoans(true); setShowForm(false); setShowBudgets(false); }}
                     variant="outline"
                     size="xs"
                     className={`flex items-center gap-2 whitespace-nowrap tint-teal ${showLoans ? 'bg-[#BFE3E0]' : 'bg-[#FFFDF8]'}`}
@@ -1124,7 +1215,39 @@ export default function ExpensesPage() {
                     <HandCoins size={15} /> Loans
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+<DialogContent 
+                  className="sm:max-w-lg max-w-[95vw] p-0 overflow-hidden"
+                  style={{ transform: `translateY(${loansDragOffset}px)` }}
+                  onTouchStart={(e) => {
+                    if (e.touches.length === 1) {
+                      setLoansTouchStartY(e.touches[0].clientY);
+                      setLoansIsDragging(true);
+                    }
+                  }}
+                  onTouchMove={(e) => {
+                    if (!loansIsDragging || e.touches.length !== 1) return;
+                    
+                    const touchY = e.touches[0].clientY;
+                    const diff = touchY - loansTouchStartY;
+                    
+                    // Only respond to downward swipes (positive diff)
+                    if (diff > 0) {
+                      e.preventDefault(); // Prevent scrolling
+                      setLoansDragOffset(diff);
+                    }
+                  }}
+                  onTouchEnd={(e) => {
+                    if (loansIsDragging) {
+                      const diff = (e.changedTouches[0]?.clientY || 0) - loansTouchStartY;
+                      // If dragged more than 50px down, close the modal
+                      if (diff > 50) {
+                        setShowLoans(false);
+                      }
+                      resetLoansTouchState();
+                    }
+                  }}
+                  onTouchCancel={resetLoansTouchState}
+                >
                   <div className="neo-card p-6 mb-8 tint-teal">
                     <div className="flex items-center justify-between mb-4">
                       <h2 className="text-lg font-extrabold flex items-center gap-2">
@@ -1132,15 +1255,21 @@ export default function ExpensesPage() {
                       </h2>
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => { setEditingLoan(null); setShowLoanForm((v) => !v); }}
-                          className="neo-button px-4 py-2 text-sm bg-[#CDEAC0] tint-green flex items-center gap-2"
+                          onClick={(e) => {
+                            triggerHapticFeedback();
+                            setEditingLoan(null); setShowLoanForm((v) => !v); }}
+                          className="neo-button px-4 py-3 text-sm bg-[#CDEAC0] tint-green flex items-center gap-2 min-h-[48px]"
                         >
                           <Plus size={15} /> {showLoanForm ? 'Cancel' : 'Add loan'}
                         </button>
-                        <button type="button" onClick={() => setShowLoans(false)} className="neo-button p-2 bg-[#FFFDF8]">
+                        <button type="button" onClick={(e) => {
+                          triggerHapticFeedback();
+                          setShowLoans(false); }} className="neo-button p-2 bg-[#FFFDF8] min-h-[44px] min-w-[44px]">
                           <X size={14} />
                         </button>
                       </div>
+                    </div>
+                    </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
@@ -1163,119 +1292,230 @@ export default function ExpensesPage() {
                       </div>
                     </div>
 
-                    {loans.length === 0 ? (
-                      <p className="text-sm font-medium text-[#5C5C5C]">
-                        No loans tracked. Add one to keep an eye on what you owe and what you&apos;re owed.
-                      </p>
-                    ) : (
-                      <div className="space-y-2">
-                        {loans.map((l) => {
-                          const meta = LOAN_META[l.kind];
-                          const principal = Number(l.principal);
-                          const paid = Number(l.paid);
-                          const outstanding = Math.max(0, principal - paid);
-                          const pct = principal > 0 ? Math.min(100, (paid / principal) * 100) : 0;
-                          return (
-                            <div key={l.id} className="rounded-xl border-[2px] border-[#2D2D2D] bg-[#FFFDF8] p-3 flex items-center gap-3">
-                              <div
-                                className="w-9 h-9 rounded-xl border-[2px] border-[#2D2D2D] flex items-center justify-center shrink-0"
-                                style={{ backgroundColor: meta.color }}
-                              >
-                                {meta.icon}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-extrabold truncate flex items-center gap-1.5">
-                                  {l.title}
-                                  {l.settled ? <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full border-[2px] border-[#2D2D2D] bg-[#CDEAC0]">settled</span> : null}
-                                </p>
-                                <p className="text-[11px] font-bold text-[#5C5C5C] truncate">
-                                  {meta.label}
-                                  {l.counterparty ? ` · ${l.counterparty}` : ''}
-                                  {l.dueDate ? ` · due ${format(parse(l.dueDate, 'yyyy-MM-dd', new Date()), 'dd MMM')}` : ''}
-                                </p>
-                                <div className="h-1.5 rounded-full bg-[#F0ECE4] border-[1.5px] border-[#2D2D2D] overflow-hidden mt-1">
-                                  <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: meta.color }} />
-                                </div>
-                              </div>
-                              <div className="text-right shrink-0">
-                                <p className="text-sm font-extrabold">{money(outstanding)}</p>
-                                <p className="text-[10px] font-bold text-[#5C5C5C]">left of {money(principal)}</p>
-                              </div>
-                              <div className="flex items-center gap-1 shrink-0">
-                                <button
-                                  onClick={() => updateLoan(l.id, { settled: !l.settled })}
-                                  className={`p-1.5 rounded-lg transition-colors ${l.settled ? 'text-[#4C8C4A]' : 'text-[#5C5C5C] hover:text-[#4C8C4A]'} hover:bg-[#F0ECE4]`}
-                                  aria-label="Toggle settled"
-                                >
-                                  <Check size={14} />
-                                </button>
-                                <button
-                                  onClick={() => { setEditingLoan(l); setShowLoanForm(true); }}
-                                  className="p-1.5 rounded-lg text-[#5C5C5C] hover:text-[#2A2A2A] hover:bg-[#F0ECE4] transition-colors"
-                                  aria-label="Edit loan"
-                                >
-                                  <Pencil size={14} />
-                                </button>
-                                <button
-                                  onClick={() => deleteLoan(l.id)}
-                                  className="p-1.5 rounded-lg text-[#5C5C5C] hover:text-[#B85042] hover:bg:#F0ECE4] transition-colors"
-                                  aria-label="Delete loan"
-                                >
-                                  <X size={14} />
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
+{loans.length === 0 ? (
+  <p className="text-sm font-medium text-[#5C5C5C]">
+    No loans tracked. Add one to keep an eye on what you owe and what you&apos;re owed.
+  </p>
+) : (
+  <div className="space-y-2">
+    {loans.map((l) => {
+      const meta = LOAN_META[l.kind];
+      const principal = Number(l.principal);
+      const paid = Number(l.paid);
+      const outstanding = Math.max(0, principal - paid);
+      const pct = principal > 0 ? Math.min(100, (paid / principal) * 100) : 0;
+      return (
+        <div key={l.id} className="rounded-xl border-[2px] border-[#2D2D2D] bg-[#FFFDF8] p-3 flex items-center gap-3">
+          <div
+            className="w-9 h-9 rounded-xl border-[2px] border-[#2D2D2D] flex items-center justify-center shrink-0"
+            style={{ backgroundColor: meta.color }}
+          >
+            {meta.icon}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-extrabold truncate flex items-center gap-1.5">
+              {l.title}
+              {l.settled ? <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full border-[2px] border-[#2D2D2D] bg-[#CDEAC0]">settled</span> : null}
+            </p>
+            <p className="text-[11px] font-bold text-[#5C5C5C] truncate">
+              {meta.label}
+              {l.counterparty ? ` · ${l.counterparty}` : ''}
+              {l.dueDate ? ` · due ${format(parse(l.dueDate, 'yyyy-MM-dd', new Date()), 'dd MMM')}` : ''}
+            </p>
+            <div className="h-1.5 rounded-full bg-[#F0ECE4] border-[1.5px] border-[#2D2D2D] overflow-hidden mt-1">
+              <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: meta.color }} />
+            </div>
+          </div>
+          <div className="text-right shrink-0">
+            <p className="text-sm font-extrabold">{money(outstanding)}</p>
+            <p className="text-[10px] font-bold text-[#5C5C5C]">left of {money(principal)}</p>
+          </div>
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              onClick={() => updateLoan(l.id, { settled: !l.settled })}
+              className={`p-1.5 rounded-lg transition-colors ${l.settled ? 'text-[#4C8C4A]' : 'text-[#5C5C5C] hover:text-[#4C8C4A]'} hover:bg-[#F0ECE4] min-h-[44px] min-w-[44px] flex items-center justify-center`}
+              aria-label="Toggle settled"
+            >
+              <Check size={14} />
+            </button>
+<button
+  onClick={(e) => {
+    triggerHapticFeedback();
+    setEditingLoan(l); setShowLoanForm(true); }}
+  className="p-1.5 rounded-lg text-[#5C5C5C] hover:text-[#2A2A2A] hover:bg-[#F0ECE4] transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+  aria-label="Edit loan"
+>
+  <Pencil size={14} />
+</button>
+            <button
+              onClick={() => deleteLoan(l.id)}
+              className="p-1.5 rounded-lg text-[#5C5C5C] hover:text-[#B85042] hover:bg-[#F0ECE4] transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+              aria-label="Delete loan"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        </div>
+      );
+    })}
+  </div>
+)}
 
-                    <AnimatePresence>
-                      {showLoanForm && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="overflow-hidden"
-                        >
-                          <LoanForm
-                            initial={editingLoan ?? undefined}
-                            onSubmit={(loan) => {
-                              if (editingLoan) updateLoan(editingLoan.id, loan);
-                              else addLoan(loan);
-                            }}
-                            onCancel={() => { setShowLoanForm(false); setEditingLoan(null); }}
-                          />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+<AnimatePresence>
+  {showLoanForm && (
+    <motion.div
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      exit={{ opacity: 0, height: 0 }}
+      className="overflow-hidden"
+    >
+      <LoanForm
+        initial={editingLoan ?? undefined}
+        onSubmit={(loan) => {
+          if (editingLoan) updateLoan(editingLoan.id, loan);
+          else addLoan(loan);
+          setShowLoanForm(false);
+          setEditingLoan(null);
+        }}
+        onCancel={() => { setShowLoanForm(false); setEditingLoan(null); }}
+      />
+    </motion.div>
+  )}
+</AnimatePresence>
                   </div>
                 </DialogContent>
               </Dialog>
             )}
             {showBudgets && (
-              <Dialog>
-                <DialogTrigger>
+              <Dialog
+                open={showBudgets}
+                onOpenChange={(open) => {
+                  if (!open) {
+                    setShowBudgets(false);
+                  }
+                }}
+              >
+                <DialogTrigger asChild>
                   <Button
-                    onClick={() => { setShowBudgets(true); setShowForm(false); setShowLoans(false); }}
+                    onClick={(e) => {
+                      triggerHapticFeedback();
+                      setShowBudgets(true); setShowForm(false); setShowLoans(false); }}
                     variant="outline"
                     size="xs"
-                    className="flex items-center gap-2 whitespace-nowrap tint-blue bg-[#FFFDF8]"
+                    className={`flex items-center gap-2 whitespace-nowrap tint-blue bg-[#FFFDF8] min-h-[48px]`}
                   >
                     <SlidersHorizontal size={15} /> Budgets
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:w-[500px]">
+                <DialogContent 
+                  className="sm:w-[500px] max-w-[95vw] p-0 overflow-hidden"
+                  style={{ transform: `translateY(${budgetDragOffset}px)` }}
+                  onTouchStart={(e) => {
+                    if (e.touches.length === 1) {
+                      setBudgetTouchStartY(e.touches[0].clientY);
+                      setBudgetIsDragging(true);
+                    }
+                  }}
+                  onTouchMove={(e) => {
+                    if (!budgetIsDragging || e.touches.length !== 1) return;
+                    
+                    const touchY = e.touches[0].clientY;
+                    const diff = touchY - budgetTouchStartY;
+                    
+                    // Only respond to downward swipes (positive diff)
+                    if (diff > 0) {
+                      e.preventDefault(); // Prevent scrolling
+                      setBudgetDragOffset(diff);
+                    }
+                  }}
+                  onTouchEnd={(e) => {
+                    if (budgetIsDragging) {
+                      const diff = (e.changedTouches[0]?.clientY || 0) - budgetTouchStartY;
+                      // If dragged more than 50px down, close the modal
+                      if (diff > 50) {
+                        setShowBudgets(false);
+                      }
+                      resetBudgetTouchState();
+                    }
+                  }}
+                  onTouchCancel={resetBudgetTouchState}
+                >
                   <BudgetEditor budgets={budgets} onChange={setBudget} onClose={() => setShowBudgets(false)} />
                 </DialogContent>
               </Dialog>
             )}
-            <button
-              onClick={() => startAdd()}
-              className="neo-button px-4 py-2 text-sm bg-[#CDEAC0] flex items-center gap-2 whitespace-nowrap tint-green"
-            >
-              <Plus size={16} /> {showForm ? 'Cancel' : 'Add'}
-            </button>
+            <Dialog open={showForm} onOpenChange={(open) => {
+              if (!open) {
+                setShowForm(false);
+                setEditing(null);
+                setPrefillDate(undefined);
+              }
+            }}>
+              <DialogTrigger asChild>
+                <button
+                  onClick={() => {
+                    triggerHapticFeedback();
+                    startAdd();
+                  }}
+                  className="neo-button px-4 py-2 text-sm bg-[#CDEAC0] flex items-center gap-2 whitespace-nowrap tint-green"
+                >
+                  <Plus size={16} /> Add
+                </button>
+              </DialogTrigger>
+              <DialogContent 
+                className="sm:max-w-lg max-w-[95vw] p-0 overflow-hidden"
+                style={{ transform: `translateY(${dragOffset}px)` }}
+                onTouchStart={(e) => {
+                  if (e.touches.length === 1) {
+                    setTouchStartY(e.touches[0].clientY);
+                    setIsDragging(true);
+                  }
+                }}
+                onTouchMove={(e) => {
+                  if (!isDragging || e.touches.length !== 1) return;
+                  
+                  const touchY = e.touches[0].clientY;
+                  const diff = touchY - touchStartY;
+                  
+                  // Only respond to downward swipes (positive diff)
+                  if (diff > 0) {
+                    e.preventDefault(); // Prevent scrolling
+                    setDragOffset(diff);
+                    // Optional: add visual feedback here
+                  }
+                }}
+                onTouchEnd={(e) => {
+                  if (isDragging) {
+                    const diff = (e.changedTouches[0]?.clientY || 0) - touchStartY;
+                    // If dragged more than 50px down, close the modal
+                    if (diff > 50) {
+                      setShowForm(false);
+                      setEditing(null);
+                      setPrefillDate(undefined);
+                    }
+                    resetTouchState();
+                  }
+                }}
+                onTouchCancel={resetTouchState}
+              >
+                <TransactionForm
+                  initial={editing ?? undefined}
+                  defaultDate={prefillDate}
+                  onSubmit={(expense) => {
+                    if (editing) updateExpense(editing.id, expense);
+                    else addExpense(expense);
+                    setShowForm(false);
+                    setEditing(null);
+                    setPrefillDate(undefined);
+                  }}
+                  onCancel={() => {
+                    setShowForm(false);
+                    setEditing(null);
+                    setPrefillDate(undefined);
+                  }}
+                />
+              </DialogContent>
+            </Dialog>
           </div>
       </div>
 
@@ -1295,20 +1535,24 @@ export default function ExpensesPage() {
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-1">
-          <button onClick={() => shiftPeriod(-1)} className="neo-button p-1.5 bg-[#FFFDF8]" aria-label="Previous period">
-            <ChevronLeft size={14} />
-          </button>
-          <span className="text-sm font-extrabold px-2 min-w-[120px] sm:min-w-[160px] text-center">{range.label}</span>
-          <button
-            onClick={() => shiftPeriod(1)}
-            disabled={range.start >= dayKey(new Date())}
-            className="neo-button p-1.5 bg-[#FFFDF8] disabled:opacity-40"
-            aria-label="Next period"
-          >
-            <ChevronRight size={14} />
-          </button>
-        </div>
+<div className="flex items-center gap-1">
+           <button onClick={(e) => {
+             triggerHapticFeedback();
+             shiftPeriod(-1); }} className="neo-button p-1.5 bg-[#FFFDF8]" aria-label="Previous period">
+             <ChevronLeft size={14} />
+           </button>
+           <span className="text-sm font-extrabold px-2 min-w-[120px] sm:min-w-[160px] text-center">{range.label}</span>
+           <button
+             onClick={(e) => {
+               triggerHapticFeedback();
+               shiftPeriod(1); }}
+             disabled={range.start >= dayKey(new Date())}
+             className="neo-button p-1.5 bg-[#FFFDF8] disabled:opacity-40"
+             aria-label="Next period"
+           >
+             <ChevronRight size={14} />
+           </button>
+         </div>
       </div>
 
       {/* Overview: earnings / expenses / savings / loans */}
@@ -1447,12 +1691,14 @@ export default function ExpensesPage() {
                 <p className="text-sm font-medium text-[#5C5C5C] mb-3">
                   Set a monthly budget and savings goal to stay on track.
                 </p>
-                <button
-                  onClick={() => { setShowBudgets(true); setShowForm(false); setShowLoans(false); }}
-                  className="neo-button px-4 py-2 text-sm bg-[#F7E8A4] w-fit tint-yellow"
-                >
-                  Set budgets
-                </button>
+<button
+  onClick={(e) => {
+    triggerHapticFeedback();
+    setShowBudgets(true); setShowForm(false); setShowLoans(false); }}
+  className="neo-button px-4 py-3 text-sm bg-[#F7E8A4] w-fit tint-yellow min-h-[48px]"
+>
+  Set budgets
+</button>
               </div>
             )}
 
@@ -1495,42 +1741,45 @@ export default function ExpensesPage() {
                 icon={<CalendarDays size={15} />}
                 title={`This Week · ${range.label}`}
                 action={
-                  <button
-                    onClick={() => startAdd()}
-                    className="neo-button px-2.5 py-1.5 text-[11px] bg-[#CDEAC0] tint-green flex items-center gap-1"
-                  >
-                    <Plus size={12} /> Add
-                  </button>
+<button
+  onClick={() => startAdd()}
+  className="neo-button px-3 py-3 text-[11px] bg-[#CDEAC0] tint-green flex items-center gap-1 min-h-[44px]"
+>
+  <Plus size={12} /> Add
+</button>
                 }
               />
-              <div className="grid grid-cols-7 gap-1.5">
-                {weekStrip.map((d) => {
-                  const active = selectedDay === d.date;
-                  const isToday = d.date === dayKey(new Date());
-                  return (
-                    <button
-                      key={d.date}
-                      onClick={() => setSelectedDay(active ? null : d.date)}
-                      className={`rounded-xl border-[2px] p-2 flex flex-col items-center gap-1 transition-all ${
-                        active
-                          ? 'border-[#2D2D2D] bg-[#FFFDF8] shadow-[2px_2px_0px_0px_var(--neo-shadow)] -translate-y-0.5'
-                          : 'border-[#2D2D2D]/40 bg-[#F0ECE4] hover:-translate-y-0.5'
-                      }`}
-                    >
-                      <span className={`text-[9px] font-extrabold uppercase ${isToday ? 'text-[#B85042]' : 'text-[#5C5C5C]'}`}>
-                        {d.dow}
-                      </span>
-                      <span className="text-sm font-extrabold">{format(parse(d.date, 'yyyy-MM-dd', new Date()), 'd')}</span>
-                      {d.expense > 0 ? (
-                        <span className="text-[9px] font-bold text-[#B85042] leading-none">{moneyShort(d.expense)}</span>
-                      ) : (
-                        <span className="text-[9px] leading-none opacity-0">.</span>
-                      )}
-                      {d.income > 0 && <span className="w-2 h-2 rounded-full bg-[#4C8C4A] border-[1px] border-[#2D2D2D]" />}
-                    </button>
-                  );
-                })}
-              </div>
+<div className="grid grid-cols-7 gap-1.5">
+                 {weekStrip.map((d) => {
+                   const active = selectedDay === d.date;
+                   const isToday = d.date === dayKey(new Date());
+                   return (
+                     <button
+                       key={d.date}
+                       onClick={() => {
+                         triggerHapticFeedback();
+                         setSelectedDay(active ? null : d.date);
+                       }}
+                       className={`rounded-xl border-[2px] p-2 flex flex-col items-center gap-1 transition-all ${
+                         active
+                           ? 'border-[#2D2D2D] bg-[#FFFDF8] shadow-[2px_2px_0px_0px_var(--neo-shadow)] -translate-y-0.5'
+                           : 'border-[#2D2D2D]/40 bg-[#F0ECE4] hover:-translate-y-0.5'
+                       }`}
+                     >
+                       <span className={`text-[9px] font-extrabold uppercase ${isToday ? 'text-[#B85042]' : 'text-[#5C5C5C]'}`}>
+                         {d.dow}
+                       </span>
+                       <span className="text-sm font-extrabold">{format(parse(d.date, 'yyyy-MM-dd', new Date()), 'd')}</span>
+                       {d.expense > 0 ? (
+                         <span className="text-[9px] font-bold text-[#B85042] leading-none">{moneyShort(d.expense)}</span>
+                       ) : (
+                         <span className="text-[9px] leading-none opacity-0">.</span>
+                       )}
+                       {d.income > 0 && <span className="w-2 h-2 rounded-full bg-[#4C8C4A] border-[1px] border-[#2D2D2D]" />}
+                     </button>
+                   );
+                 })}
+               </div>
 
               <div className="mt-4 pt-4 border-t-[2px] border-[#2D2D2D] flex-1">
                 {selectedDay && dayDetail ? (
@@ -1697,96 +1946,82 @@ export default function ExpensesPage() {
 
 
 
-      <AnimatePresence>
-        {showForm && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden"
-          >
-            <TransactionForm
-              initial={editing ?? undefined}
-              defaultDate={prefillDate}
-              onSubmit={(expense) => {
-                if (editing) updateExpense(editing.id, expense);
-                else addExpense(expense);
-              }}
-              onCancel={() => {
-                setShowForm(false);
-                setEditing(null);
-                setPrefillDate(undefined);
-              }}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      
 
       {period === 'monthly' && (
         <>
           {/* Calendar + day detail */}
           <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-5 mb-5">
         <NeoCard color="#B8D8F8">
-          <SectionTitle
-            icon={<CalendarDays size={15} />}
-            title={`Calendar · ${format(calMonth, 'MMMM yyyy')}`}
-            action={
-              <div className="flex items-center gap-1">
-                <button onClick={() => setCalMonth((m) => addMonths(m, -1))} className="neo-button p-1.5 bg-[#FFFDF8]" aria-label="Previous month">
-                  <ChevronLeft size={13} />
-                </button>
-                <button
-                  onClick={() => { setCalMonth(startOfMonth(new Date())); setSelectedDay(dayKey(new Date())); }}
-                  className="neo-button px-2.5 py-1.5 text-[11px] bg-[#FFFDF8]"
-                >
-                  Today
-                </button>
-                <button onClick={() => setCalMonth((m) => addMonths(m, 1))} className="neo-button p-1.5 bg-[#FFFDF8]" aria-label="Next month">
-                  <ChevronRight size={13} />
-                </button>
-              </div>
-            }
-          />
+<SectionTitle
+             icon={<CalendarDays size={15} />}
+             title={`Calendar · ${format(calMonth, 'MMMM yyyy')}`}
+             action={
+               <div className="flex items-center gap-1">
+                 <button onClick={(e) => {
+                   triggerHapticFeedback();
+                   setCalMonth((m) => addMonths(m, -1)); }} className="neo-button p-1.5 bg-[#FFFDF8]" aria-label="Previous month">
+                   <ChevronLeft size={13} />
+                 </button>
+                 <button
+                   onClick={(e) => {
+                     triggerHapticFeedback();
+                     setCalMonth(startOfMonth(new Date())); setSelectedDay(dayKey(new Date())); }}
+                   className="neo-button px-2.5 py-1.5 text-[11px] bg-[#FFFDF8]"
+                 >
+                   Today
+                 </button>
+                 <button onClick={(e) => {
+                   triggerHapticFeedback();
+                   setCalMonth((m) => addMonths(m, 1)); }} className="neo-button p-1.5 bg-[#FFFDF8]" aria-label="Next month">
+                   <ChevronRight size={13} />
+                 </button>
+               </div>
+             }
+           />
 
           <div className="grid grid-cols-7 gap-1 mb-1">
             {WEEKDAYS.map((d, i) => (
               <div key={i} className="text-center text-[10px] font-extrabold text-[#5C5C5C]">{d}</div>
             ))}
           </div>
-          <div className="grid grid-cols-7 gap-1.5">
-            {calendar.cells.map((cell, i) => {
-              if (!cell) return <div key={`blank-${i}`} />;
-              const dateKey = dayKey(new Date(calMonth.getFullYear(), calMonth.getMonth(), cell.day));
-              const ratio = calendar.max ? cell.spend / calendar.max : 0;
-              const level = cell.spend === 0 ? 0 : ratio > 0.75 ? 4 : ratio > 0.5 ? 3 : ratio > 0.25 ? 2 : 1;
-              const active = selectedDay === dateKey;
-              const hasActivity = cell.spend > 0 || cell.income > 0;
-              return (
-                <button
-                  key={dateKey}
-                  onClick={() => setSelectedDay(active ? null : dateKey)}
-                  className={`aspect-square rounded-xl border-[2px] p-1 flex flex-col items-center justify-between transition-all ${
-                    active ? 'border-[#2D2D2D] shadow-[2px_2px_0px_0px_var(--neo-shadow)] -translate-y-0.5' : 'border-[#2D2D2D]/40 hover:-translate-y-0.5'
-                  }`}
-                  style={{ backgroundColor: active ? '#FFFDF8' : HEAT_COLORS[level] }}
-                  title={hasActivity ? `${format(parse(dateKey, 'yyyy-MM-dd', new Date()), 'dd MMM')} · out ${money(cell.spend)} · in ${money(cell.income)}` : undefined}
-                >
-                  <span className={`text-[10px] font-extrabold leading-none ${cell.isToday ? 'text-[#B85042]' : 'text-[#2A2A2A]'}`}>
-                    {cell.day}
-                  </span>
-                  {cell.spend > 0 ? (
-                    <span className="text-[8px] font-bold text-[#5C5C5C] leading-none">{moneyShort(cell.spend)}</span>
-                  ) : (
-                    <span className="text-[8px] leading-none opacity-0">.</span>
-                  )}
-                  <span className="flex items-center gap-0.5">
-                    {cell.income > 0 && <span className="w-1.5 h-1.5 rounded-full bg-[#4C8C4A] border-[1px] border-[#2D2D2D]" />}
-                    {cell.spend > 0 && <span className="w-1.5 h-1.5 rounded-full bg-[#B85042] border-[1px] border-[#2D2D2D]" />}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+<div className="grid grid-cols-7 gap-1.5">
+             {calendar.cells.map((cell, i) => {
+               if (!cell) return <div key={`blank-${i}`} />;
+               const dateKey = dayKey(new Date(calMonth.getFullYear(), calMonth.getMonth(), cell.day));
+               const ratio = calendar.max ? cell.spend / calendar.max : 0;
+               const level = cell.spend === 0 ? 0 : ratio > 0.75 ? 4 : ratio > 0.5 ? 3 : ratio > 0.25 ? 2 : 1;
+               const active = selectedDay === dateKey;
+               const hasActivity = cell.spend > 0 || cell.income > 0;
+               return (
+                 <button
+                   key={dateKey}
+                   onClick={() => {
+                     triggerHapticFeedback();
+                     setSelectedDay(active ? null : dateKey);
+                   }}
+                   className={`aspect-square rounded-xl border-[2px] p-1 flex flex-col items-center justify-between transition-all ${
+                     active ? 'border-[#2D2D2D] shadow-[2px_2px_0px_0px_var(--neo-shadow)] -translate-y-0.5' : 'border-[#2D2D2D]/40 hover:-translate-y-0.5'
+                   }`}
+                   style={{ backgroundColor: active ? '#FFFDF8' : HEAT_COLORS[level] }}
+                   title={hasActivity ? `${format(parse(dateKey, 'yyyy-MM-dd', new Date()), 'dd MMM')} · out ${money(cell.spend)} · in ${money(cell.income)}` : undefined}
+                 >
+                   <span className={`text-[10px] font-extrabold leading-none ${cell.isToday ? 'text-[#B85042]' : 'text-[#2A2A2A]'}`}>
+                     {cell.day}
+                   </span>
+                   {cell.spend > 0 ? (
+                     <span className="text-[8px] font-bold text-[#5C5C5C] leading-none">{moneyShort(cell.spend)}</span>
+                   ) : (
+                     <span className="text-[8px] leading-none opacity-0">.</span>
+                   )}
+                   <span className="flex items-center gap-0.5">
+                     {cell.income > 0 && <span className="w-1.5 h-1.5 rounded-full bg-[#4C8C4A] border-[1px] border-[#2D2D2D]" />}
+                     {cell.spend > 0 && <span className="w-1.5 h-1.5 rounded-full bg-[#B85042] border-[1px] border-[#2D2D2D]" />}
+                   </span>
+                 </button>
+               );
+             })}
+           </div>
 
           <div className="flex items-center justify-between mt-4 pt-3 border-t-[2px] border-[#2D2D2D]">
             <span className="text-[11px] font-bold text-[#5C5C5C]">Less</span>
@@ -1811,12 +2046,12 @@ export default function ExpensesPage() {
                 icon={<CalendarDays size={15} />}
                 title={format(parse(selectedDay, 'yyyy-MM-dd', new Date()), 'EEE, dd MMM yyyy')}
                 action={
-                  <button
-                    onClick={() => startAdd(selectedDay)}
-                    className="neo-button px-2.5 py-1.5 text-[11px] bg-[#CDEAC0] tint-green flex items-center gap-1"
-                  >
-                    <Plus size={12} /> Add
-                  </button>
+<button
+  onClick={() => startAdd(selectedDay)}
+  className="neo-button px-3 py-3 text-[11px] bg-[#CDEAC0] tint-green flex items-center gap-1 min-h-[44px]"
+>
+  <Plus size={12} /> Add
+</button>
                 }
               />
               <div className="grid grid-cols-3 gap-2 mb-3">
@@ -1983,12 +2218,14 @@ export default function ExpensesPage() {
               <p className="text-sm font-medium text-[#5C5C5C] mb-3">
                 No category budgets set. Add limits to track where your money goes.
               </p>
-              <button
-                onClick={() => { setShowBudgets(true); setShowForm(false); setShowLoans(false); }}
-                className="neo-button px-4 py-2 text-sm bg-[#F7E8A4] tint-yellow"
-              >
-                Set budgets
-              </button>
+<button
+  onClick={(e) => {
+    triggerHapticFeedback();
+    setShowBudgets(true); setShowForm(false); setShowLoans(false); }}
+  className="neo-button px-4 py-3 text-sm bg-[#F7E8A4] tint-yellow min-h-[48px]"
+>
+  Set budgets
+</button>
             </div>
           ) : (
             <div className="space-y-3.5">
@@ -2145,13 +2382,15 @@ export default function ExpensesPage() {
                               {isIncome ? '+' : '-'}{money(t.amount)}
                             </p>
                             <div className="flex items-center gap-1 shrink-0">
-                              <button
-                                onClick={() => { setEditing(t); setPrefillDate(undefined); setShowBudgets(false); setShowLoans(false); setShowForm(true); }}
-                                className="p-1.5 rounded-lg text-[#5C5C5C] hover:text-[#2A2A2A] hover:bg-[#F0ECE4] transition-colors"
-                                aria-label="Edit transaction"
-                              >
-                                <Pencil size={14} />
-                              </button>
+<button
+  onClick={(e) => {
+    triggerHapticFeedback();
+    setEditing(t); setPrefillDate(undefined); setShowBudgets(false); setShowLoans(false); setShowForm(true); }}
+  className="p-1.5 rounded-lg text-[#5C5C5C] hover:text-[#2A2A2A] hover:bg-[#F0ECE4] transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+  aria-label="Edit transaction"
+>
+  <Pencil size={14} />
+</button>
                               <button
                                 onClick={() => deleteExpense(t.id)}
                                 className="p-1.5 rounded-lg text-[#5C5C5C] hover:text-[#B85042] hover:bg-[#F0ECE4] transition-colors"

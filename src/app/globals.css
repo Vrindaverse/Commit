@@ -217,3 +217,149 @@
     transform: none;
   }
 }
+
+/* Mobile-first improvements */
+@media (max-width: 768px) {
+  /* Larger touch targets for mobile */
+  .neo-button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .neo-input {
+    min-height: 48px;
+    font-size: 16px; /* Prevents iOS zoom on focus */
+  }
+  
+  textarea {
+    min-height: 60px;
+    font-size: 16px;
+  }
+  
+  /* Ensure inputs don't zoom on focus */
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  textarea,
+  select {
+    font-size: 16px;
+  }
+  
+  /* Better spacing for mobile */
+  .mobile-stack {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  /* Calendar cells on mobile */
+  .grid.grid-cols-7.gap-1\.5 > button {
+    min-height: 40px;
+    min-width: 40px;
+  }
+  
+  /* Stat cards on mobile */
+  .sm\\:grid-cols-2 > div {
+    min-height: 60px;
+  }
+  
+  /* Better text sizing on mobile */
+  .text-2xl {
+    font-size: 1.5rem;
+  }
+  
+  .text-4xl {
+    font-size: 2rem;
+  }
+  
+  /* Dialog content on mobile */
+  [data-slot="dialog-content"] {
+    margin: 1rem;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  /* Form layout adjustments */
+  form .flex.flex-col.sm\\:flex-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  form .flex.flex-col.sm\\:flex-row > * {
+    width: 100%;
+  }
+}
+
+/* Very small screens (extra small) - enhance touch targets further */
+@media (max-width: 480px) {
+  /* Extra large touch targets for very small screens */
+  .neo-button {
+    min-height: 48px !important;
+    min-width: 48px !important;
+  }
+  
+  /* Calendar buttons - ensure minimum touch target size */
+  .grid.grid-cols-7 > button {
+    min-height: 44px !important;
+    min-width: 44px !important;
+    padding: 8px !important;
+  }
+  
+  /* Increase tap area for date numbers */
+  .grid.grid-cols-7 > button > span {
+    font-size: 14px !important;
+    line-height: 1.2 !important;
+  }
+  
+  /* Make sure modal content is usable */
+  [data-slot="dialog-content"] {
+    margin: 0.5rem !important;
+    border-radius: 12px !important;
+  }
+  
+  /* Form inputs - extra padding for small screens */
+  .neo-input {
+    min-height: 52px !important;
+    padding: 12px 16px !important;
+    font-size: 16px !important;
+  }
+  
+  /* Buttons in forms */
+  form .neo-button {
+    min-height: 48px !important;
+    font-size: 16px !important;
+  }
+  
+  /* Textarea minimum height */
+  textarea {
+    min-height: 68px !important;
+  }
+  
+  /* Increase touch area for checkboxes and radios */
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-width: 24px !important;
+    min-height: 24px !important;
+  }
+  
+  /* Improve select dropdown touch target */
+  [data-slot="select"] {
+    min-height: 48px !important;
+  }
+  
+  /* Make category buttons easier to tap */
+  .TransactionForm .flex.gap-2.flex-wrap > button {
+    min-height: 40px !important;
+    min-width: 40px !important;
+    padding: 8px 12px !important;
+  }
+}
+
+/* Dark mode support for footer links */
+@media (prefers-color-scheme: dark) {
+  footer a {
+    color: var(--muted-foreground);
+  }
+  footer a:hover {
+    color: var(--foreground);
+  }
+}

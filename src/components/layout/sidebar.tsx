@@ -439,7 +439,7 @@ export default function Sidebar() {
       </button>
 
       {/* Desktop sidebar - bottom bar */}
-      <aside className="hidden md:flex flex-col border-[3px] border-[#2D2D2D] bg-[#FFFDF8] fixed left-0 bottom-0 top-0 left-4 right-4 z-40 w-full md:w-64 rounded-t-[20px] rounded-b-[20px] shadow-[6px_6px_0px_0px_var(--neo-shadow)] tint-purple overflow-y-auto">
+      <aside className="hidden md:flex flex-col border-[3px] border-[#2D2D2D] bg-[#FFFDF8] fixed right-0 top-0 bottom-0 w-64 z-40 rounded-[20px] shadow-[6px_6px_0px_0px_var(--neo-shadow)] tint-purple overflow-y-auto">
 <SidebarContent
               streak={streak}
               loggedInToday={loggedInToday}

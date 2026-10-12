@@ -3,7 +3,7 @@
 import { useSyncExternalStore, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Sparkles, Target, BookOpen, Flame, Rocket, Trophy, CheckCircle2, Code, Dumbbell, Heart, Droplet, ArrowRight, Zap, ListChecks, Layers, Activity, Wallet, TrendingUp, TrendingDown, PiggyBank, HandCoins } from 'lucide-react';
+import { Sparkles, Target, BookOpen, Flame, Rocket, Trophy, CheckCircle2, Code, Dumbbell, Heart, Droplet, ArrowRight, Zap, ListChecks, Layers, Activity, Wallet, TrendingUp, TrendingDown, PiggyBank, HandCoins, Star } from 'lucide-react';
 import NeoCard from '@/components/shared/neo-card';
 import ProgressBar from '@/components/shared/progress-bar';
 import { Button } from '@/components/ui/button';
@@ -714,6 +714,7 @@ export default function Dashboard() {
   const projects = useLifeStore(s => s.projects);
   const learningPaths = useLifeStore(s => s.learningPaths);
   const updateTask = useLifeStore(s => s.updateTask);
+  const toggleHabitLog = useLifeStore(s => s.toggleHabitLog);
   const expenses = useLifeStore(s => s.expenses);
   const loans = useLifeStore(s => s.loans);
 
@@ -727,6 +728,9 @@ export default function Dashboard() {
 
   const now = new Date();
   const monthPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const compulsoryHabits = habits.filter(h => h.category === 'compulsory');
+  const compulsoryDone = compulsoryHabits.filter(h => (h.logs.find(l => l.date === todayStr)?.count ?? 0) > 0).length;
   let monthEarnings = 0;
   let monthExpenses = 0;
   for (const t of expenses) {
@@ -1060,6 +1064,37 @@ export default function Dashboard() {
               <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm bg-[#F0ECE4]" /> Total</div>
             </div>
           </NeoCard>
+
+          {mounted && compulsoryHabits.length > 0 && (
+            <NeoCard color="#F8C8C8">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-9 h-9 rounded-xl border-[3px] border-[#2D2D2D] bg-[#F8C8C8] flex items-center justify-center"><Star size={18} /></div>
+                <div>
+                  <h3 className="text-sm font-extrabold">Must-Do Today</h3>
+                  <p className="text-[10px] font-bold text-[#5C5C5C]">{compulsoryDone}/{compulsoryHabits.length} compulsory habits done</p>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                {compulsoryHabits.map(h => {
+                  const done = (h.logs.find(l => l.date === todayStr)?.count ?? 0) > 0;
+                  return (
+                    <button
+                      key={h.id}
+                      onClick={() => toggleHabitLog(h.id, todayStr)}
+                      aria-pressed={done}
+                      className="flex items-center gap-3 w-full text-left p-2.5 min-h-[44px] rounded-xl border-[2px] border-[#2D2D2D] bg-[#FFFDF8] hover:bg-[#F0ECE4] transition-colors"
+                    >
+                      <span className="w-6 h-6 rounded-lg border-[2px] border-[#2D2D2D] flex items-center justify-center shrink-0" style={{ backgroundColor: done ? '#CDEAC0' : h.color }}>
+                        {done && <CheckCircle2 size={14} />}
+                      </span>
+                      <span className="text-xs font-bold flex-1 min-w-0 truncate">{h.name}</span>
+                      <span className={`text-[10px] font-extrabold ${done ? 'text-[#4C8C4A]' : 'text-[#5C5C5C]'}`}>{done ? 'Done' : 'Not done'}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </NeoCard>
+          )}
 
           <NeoCard color="#F8C8C8">
             <div className="flex items-center gap-3 mb-4">

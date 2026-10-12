@@ -3,10 +3,11 @@
 import { useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Flame, Plus, X, Check, CalendarDays, Sparkles, TrendingUp, ChevronLeft, ChevronRight, BarChart3, Grid3x3 } from 'lucide-react';
+import { Flame, Plus, X, Check, CalendarDays, Sparkles, TrendingUp, ChevronLeft, ChevronRight, BarChart3, Grid3x3, Star, Sun, CircleDot } from 'lucide-react';
 import NeoCard from '@/components/shared/neo-card';
 import PageHeader from '@/components/shared/page-header';
 import { useLifeStore, genId } from '@/store/use-store';
+import type { Habit, HabitCategory } from '@/types';
 
 const HabitChart = dynamic(() => import('@/components/charts/habit-chart'), {
   ssr: false,
@@ -14,6 +15,30 @@ const HabitChart = dynamic(() => import('@/components/charts/habit-chart'), {
 });
 
 const colorOptions = ['#B8D8F8', '#CDEAC0', '#F8C8C8', '#DCCEF5', '#F7E8A4', '#FFD8BE'];
+
+const HABIT_CATEGORIES: { key: HabitCategory; label: string; hint: string; color: string; icon: React.ReactNode }[] = [
+  { key: 'compulsory', label: 'Compulsory', hint: 'Must do every day', color: '#F8C8C8', icon: <Star size={12} /> },
+  { key: 'when-free', label: 'When free', hint: 'Do it if time allows', color: '#F7E8A4', icon: <Sun size={12} /> },
+  { key: 'other', label: 'Other', hint: 'Anything else', color: '#DCCEF5', icon: <CircleDot size={12} /> },
+];
+
+const CATEGORY_META = Object.fromEntries(HABIT_CATEGORIES.map(c => [c.key, c])) as Record<HabitCategory, (typeof HABIT_CATEGORIES)[number]>;
+
+function HabitCategoryBadge({ category, className = '' }: { category?: HabitCategory; className?: string }) {
+  const meta = CATEGORY_META[category ?? 'other'] ?? CATEGORY_META.other;
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-lg border-[2px] border-[#2D2D2D] px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-[#2A2A2A] ${className}`}
+      style={{ backgroundColor: meta.color }}
+    >
+      {meta.icon} {meta.label}
+    </span>
+  );
+}
+
+function todayKey() {
+  return new Date().toISOString().split('T')[0];
+}
 
 function calcRate(logs: { date: string; count: number }[], days: number): number {
   const cutoff = new Date();
@@ -35,6 +60,66 @@ function generateLogs(days: number): { date: string; count: number }[] {
     logs.push({ date: date.toISOString().split('T')[0], count: 0 });
   }
   return logs;
+}
+
+const CATEGORY_ORDER: HabitCategory[] = ['compulsory', 'when-free', 'other'];
+
+function TodayCheckIn({ habits }: { habits: Habit[] }) {
+  const toggleHabitLog = useLifeStore(s => s.toggleHabitLog);
+  const today = todayKey();
+  const dateLabel = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
+  const rows = [...habits].sort((a, b) => CATEGORY_ORDER.indexOf(a.category ?? 'other') - CATEGORY_ORDER.indexOf(b.category ?? 'other'));
+  const isDone = (h: Habit) => (h.logs.find(l => l.date === today)?.count ?? 0) > 0;
+  const doneCount = habits.filter(isDone).length;
+  const allDone = habits.length > 0 && doneCount === habits.length;
+
+  const toggleAll = () => {
+    habits.forEach(h => {
+      const done = isDone(h);
+      if (allDone ? done : !done) toggleHabitLog(h.id, today);
+    });
+  };
+
+  return (
+    <NeoCard color="#CDEAC0" className="mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div>
+          <h2 className="text-sm font-extrabold flex items-center gap-2">
+            <Check size={16} /> Today&apos;s Check-in
+          </h2>
+          <p className="text-[11px] font-bold text-[#5C5C5C]">{dateLabel} · {doneCount}/{habits.length} done</p>
+        </div>
+        <button
+          onClick={toggleAll}
+          className={`neo-button px-3 py-2 text-xs font-extrabold flex items-center gap-1.5 ${allDone ? 'bg-[#FFFDF8]' : 'bg-[#F7E8A4]'}`}
+        >
+          {allDone ? <X size={13} /> : <Check size={13} />} {allDone ? 'Unmark all' : 'Mark all done'}
+        </button>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {rows.map(h => {
+          const done = isDone(h);
+          return (
+            <button
+              key={h.id}
+              onClick={() => toggleHabitLog(h.id, today)}
+              aria-pressed={done}
+              className="flex items-center gap-3 w-full text-left p-2.5 min-h-[48px] rounded-xl border-[2px] border-[#2D2D2D] bg-[#FFFDF8] hover:bg-[#F0ECE4] transition-colors"
+            >
+              <div
+                className={`w-6 h-6 rounded-lg border-[2px] border-[#2D2D2D] flex items-center justify-center shrink-0 transition-colors ${done ? 'bg-[#CDEAC0]' : ''}`}
+                style={{ backgroundColor: done ? '#CDEAC0' : h.color }}
+              >
+                {done && <Check size={14} />}
+              </div>
+              <span className="text-xs font-bold flex-1 min-w-0 truncate">{h.name}</span>
+              <HabitCategoryBadge category={h.category} />
+            </button>
+          );
+        })}
+      </div>
+    </NeoCard>
+  );
 }
 
 const CELL_SIZE = 18;
@@ -101,9 +186,21 @@ function ContributionGrid({
   });
 
   const dayLabels = ['', 'Mon', '', 'Wed', '', 'Fri', ''];
+  const todayDone = (logs.find(l => l.date === todayStr)?.count ?? 0) > 0;
+  const todayDateLabel = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 
   return (
     <div>
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+        <span className="text-[10px] font-extrabold text-[#5C5C5C] uppercase tracking-wide">Today · {todayDateLabel}</span>
+        <button
+          onClick={() => toggleHabitLog(habitId, todayStr)}
+          aria-pressed={todayDone}
+          className={`neo-button px-2.5 py-1 text-[10px] font-extrabold flex items-center gap-1 ${todayDone ? 'bg-[#CDEAC0]' : 'bg-[#FFFDF8]'}`}
+        >
+          {todayDone ? <Check size={11} /> : <Plus size={11} />} {todayDone ? 'Done today' : 'Mark today'}
+        </button>
+      </div>
       <div className="flex ml-9 mb-0.5 text-[10px] font-extrabold text-[#5C5C5C] select-none">
         {monthLabels.map((m, i) => (
           <div key={i} style={{ width: m.count * COL_W - CELL_GAP }}>{m.label}</div>
@@ -150,9 +247,11 @@ function ContributionGrid({
                         opacity: isFuture ? 0.25 : isDone ? 1 : 0.45,
                         cursor: isFuture ? 'default' : 'pointer',
                       }}
-                      className="rounded-sm border-[1.5px] border-[#2D2D2D] transition-colors"
+                      className="rounded-sm border-[1.5px] border-[#2D2D2D] transition-colors flex items-center justify-center text-[#2D2D2D]"
                       title={isFuture ? '' : `${log.date}: ${isDone ? 'Done' : 'Missed'}${isToday ? ' (today)' : ''}`}
-                    />
+                    >
+                      {isToday && isDone && <Check size={11} strokeWidth={3} />}
+                    </motion.button>
                   );
                 })}
               </div>
@@ -204,6 +303,17 @@ function HabitCalendar({ habits }: { habits: { id: string; name: string; color: 
 
   const activeRows = selectedDay === todayStr ? todayHabits : dayHabits;
 
+  const isHabitDone = (h: { logs: { date: string; count: number }[] }, dateStr: string) =>
+    (h.logs.find(l => l.date === dateStr)?.count ?? 0) > 0;
+  const allDoneForDay = (dateStr: string) => habits.length > 0 && habits.every(h => isHabitDone(h, dateStr));
+  const toggleAllForDay = (dateStr: string) => {
+    const all = allDoneForDay(dateStr);
+    habits.forEach(h => {
+      const done = isHabitDone(h, dateStr);
+      if (all ? done : !done) toggleHabitLog(h.id, dateStr);
+    });
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
@@ -233,18 +343,23 @@ function HabitCalendar({ habits }: { habits: { id: string; name: string; color: 
           const isToday = dateStr === todayStr;
           const isSelected = dateStr === selectedDay;
           const dayData = habitMap[day] || [];
+          const allDone = allDoneForDay(dateStr);
           return (
             <motion.button
               key={day}
-              whileHover={{ scale: 1.08 }}
+              whileHover={{ scale: 1.06 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setSelectedDay(dateStr)}
+              onClick={() => { setSelectedDay(dateStr); toggleAllForDay(dateStr); }}
+              title={`${dateStr} · tap to mark all habits ${allDone ? 'undone' : 'done'}`}
               className={`relative rounded-lg border-[2px] border-[#2D2D2D] p-1.5 text-center text-xs font-bold transition-colors min-h-[48px]
                 ${isSelected || isToday ? 'ring-[3px] ring-[#2D2D2D]' : ''}
                 ${isToday ? 'bg-[#F7E8A4]' : isSelected ? 'bg-[#B8D8F8]' : 'bg-[#FFFDF8]'}
                 hover:bg-[#F0ECE4]`}
             >
-              <span className={`${isToday ? 'inline-flex w-5 h-5 leading-none items-center justify-center rounded-full bg-[#2D2D2D] text-[#FFFDF8]' : ''}`}>{day}</span>
+              <span className="flex items-center justify-center gap-1">
+                <span className={`${isToday ? 'inline-flex w-5 h-5 leading-none items-center justify-center rounded-full bg-[#2D2D2D] text-[#FFFDF8]' : ''}`}>{day}</span>
+                {allDone && <Check size={12} strokeWidth={3} className="text-[#4C8C4A]" />}
+              </span>
               {dayData.length > 0 && (
                 <div className="flex flex-wrap justify-center gap-[2px] mt-1">
                   {dayData.slice(0, 4).map(h => (
@@ -273,16 +388,27 @@ function HabitCalendar({ habits }: { habits: { id: string; name: string; color: 
           exit={{ opacity: 0, y: -10 }}
           className="border-t-[2px] border-[#2D2D2D] pt-4"
         >
-          <h4 className="text-sm font-extrabold mb-3 flex items-center flex-wrap gap-2">
-            {selectedDay === todayStr ? (
-              <>
-                <span className="text-[10px] font-extrabold uppercase tracking-wide px-2 py-0.5 rounded-lg border-[2px] border-[#2D2D2D] bg-[#F7E8A4]">Today</span>
-                <span>Today&apos;s Log</span>
-              </>
-            ) : (
-              selectedDay
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <h4 className="text-sm font-extrabold flex items-center flex-wrap gap-2">
+              {selectedDay === todayStr ? (
+                <>
+                  <span className="text-[10px] font-extrabold uppercase tracking-wide px-2 py-0.5 rounded-lg border-[2px] border-[#2D2D2D] bg-[#F7E8A4]">Today</span>
+                  <span>Today&apos;s Log</span>
+                </>
+              ) : (
+                selectedDay
+              )}
+            </h4>
+            {selectedDay && habits.length > 0 && (
+              <button
+                onClick={() => toggleAllForDay(selectedDay)}
+                className={`neo-button px-2.5 py-1 text-[10px] font-extrabold flex items-center gap-1 ${allDoneForDay(selectedDay) ? 'bg-[#FFFDF8]' : 'bg-[#CDEAC0]'}`}
+              >
+                {allDoneForDay(selectedDay) ? <X size={11} /> : <Check size={11} />}
+                {allDoneForDay(selectedDay) ? 'Unmark all' : 'Mark all'}
+              </button>
             )}
-          </h4>
+          </div>
           {activeRows.length === 0 ? (
             <p className="text-xs text-[#5C5C5C] font-medium py-4 text-center">No habits logged for this day</p>
           ) : (
@@ -352,6 +478,7 @@ function AddHabitForm({ onDone }: { onDone: () => void }) {
   const addHabit = useLifeStore(s => s.addHabit);
   const [name, setName] = useState('');
   const [selectedColor, setSelectedColor] = useState('#B8D8F8');
+  const [category, setCategory] = useState<HabitCategory>('when-free');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -360,6 +487,7 @@ function AddHabitForm({ onDone }: { onDone: () => void }) {
       id: genId(),
       name: name.trim(),
       color: selectedColor,
+      category,
       streak: 0,
       logs: generateLogs(90),
     });
@@ -368,7 +496,7 @@ function AddHabitForm({ onDone }: { onDone: () => void }) {
 
   return (
     <form onSubmit={handleSubmit} className="neo-card p-4 mb-6">
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-2">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-3">
         <div className="flex items-center gap-2 flex-1">
           <input
             value={name}
@@ -383,6 +511,23 @@ function AddHabitForm({ onDone }: { onDone: () => void }) {
           <button type="button" onClick={onDone} className="neo-button p-2 bg-[#FFFDF8]"><X size={14} /></button>
         </div>
       </div>
+      <p className="text-[10px] font-extrabold uppercase tracking-wide text-[#5C5C5C] mb-1.5">Category</p>
+      <div className="grid grid-cols-3 gap-2 mb-3">
+        {HABIT_CATEGORIES.map(c => (
+          <button
+            key={c.key}
+            type="button"
+            onClick={() => setCategory(c.key)}
+            aria-pressed={category === c.key}
+            className={`rounded-xl border-[2px] border-[#2D2D2D] px-2 py-2 text-left transition-all ${category === c.key ? 'shadow-[2px_2px_0px_0px_var(--neo-shadow)] -translate-y-0.5' : 'opacity-80 hover:opacity-100'}`}
+            style={{ backgroundColor: c.color }}
+          >
+            <span className="flex items-center gap-1 text-[11px] font-extrabold text-[#2A2A2A]">{c.icon} {c.label}</span>
+            <span className="block text-[9px] font-bold text-[#5C5C5C] mt-0.5">{c.hint}</span>
+          </button>
+        ))}
+      </div>
+      <p className="text-[10px] font-extrabold uppercase tracking-wide text-[#5C5C5C] mb-1.5">Color</p>
       <div className="flex gap-1.5">
         {colorOptions.map(c => (
           <button key={c} type="button" onClick={() => setSelectedColor(c)}
@@ -426,6 +571,8 @@ export default function HabitsPage() {
     <div>
       <PageHeader title="Habits" description="Track your daily habits and maintain streaks" icon={<Flame size={20} />} />
 
+      {habits.length > 0 && <TodayCheckIn habits={habits} />}
+
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <p className="text-sm font-bold text-[#5C5C5C]">{habits.length} habit{habits.length !== 1 ? 's' : ''} tracked</p>
         <button onClick={() => setShowAdd(!showAdd)} className="neo-button px-3 py-1.5 text-xs bg-[#F7E8A4] font-extrabold flex items-center gap-1">
@@ -444,7 +591,7 @@ export default function HabitsPage() {
       ) : (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
-            {habits.map((habit, i) => {
+            {[...habits].sort((a, b) => CATEGORY_ORDER.indexOf(a.category ?? 'other') - CATEGORY_ORDER.indexOf(b.category ?? 'other')).map((habit, i) => {
               const todayLog = habit.logs.find(l => l.date === today);
               const doneToday = todayLog ? todayLog.count > 0 : false;
               return (
@@ -476,10 +623,14 @@ export default function HabitsPage() {
                     {doneToday ? <Check size={18} /> : <Flame size={18} />}
                   </button>
                   <h3 className="text-xs font-extrabold mb-1 truncate">{habit.name}</h3>
+                  <HabitCategoryBadge category={habit.category} className="mb-1.5" />
                   <div className="flex items-center justify-center gap-1">
                     <Flame size={14} className="text-[#F8C8C8]" />
                     <span className="text-lg font-extrabold">{habit.streak}</span>
                   </div>
+                  <p className={`text-[9px] font-bold mt-1 uppercase tracking-wide ${doneToday ? 'text-[#4C8C4A]' : 'text-[#5C5C5C]'}`}>
+                    {doneToday ? '✓ Done today' : 'Not done today'}
+                  </p>
                 </motion.div>
               );
             })}
@@ -534,7 +685,25 @@ export default function HabitsPage() {
                           {activeHabit.name}
                         </h2>
                       )}
-                      <p className="text-sm text-[#5C5C5C] font-medium">{isTodayDone ? 'Done today!' : 'Not logged yet today'}</p>
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        <p className="text-sm text-[#5C5C5C] font-medium">{isTodayDone ? 'Done today!' : 'Not logged yet today'}</p>
+                        <HabitCategoryBadge category={activeHabit.category} />
+                        <span className="text-[10px] font-bold text-[#5C5C5C] uppercase tracking-wide">Today · {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wide text-[#5C5C5C]">Category</span>
+                        {HABIT_CATEGORIES.map(c => (
+                          <button
+                            key={c.key}
+                            onClick={() => updateHabit(activeHabit.id, { category: c.key })}
+                            aria-pressed={(activeHabit.category ?? 'other') === c.key}
+                            className={`rounded-lg border-[2px] border-[#2D2D2D] px-2 py-0.5 text-[10px] font-extrabold text-[#2A2A2A] transition-all ${(activeHabit.category ?? 'other') === c.key ? 'shadow-[2px_2px_0px_0px_var(--neo-shadow)] -translate-y-0.5' : 'opacity-70 hover:opacity-100'}`}
+                            style={{ backgroundColor: c.color }}
+                          >
+                            {c.label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-bold text-[#5C5C5C]">Streak</p>

@@ -202,19 +202,19 @@ export const exams: Exam[] = [
 ];
 
 export const habits: Habit[] = [
-  { id: "h1", name: "Coding", color: "#B8D8F8", streak: 12,
+  { id: "h1", name: "Coding", color: "#B8D8F8", category: "compulsory", streak: 12,
     logs: generateHabitLogs(90, 0.7),
   },
-  { id: "h2", name: "Reading", color: "#CDEAC0", streak: 8,
+  { id: "h2", name: "Reading", color: "#CDEAC0", category: "when-free", streak: 8,
     logs: generateHabitLogs(90, 0.5),
   },
-  { id: "h3", name: "Workout", color: "#F8C8C8", streak: 5,
+  { id: "h3", name: "Workout", color: "#F8C8C8", category: "compulsory", streak: 5,
     logs: generateHabitLogs(90, 0.4),
   },
-  { id: "h4", name: "Meditation", color: "#DCCEF5", streak: 3,
+  { id: "h4", name: "Meditation", color: "#DCCEF5", category: "when-free", streak: 3,
     logs: generateHabitLogs(90, 0.3),
   },
-  { id: "h5", name: "Water Intake", color: "#B8D8F8", streak: 7,
+  { id: "h5", name: "Water Intake", color: "#B8D8F8", category: "other", streak: 7,
     logs: generateHabitLogs(90, 0.6),
   },
 ];

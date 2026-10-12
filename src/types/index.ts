@@ -90,11 +90,14 @@ export interface Exam {
   updatedAt?: string;
 }
 
+export type HabitCategory = 'compulsory' | 'when-free' | 'other';
+
 export interface Habit {
   id: string;
   name: string;
   icon?: string;
   color: string;
+  category: HabitCategory;
   streak: number;
   logs: { date: string; count: number }[];
   createdAt?: string;

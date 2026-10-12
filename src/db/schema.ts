@@ -89,6 +89,7 @@ export const habits = pgTable('habits', {
   name: text('name').notNull(),
   icon: text('icon'),
   color: text('color').default('#CDEAC0').notNull(),
+  category: text('category').default('when-free').notNull(),
   streak: integer('streak').default(0).notNull(),
   logs: jsonb('logs').default([]).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),

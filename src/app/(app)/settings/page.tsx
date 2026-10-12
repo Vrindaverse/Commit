@@ -148,7 +148,7 @@ export default function SettingsPage() {
         <NeoCard color="#CDEAC0">
           <div className="flex items-center gap-3 mb-6">
             <User size={18} />
-            <h2 className="text-base font-extrabold">About</h2>
+            <h2 className="text-base font-extrabold">A Word From The Maker</h2>
           </div>
           <div className="flex items-center gap-4 mb-5">
             <div className="w-14 h-14 rounded-2xl border-[3px] border-[#2D2D2D] bg-[#CDEAC0] flex items-center justify-center shrink-0 text-xl font-extrabold">

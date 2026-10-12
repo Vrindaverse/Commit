@@ -249,10 +249,13 @@ function TransactionForm({
    };
 
 return (
-    <form onSubmit={handleSubmit} className="neo-card p-4 sm:p-6 tint-peach">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-extrabold">{initial ? 'Edit Transaction' : 'New Transaction'}</h2>
-<button
+    <form onSubmit={handleSubmit} className="neo-card tint-peach flex max-h-[88vh] w-full flex-col overflow-hidden">
+      <div className="flex items-center justify-between gap-3 border-b-[2.5px] border-[#2D2D2D] px-5 py-4">
+        <div className="min-w-0">
+          <h2 className="text-lg font-extrabold truncate">{initial ? 'Edit Transaction' : 'New Transaction'}</h2>
+          <p className="text-[11px] font-bold text-[#5C5C5C]">{initial ? 'Update the details below' : 'Log a new income or expense'}</p>
+        </div>
+        <button
           type="button"
           aria-label="Close transaction form"
           onClick={() => {
@@ -260,12 +263,13 @@ return (
             setIsLoading(false);
             onCancel();
           }}
-          className={CLOSE_BTN}
+          className={`${CLOSE_BTN} shrink-0`}
         >
           <X size={16} />
         </button>
       </div>
 
+      <div className="flex-1 overflow-y-auto px-5 py-4">
       <div className="inline-flex rounded-xl border-[3px] border-[#2D2D2D] overflow-hidden mb-4 w-full">
         {(['expense', 'income'] as TransactionType[]).map((t) => (
           <Button
@@ -297,8 +301,8 @@ return (
                 variant="default"
                 size="xs"
                 onClick={() => setCategory(key)}
-                className={`flex items-center gap-1.5 text-xs font-bold px-3 py-3 rounded-xl border-[3px] border-[#2D2D2D] transition-all min-h-[44px] ${
-                  category === key ? 'shadow-[3px_3px_0px_0px_var(--neo-shadow)]' : ''
+                className={`flex items-center gap-1.5 text-xs font-bold text-[#2A2A2A] px-3 py-3 rounded-xl border-[3px] border-[#2D2D2D] transition-all min-h-[44px] ${
+                  category === key ? 'shadow-[3px_3px_0px_0px_var(--neo-shadow)]' : 'opacity-90 hover:opacity-100'
                 }`}
                 style={{ backgroundColor: category === key ? c.color : '#FFFDF8' }}
               >
@@ -415,6 +419,7 @@ return (
            )}
          </Button>
       </div>
+      </div>
     </form>
   );
 }
@@ -445,14 +450,18 @@ function BudgetEditor({
   };
 
   return (
-    <div className="neo-card p-6 mb-8 tint-blue">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-extrabold">Monthly Budgets & Savings Goal</h2>
-        <button type="button" aria-label="Close budgets" onClick={onClose} className={CLOSE_BTN}>
+    <div className="neo-card tint-blue flex max-h-[88vh] w-full flex-col overflow-hidden">
+      <div className="flex items-center justify-between gap-3 border-b-[2.5px] border-[#2D2D2D] px-5 py-4">
+        <div className="min-w-0">
+          <h2 className="text-lg font-extrabold truncate">Budgets &amp; Savings</h2>
+          <p className="text-[11px] font-bold text-[#5C5C5C]">Set monthly limits per category</p>
+        </div>
+        <button type="button" aria-label="Close budgets" onClick={onClose} className={`${CLOSE_BTN} shrink-0`}>
           <X size={16} />
         </button>
       </div>
 
+      <div className="flex-1 overflow-y-auto px-5 py-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
         <div>
           <label className="text-xs font-bold text-[#5C5C5C] block mb-1.5">Overall monthly budget</label>
@@ -523,6 +532,7 @@ function BudgetEditor({
           );
         })}
       </div>
+      </div>
     </div>
   );
 }
@@ -566,14 +576,14 @@ function LoanForm({
   };
 
 return (
-    <form onSubmit={handleSubmit} className="neo-card p-4 sm:p-6 tint-teal">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-extrabold">{initial ? 'Edit Loan' : 'New Loan'}</h2>
-        <button type="button" onClick={() => {
+    <form onSubmit={handleSubmit} className="rounded-2xl border-[2.5px] border-[#2D2D2D] bg-[#FFFDF8] p-4 tint-teal sm:p-5">
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <h2 className="text-base font-extrabold">{initial ? 'Edit Loan' : 'New Loan'}</h2>
+        <button type="button" aria-label="Close loan form" onClick={() => {
     triggerHapticFeedback();
     onCancel();
-  }} className="neo-button p-2 bg-[#FFFDF8] min-h-[44px] min-w-[44px]">
-          <X size={14} />
+  }} className={`${CLOSE_BTN} shrink-0`}>
+          <X size={16} />
         </button>
       </div>
 
@@ -1272,21 +1282,24 @@ export default function ExpensesPage() {
                 </DialogTrigger>
 <DialogContent
                   showCloseButton={false}
-                  className="sm:max-w-lg max-w-[95vw] p-0 overflow-hidden"
+                  className="!max-w-[95vw] !bg-transparent !p-3 !ring-0 sm:!max-w-lg"
                 >
-                  <div className="neo-card p-6 mb-8 tint-teal">
-                    <div className="flex items-center justify-between mb-4">
-                      <h2 className="text-lg font-extrabold flex items-center gap-2">
-                        <HandCoins size={18} /> Loans
-                      </h2>
-                      <div className="flex items-center gap-2">
+                  <div className="neo-card tint-teal flex max-h-[85vh] w-full flex-col overflow-hidden">
+                    <div className="flex items-center justify-between gap-3 border-b-[2.5px] border-[#2D2D2D] px-5 py-4">
+                      <div className="min-w-0">
+                        <h2 className="text-lg font-extrabold flex items-center gap-2">
+                          <HandCoins size={18} /> Loans
+                        </h2>
+                        <p className="text-[11px] font-bold text-[#5C5C5C]">Track what you owe and what you&apos;re owed</p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
                         <button
                           onClick={() => {
                             triggerHapticFeedback();
                             setEditingLoan(null); setShowLoanForm((v) => !v); }}
-                          className="neo-button px-4 py-3 text-sm bg-[#CDEAC0] tint-green flex items-center gap-2 min-h-[48px]"
+                          className="neo-button px-3 py-2 text-xs bg-[#CDEAC0] tint-green flex items-center gap-1.5 min-h-[44px]"
                         >
-                          <Plus size={15} /> {showLoanForm ? 'Cancel' : 'Add loan'}
+                          <Plus size={15} /> {showLoanForm ? 'Cancel' : 'Add'}
                         </button>
                         <button
                           type="button"
@@ -1300,8 +1313,8 @@ export default function ExpensesPage() {
                           <X size={16} />
                         </button>
                       </div>
-                       </div>
                      </div>
+                     <div className="flex-1 overflow-y-auto px-5 py-4">
                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                       <div className="rounded-xl border-[2px] border-[#2D2D2D] bg-[#FFFDF8] p-3 tint-pink">
                         <p className="text-[10px] font-bold uppercase tracking-wide text-[#5C5C5C]">I owe</p>
@@ -1413,9 +1426,11 @@ export default function ExpensesPage() {
       />
      </motion.div>
    )}
- </AnimatePresence>
-               </DialogContent>
-             </Dialog>
+  </AnimatePresence>
+                     </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
               <Dialog
                 open={showBudgets}
                 onOpenChange={(open) => {
@@ -1437,7 +1452,7 @@ export default function ExpensesPage() {
                 </DialogTrigger>
                 <DialogContent
                   showCloseButton={false}
-                  className="sm:w-[500px] max-w-[95vw] p-0 overflow-hidden"
+                  className="!max-w-[95vw] !bg-transparent !p-3 !ring-0 sm:!w-[500px]"
                 >
                   <BudgetEditor budgets={budgets} onChange={setBudget} onClose={() => setShowBudgets(false)} />
                 </DialogContent>
@@ -1464,7 +1479,7 @@ export default function ExpensesPage() {
                </DialogTrigger>
               <DialogContent
                 showCloseButton={false}
-                className="sm:max-w-lg max-w-[95vw] p-0 overflow-hidden"
+                className="!max-w-[95vw] !bg-transparent !p-3 !ring-0 sm:!max-w-lg"
               >
                <TransactionForm
                    initial={editing ?? undefined}
@@ -1720,7 +1735,7 @@ export default function ExpensesPage() {
 </button>
                 }
               />
-<div className="grid grid-cols-7 gap-1.5">
+<div className="grid grid-cols-7 gap-1">
                  {weekStrip.map((d) => {
                    const active = selectedDay === d.date;
                    const isToday = d.date === dayKey(new Date());
@@ -1731,23 +1746,21 @@ export default function ExpensesPage() {
                          triggerHapticFeedback();
                          setSelectedDay(active ? null : d.date);
                        }}
-                       className={`rounded-xl border-[2px] p-2 flex flex-col items-center gap-1 transition-all ${
-                         active
-                           ? 'border-[#2D2D2D] bg-[#FFFDF8] shadow-[2px_2px_0px_0px_var(--neo-shadow)] -translate-y-0.5'
-                           : 'border-[#2D2D2D]/40 bg-[#F0ECE4] hover:-translate-y-0.5'
-                       }`}
-                     >
-                       <span className={`text-[9px] font-extrabold uppercase ${isToday ? 'text-[#B85042]' : 'text-[#5C5C5C]'}`}>
-                         {d.dow}
-                       </span>
-                       <span className="text-sm font-extrabold">{format(parse(d.date, 'yyyy-MM-dd', new Date()), 'd')}</span>
-                       {d.expense > 0 ? (
-                         <span className="text-[9px] font-bold text-[#B85042] leading-none">{moneyShort(d.expense)}</span>
-                       ) : (
-                         <span className="text-[9px] leading-none opacity-0">.</span>
-                       )}
-                       {d.income > 0 && <span className="w-2 h-2 rounded-full bg-[#4C8C4A] border-[1px] border-[#2D2D2D]" />}
-                     </button>
+                      className={`rounded-lg border-[2px] p-1 min-h-[56px] flex flex-col items-center justify-center gap-0.5 transition-all ${
+                        active
+                          ? 'border-[#2D2D2D] bg-[#FFFDF8] shadow-[2px_2px_0px_0px_var(--neo-shadow)] -translate-y-0.5'
+                          : 'border-[#2D2D2D]/40 bg-[#F0ECE4] hover:-translate-y-0.5'
+                      }`}
+                    >
+                      <span className={`text-[9px] font-extrabold uppercase leading-none ${isToday ? 'text-[#B85042]' : 'text-[#5C5C5C]'}`}>
+                        {d.dow}
+                      </span>
+                      <span className="text-sm font-extrabold leading-none">{format(parse(d.date, 'yyyy-MM-dd', new Date()), 'd')}</span>
+                      <span className="flex items-center gap-0.5 h-1.5">
+                        {d.income > 0 && <span className="w-1.5 h-1.5 rounded-full bg-[#4C8C4A] border-[1px] border-[#2D2D2D]" />}
+                        {d.expense > 0 && <span className="w-1.5 h-1.5 rounded-full bg-[#B85042] border-[1px] border-[#2D2D2D]" />}
+                      </span>
+                    </button>
                    );
                  })}
                </div>
@@ -1956,7 +1969,7 @@ export default function ExpensesPage() {
               <div key={i} className="text-center text-[10px] font-extrabold text-[#5C5C5C]">{d}</div>
             ))}
           </div>
-<div className="grid grid-cols-7 gap-1.5">
+<div className="grid grid-cols-7 gap-1">
              {calendar.cells.map((cell, i) => {
                if (!cell) return <div key={`blank-${i}`} />;
                const dateKey = dayKey(new Date(calMonth.getFullYear(), calMonth.getMonth(), cell.day));
@@ -1971,25 +1984,20 @@ export default function ExpensesPage() {
                      triggerHapticFeedback();
                      setSelectedDay(active ? null : dateKey);
                    }}
-                   className={`aspect-square rounded-xl border-[2px] p-1 flex flex-col items-center justify-between transition-all ${
-                     active ? 'border-[#2D2D2D] shadow-[2px_2px_0px_0px_var(--neo-shadow)] -translate-y-0.5' : 'border-[#2D2D2D]/40 hover:-translate-y-0.5'
-                   }`}
-                   style={{ backgroundColor: active ? '#FFFDF8' : HEAT_COLORS[level] }}
-                   title={hasActivity ? `${format(parse(dateKey, 'yyyy-MM-dd', new Date()), 'dd MMM')} · out ${money(cell.spend)} · in ${money(cell.income)}` : undefined}
-                 >
-                   <span className={`text-[10px] font-extrabold leading-none ${cell.isToday ? 'text-[#B85042]' : 'text-[#2A2A2A]'}`}>
-                     {cell.day}
-                   </span>
-                   {cell.spend > 0 ? (
-                     <span className="text-[8px] font-bold text-[#5C5C5C] leading-none">{moneyShort(cell.spend)}</span>
-                   ) : (
-                     <span className="text-[8px] leading-none opacity-0">.</span>
-                   )}
-                   <span className="flex items-center gap-0.5">
-                     {cell.income > 0 && <span className="w-1.5 h-1.5 rounded-full bg-[#4C8C4A] border-[1px] border-[#2D2D2D]" />}
-                     {cell.spend > 0 && <span className="w-1.5 h-1.5 rounded-full bg-[#B85042] border-[1px] border-[#2D2D2D]" />}
-                   </span>
-                 </button>
+                    className={`h-10 sm:h-11 rounded-lg border-[2px] flex flex-col items-center justify-center gap-0.5 transition-all ${
+                      active ? 'border-[#2D2D2D] shadow-[2px_2px_0px_0px_var(--neo-shadow)] -translate-y-0.5' : 'border-[#2D2D2D]/40 hover:-translate-y-0.5'
+                    }`}
+                    style={{ backgroundColor: active ? '#FFFDF8' : HEAT_COLORS[level] }}
+                    title={hasActivity ? `${format(parse(dateKey, 'yyyy-MM-dd', new Date()), 'dd MMM')} · out ${money(cell.spend)} · in ${money(cell.income)}` : undefined}
+                  >
+                    <span className={`text-[10px] font-extrabold leading-none ${cell.isToday ? 'text-[#B85042]' : 'text-[#2A2A2A]'}`}>
+                      {cell.day}
+                    </span>
+                    <span className="flex items-center gap-0.5 h-1.5">
+                      {cell.income > 0 && <span className="w-1.5 h-1.5 rounded-full bg-[#4C8C4A] border-[1px] border-[#2D2D2D]" />}
+                      {cell.spend > 0 && <span className="w-1.5 h-1.5 rounded-full bg-[#B85042] border-[1px] border-[#2D2D2D]" />}
+                    </span>
+                  </button>
                );
              })}
            </div>
@@ -2383,8 +2391,8 @@ export default function ExpensesPage() {
           if (!open) setDeleteTarget(null);
         }}
       >
-        <DialogContent showCloseButton={false} className="sm:max-w-sm p-0 overflow-hidden">
-          <div className="neo-card p-5 tint-pink relative">
+        <DialogContent showCloseButton={false} className="!max-w-[95vw] !bg-transparent !p-3 !ring-0 sm:!max-w-sm">
+          <div className="neo-card tint-pink relative w-full p-5">
             <div className="flex items-center gap-3 mb-3">
               <span className="w-10 h-10 rounded-xl border-[3px] border-[#2D2D2D] bg-[#F8C8C8] flex items-center justify-center shrink-0">
                 <Trash2 size={18} />

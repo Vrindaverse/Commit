@@ -20,6 +20,12 @@ import {
 
 import { localDateKey } from '@/lib/date';
 
+import { computeDashboardStats, parseDateKey } from '@/lib/dashboard-stats';
+
+import { useLifeStore } from '@/store/use-store';
+
+import ProgressBar from '@/components/shared/progress-bar';
+
 
 
 const navItems = [
@@ -297,6 +303,59 @@ function StreakPopup({ logs, streak, onClose }: { logs: string[]; streak: number
 }
 
 
+function useProfileMetrics() {
+  const hydrated = useLifeStore(s => s.hydrated);
+  const tasks = useLifeStore(s => s.tasks);
+  const goals = useLifeStore(s => s.goals);
+  const projects = useLifeStore(s => s.projects);
+  const habits = useLifeStore(s => s.habits);
+  const learningPaths = useLifeStore(s => s.learningPaths);
+  const journalEntries = useLifeStore(s => s.journalEntries);
+  const subjects = useLifeStore(s => s.subjects);
+  const exams = useLifeStore(s => s.exams);
+  const settings = useLifeStore(s => s.settings);
+
+  const stats = computeDashboardStats({ tasks, goals, projects, habits, learningPaths, expenses: [], loans: [] });
+
+  const now = new Date();
+  const goalsCompleted = goals.filter(g => g.progress >= 100).length;
+  const goalsAvg = goals.length > 0 ? Math.round(goals.reduce((sum, g) => sum + (g.progress || 0), 0) / goals.length) : 0;
+  const learningAvg = learningPaths.length > 0 ? Math.round(learningPaths.reduce((sum, l) => sum + (l.progress || 0), 0) / learningPaths.length) : 0;
+  const upcomingExams = exams.filter(e => {
+    const d = parseDateKey(e.date);
+    return d ? d >= now : false;
+  }).length;
+  const assignments = subjects.flatMap(s => s.assignments);
+  const assignmentsDone = assignments.filter(a => a.submitted).length;
+  const habitsToday = stats.compulsoryHabits.length;
+  const habitsDone = stats.compulsoryDone;
+  const habitRate = habitsToday > 0 ? Math.round((habitsDone / habitsToday) * 100) : 0;
+  const score = Math.round((stats.completionRate + habitRate + goalsAvg + learningAvg) / 4);
+
+  return {
+    hydrated, settings, stats,
+    goalsCompleted, goalsAvg, learningAvg, upcomingExams,
+    assignmentsDone, assignmentsTotal: assignments.length,
+    habitsToday, habitsDone, habitRate, score,
+    journalCount: journalEntries.length,
+  };
+}
+
+function MetricTile({ icon: Icon, label, value, sub, color }: {
+  icon: typeof Target; label: string; value: string | number; sub?: string; color: string;
+}) {
+  return (
+    <div className="rounded-xl border-[2px] border-[#2D2D2D] p-2.5" style={{ backgroundColor: color }}>
+      <div className="flex items-center gap-1.5 mb-1">
+        <Icon size={12} />
+        <span className="text-[9px] font-extrabold uppercase tracking-wider">{label}</span>
+      </div>
+      <p className="text-lg font-extrabold leading-none">{value}</p>
+      {sub && <p className="text-[9px] font-bold text-[#5C5C5C] mt-0.5">{sub}</p>}
+    </div>
+  );
+}
+
 function ProfilePopup({
 
   isOpen,
@@ -305,45 +364,105 @@ function ProfilePopup({
 
 }: { isOpen: boolean; onClose: () => void }) {
 
+  const m = useProfileMetrics();
+
+  const memberSince = m.settings.createdAt
+    ? new Date(m.settings.createdAt).getFullYear()
+    : null;
+
   return (
 
     <AnimatePresence mode='wait'>
 
-      <motion.div
+      {isOpen && (
 
-        initial={{ opacity: 0, y: 10 }}
+        <>
 
-        animate={{ opacity: 1, y: 0 }}
+          <motion.button
+            type="button"
+            aria-label="Close profile"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 z-40 cursor-default"
+          />
 
-        exit={{ opacity: 0, y: -10 }}
+          <motion.div
 
-        className="absolute top-14 left-1/2 -translate-x-1/2 z-50 bg-[#FFFDF8] border-t-[2px] border-[#2D2D2D] rounded-xl p-4 w-64 shadow-[2px_2px_0px_0px_var(--neo-shadow)] min-h-[200px]"
+            initial={{ opacity: 0, y: 10, scale: 0.98 }}
 
-      >
+            animate={{ opacity: 1, y: 0, scale: 1 }}
 
-        <h3 className="text-sm font-extrabold mb-3">Profile</h3>
+            exit={{ opacity: 0, y: 10, scale: 0.98 }}
 
-        <div className="space-y-3">
+            className="fixed top-4 right-[16.5rem] z-50 w-80 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl border-[3px] border-[#2D2D2D] bg-[#FFFDF8] p-4 shadow-[6px_6px_0px_0px_var(--neo-shadow)]"
 
-          <div className="flex items-center gap-3">
+          >
 
-            <div className="w-10 h-10 rounded-full bg-[#F7E8A4] flex items-center justify-center text-[2xl] font-bold">C</div>
+            <div className="flex items-center gap-3 mb-3">
 
-            <div>
+              <div className="w-10 h-10 rounded-full bg-[#F7E8A4] border-[3px] border-[#2D2D2D] flex items-center justify-center text-lg font-bold flex-shrink-0">C</div>
 
-              <h4 className="font-extrabold text-[12px]">Username</h4>
+              <div className="min-w-0 flex-1">
 
-              <p className="text-[10px] text-[#5C5C5C]">Member since 2024</p>
+                <h3 className="text-sm font-extrabold truncate">{m.settings.displayName || 'User'}</h3>
+
+                <p className="text-[10px] text-[#5C5C5C] truncate">{m.settings.email || 'No email set'}</p>
+
+              </div>
+
+              <button onClick={onClose} aria-label="Close profile" className="neo-button p-1.5 bg-[#FFFDF8] flex-shrink-0"><X size={12} /></button>
 
             </div>
 
-          </div>
+            {memberSince && <p className="text-[9px] font-bold text-[#5C5C5C] uppercase tracking-wider mb-3">Member since {memberSince}</p>}
 
-          <button onClick={onClose} className="neo-button w-full text-[10px] font-extrabold px-4 py-2 bg-[#2D2D2D] text-[#FFFDF8]">Close</button>
+            {!m.hydrated ? (
+              <p className="text-[10px] font-bold text-[#5C5C5C] py-6 text-center">Loading your stats...</p>
+            ) : (
+              <>
+                <div className="flex items-center gap-3 rounded-xl border-[2px] border-[#2D2D2D] bg-[#F0ECE4] p-3 mb-3">
+                  <svg viewBox="0 0 36 36" className="w-12 h-12 flex-shrink-0">
+                    <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#FFFDF8" strokeWidth="3" />
+                    <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#CDEAC0" strokeWidth="3" strokeDasharray={`${m.score}, 100`} strokeLinecap="round" />
+                  </svg>
+                  <div>
+                    <p className="text-[9px] font-bold uppercase tracking-wider text-[#5C5C5C]">Productivity Score</p>
+                    <p className="text-xl font-extrabold leading-none">{m.score}%</p>
+                  </div>
+                </div>
 
-        </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <MetricTile icon={CheckCircle2} label="Tasks Done" value={m.stats.tasksDone} sub={`${m.stats.tasksPending} pending`} color="#CDEAC0" />
+                  <MetricTile icon={Target} label="Completion" value={`${m.stats.completionRate}%`} sub={`${m.stats.tasksTotal} total`} color="#B8D8F8" />
+                  <MetricTile icon={Flame} label="Best Streak" value={`${m.stats.bestStreak}d`} sub="habit streak" color="#F8C8C8" />
+                  <MetricTile icon={FlameIcon} label="Habits Today" value={`${m.habitsDone}/${m.habitsToday}`} sub={`${m.habitRate}% done`} color="#F7E8A4" />
+                  <MetricTile icon={Trophy} label="Goals" value={`${m.goalsCompleted}/${m.stats.goalCategories.reduce((n, c) => n + c.count, 0)}`} sub={`${m.goalsAvg}% avg progress`} color="#DCCEF5" />
+                  <MetricTile icon={BookOpen} label="Learning" value={`${m.learningAvg}%`} sub="avg progress" color="#B8D8F8" />
+                  <MetricTile icon={NotebookPen} label="Journal" value={m.journalCount} sub="entries" color="#F7E8A4" />
+                  <MetricTile icon={GraduationCap} label="Exams" value={m.upcomingExams} sub="upcoming" color="#F8C8C8" />
+                </div>
 
-      </motion.div>
+                {m.assignmentsTotal > 0 && (
+                  <div className="mt-3">
+                    <div className="flex justify-between text-[10px] font-bold mb-1">
+                      <span className="text-[#5C5C5C]">Assignments</span>
+                      <span>{m.assignmentsDone}/{m.assignmentsTotal}</span>
+                    </div>
+                    <ProgressBar value={Math.round((m.assignmentsDone / m.assignmentsTotal) * 100)} color="#B8D8F8" height={8} showLabel={false} />
+                  </div>
+                )}
+
+                <button onClick={onClose} className="neo-button w-full text-[10px] font-extrabold px-4 py-2 bg-[#2D2D2D] text-[#FFFDF8] mt-4">Close</button>
+              </>
+            )}
+
+          </motion.div>
+
+        </>
+
+      )}
 
     </AnimatePresence>
 
@@ -612,7 +731,7 @@ export default function Sidebar() {
 
       {/* Profile popup */}
 
-      {profileOpen && <ProfilePopup isOpen={profileOpen} onClose={() => setProfileOpen(false)} />}
+      <ProfilePopup isOpen={profileOpen} onClose={() => setProfileOpen(false)} />
 
 
 

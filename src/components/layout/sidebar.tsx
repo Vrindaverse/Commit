@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
@@ -288,63 +287,61 @@ function StreakPopup({ logs, streak, onClose }: { logs: string[]; streak: number
 }
 
 function SidebarContent({
-  onNavigate,
   streak,
   loggedInToday,
   logs,
+  showStreak,
+  setShowStreak,
 }: {
-  onNavigate?: () => void;
   streak: number;
   loggedInToday: boolean;
   logs: string[];
+  showStreak: boolean;
+  setShowStreak: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const pathname = usePathname();
-  const [showStreak, setShowStreak] = useState(false);
 
   return (
     <>
-      <div className="flex items-center justify-between px-5 py-5 border-b-[3px] border-[#2D2D2D] rounded-t-[17px]">
+      <header className="border-b [3px] solid #[2D2D2D] bg-[#FFFDF8] rounded-t-[20px] p-5">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl border-[3px] border-[#2D2D2D] bg-[#F7E8A4] flex items-center justify-center text-base font-extrabold flex-shrink-0">
-            C
-          </div>
+          <div className="w-10 h-10 rounded-xl bg-[#F7E8A4] flex items-center justify-center text-[2xl] font-bold flex-shrink-0">C</div>
           <div>
-            <h1 className="text-base font-extrabold leading-tight text-[#2A2A2A]">Commit</h1>
-            <p className="text-[9px] text-[#5C5C5C] font-medium">Command Center</p>
+            <h1 className="text-xl font-extrabold leading-tight text-[#2A2A2A]">Commit</h1>
+            <p className="text-sm text-[#5C5C5C] font-medium">Command Center</p>
           </div>
         </div>
-      </div>
+      </header>
 
-      <nav aria-label="Primary" className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
+      <nav aria-label="Primary" className="overflow-y-auto flex-1 py-2 px-2 space-y-1">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
           return (
-            <Link key={item.href} href={item.href} onClick={onNavigate} aria-current={isActive ? 'page' : undefined}>
-              <motion.div
-                whileHover={{ x: 2 }}
-                whileTap={{ scale: 0.97 }}
-                className={`flex items-center gap-3 px-3.5 py-2.5 min-h-[44px] rounded-xl border-[2px] transition-all duration-150 ${
-                  isActive
-                    ? 'tint-yellow bg-[#F7E8A4] border-[#2D2D2D] text-[#2A2A2A] shadow-[2px_2px_0px_0px_var(--neo-shadow)]'
-                    : 'border-transparent text-[#5C5C5C] hover:text-[#2A2A2A] hover:bg-[#F0ECE4]'
-                }`}
-              >
-                <Icon size={18} />
-                <span className="text-sm font-medium">{item.label}</span>
-              </motion.div>
-            </Link>
+            <motion.div
+              whileHover={{ x: 2 }}
+              whileTap={{ scale: 0.97 }}
+              key={item.href}
+              className={`flex items-center gap-3 px-3.5 py-2.5 min-h-[44px] rounded-xl border-[2px] transition-all duration-150 ${
+                isActive
+                  ? 'tint-yellow bg-[#F7E8A4] border-[#2D2D2D] text-[#2A2A2A] shadow-[2px_2px_0px_0px_var(--neo-shadow)]'
+                  : 'border-transparent text-[#5C5C5C] hover:text-[#2A2A2A] hover:bg-[#F0ECE4]'
+            }`}
+            >
+              <Icon size={18} />
+              <span className="text-sm font-medium">{item.label}</span>
+            </motion.div>
           );
         })}
       </nav>
 
-      <div className="px-4 py-3 border-t-[3px] border-[#2D2D2D] rounded-b-[17px]">
-        <button onClick={() => setShowStreak(true)} className="w-full rounded-xl border-[3px] border-[#2D2D2D] bg-[#CDEAC0] p-3 hover:bg-[#b8d8b0] transition-colors text-left tint-green">
+      <div className="p-4 border-t [3px] solid #[2D2D2D] rounded-b-[20px]">
+        <button onClick={() => setShowStreak(true)} className="w-full rounded-xl border-[3px] border-[#2D2D2D] bg-[#CDEAC0] p-3 hover:bg-[#b8d8b0] transition-colors text-left">
           <div className="flex items-center gap-2">
             <FlameIcon size={16} />
             <p className="text-xs font-extrabold text-[#2A2A2A]">Daily Login</p>
           </div>
-          <div className="flex items-center justify-between mt-0.5">
+          <div className="flex items-center justify-between mt-1.5">
             <p className="text-xl font-extrabold text-[#2A2A2A]">{streak}d</p>
             <div className={`flex items-center gap-1 text-[10px] font-extrabold ${loggedInToday ? 'text-[#2A2A2A]' : 'text-[#B85042]'}`}>
               {loggedInToday ? <CheckCircle2 size={12} /> : <X size={12} />}
@@ -441,19 +438,15 @@ export default function Sidebar() {
         <Menu size={18} />
       </button>
 
-      {/* Mobile streak badge — scrolls with page */}
-      {mounted && (
-        <div className="md:hidden absolute top-4 right-4 z-30">
-          <button onClick={() => setShowStreak(true)} aria-label={`Login streak: ${streak} day${streak === 1 ? '' : 's'}`} className="min-h-[44px] min-w-[44px] rounded-xl border-[3px] border-[#2D2D2D] bg-[#CDEAC0] px-3 flex items-center gap-1.5 shadow-[2px_2px_0px_0px_var(--neo-shadow)] hover:bg-[#b8d8b0] transition-colors">
-            <FlameIcon size={14} />
-            <span className="text-xs font-extrabold">{streak}</span>
-          </button>
-        </div>
-      )}
-
-      {/* Desktop sidebar - floating rectangle */}
-      <aside className="hidden md:flex flex-col border-[3px] border-[#2D2D2D] bg-[#FFFDF8] fixed right-4 top-4 bottom-4 z-40 w-64 rounded-[20px] shadow-[6px_6px_0px_0px_var(--neo-shadow)] tint-purple">
-        <SidebarContent streak={streak} loggedInToday={loggedInToday} logs={logs} />
+      {/* Desktop sidebar - bottom bar */}
+      <aside className="hidden md:flex flex-col border-[3px] border-[#2D2D2D] bg-[#FFFDF8] fixed left-0 bottom-0 top-0 left-4 right-4 z-40 w-full md:w-64 rounded-t-[20px] rounded-b-[20px] shadow-[6px_6px_0px_0px_var(--neo-shadow)] tint-purple overflow-y-auto">
+<SidebarContent
+              streak={streak}
+              loggedInToday={loggedInToday}
+              logs={logs}
+              showStreak={showStreak}
+              setShowStreak={setShowStreak}
+            />
       </aside>
 
       {/* Mobile navigation drawer */}
@@ -490,10 +483,11 @@ export default function Sidebar() {
                 <X size={14} />
               </button>
               <SidebarContent
-                onNavigate={() => setMobileOpen(false)}
                 streak={streak}
                 loggedInToday={loggedInToday}
                 logs={logs}
+                showStreak={showStreak}
+                setShowStreak={setShowStreak}
               />
             </motion.aside>
           </>

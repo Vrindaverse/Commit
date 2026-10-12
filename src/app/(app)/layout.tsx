@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Sidebar from "@/components/layout/sidebar";
-import Dock from "@/components/layout/dock";
 import MainContent from "@/components/layout/main-content";
 import HydrateStore from "@/components/layout/hydrate-store";
 
@@ -24,7 +23,6 @@ export default function AppLayout({
       </a>
       <Sidebar />
       <MainContent>{children}</MainContent>
-      <Dock />
     </HydrateStore>
   );
 }

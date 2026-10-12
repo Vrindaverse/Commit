@@ -149,17 +149,17 @@ function PathCard({ path, compact }: { path: LearningPath; compact?: boolean }) 
       <motion.div layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <NeoCard color={path.color}>
           <div className="flex items-start gap-3 mb-4">
-            <div className="w-12 h-12 rounded-xl border-[3px] border-[#2D2D2D] flex items-center justify-center shrink-0" style={{ backgroundColor: path.color }}>
+            <div className="w-12 h-12 rounded-xl border-[3px] border-[#2D2D2D] flex items-center justify-center shrink-0 flex-shrink-0" style={{ backgroundColor: path.color }}>
               {pathIcons[path.title] || <BookOpen size={22} />}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-extrabold">{path.title}</h3>
-                <button onClick={() => setEditDialogOpen(true)} className="neo-button px-2 py-0.5 text-[9px] bg-[#FFFDF8] font-extrabold">Edit</button>
-                <button onClick={() => deleteLearningPath(path.id)} className="neo-button p-1 bg-[#FFFDF8] text-[#5C5C5C] hover:text-[#F8C8C8] ml-auto"><X size={12} /></button>
+                <button onClick={() => setEditDialogOpen(true)} className="rounded-sm border-[2px] border-[#2D2D2D] bg-[#FFFDF8] px-2 py-0.5 text-[9px] font-extrabold hover:bg-[#F0ECE4] transition-colors">Edit</button>
+                <button onClick={() => deleteLearningPath(path.id)} className="rounded-sm border-[2px] border-[#2D2D2D] bg-[#FFFDF8] text-[#5C5C5C] hover:text-[#F8C8C8] px-1 py-0.5 ml-auto">X</button>
               </div>
               {path.description && <p className="text-[10px] text-[#5C5C5C] font-medium mt-0.5">{path.description}</p>}
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border-[2px] border-[#2D2D2D] inline-block mt-1" style={{ backgroundColor: categoryColors[path.category] || '#F0ECE4' }}>
+              <span className="rounded-full border border-[2px] border-[#2D2D2D] px-2 py-0.5 text-[9px] font-bold inline-block mt-1" style={{ backgroundColor: categoryColors[path.category] || '#F0ECE4' }}>
                 {path.category}
               </span>
             </div>
@@ -173,16 +173,16 @@ function PathCard({ path, compact }: { path: LearningPath; compact?: boolean }) 
             <ProgressBar value={path.progress} color={path.color} />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-3">
             <AnimatePresence>
               {visibleModules.map((module, i) => (
                 <motion.div key={module.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, height: 0, margin: 0 }}>
-                  <div className="flex items-center gap-2 p-2 rounded-xl border-[2px] border-[#2D2D2D] bg-[#FFFDF8] group">
+                  <div className="flex items-center gap-2 rounded-sm border border-[#2D2D2D] bg-[#FFFDF8] px-2 py-1 group">
                     <button onClick={() => toggleModule(path.id, i)} className="shrink-0">
                       {module.completed ? <CheckCircle2 size={16} className="text-[#CDEAC0]" /> : <Circle size={16} className="text-[#5C5C5C]" />}
                     </button>
                     <span className={`text-xs font-medium flex-1 ${module.completed ? 'line-through text-[#5C5C5C]' : ''}`}>{module.name}</span>
-                    <button onClick={() => deleteModule(path.id, i)} className="opacity-0 group-hover:opacity-100 text-[#5C5C5C] hover:text-[#F8C8C8] transition-all"><X size={12} /></button>
+                    <button onClick={() => deleteModule(path.id, i)} className="opacity-0 group-hover:opacity-100 text-[#5C5C5C] hover:text-[#F8C8C8] transition-all">X</button>
                   </div>
                 </motion.div>
               ))}
@@ -198,10 +198,10 @@ function PathCard({ path, compact }: { path: LearningPath; compact?: boolean }) 
                 <div className="flex items-center gap-2 mt-3">
                   <input value={newModule} onChange={e => setNewModule(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddModule()} placeholder="Module name..." className="neo-input text-xs py-1.5 flex-1" autoFocus />
                   <button onClick={handleAddModule} className="neo-button px-2.5 py-1.5 text-xs bg-[#CDEAC0] font-extrabold">Add</button>
-                  <button onClick={() => setShowAddModule(false)} className="neo-button p-1.5 bg-[#FFFDF8]"><X size={12} /></button>
+                  <button onClick={() => setShowAddModule(false)} className="rounded-sm border-[2px] border-[#2D2D2D] bg-[#FFFDF8]">X</button>
                 </div>
               ) : (
-                <button onClick={() => setShowAddModule(true)} className="mt-3 w-full py-2 rounded-xl border-[2px] border-dashed border-[#2D2D2D] text-xs font-bold text-[#5C5C5C] hover:bg-[#F0ECE4] transition-colors flex items-center justify-center gap-1">
+                <button onClick={() => setShowAddModule(true)} className="w-full py-2 rounded-xl border-[2px] border-dashed border-[#2D2D2D] text-xs font-bold text-[#5C5C5C] hover:bg-[#F0ECE4] transition-colors flex items-center justify-center gap-1">
                   <Plus size={12} /> Add Module
                 </button>
               )}
@@ -209,7 +209,7 @@ function PathCard({ path, compact }: { path: LearningPath; compact?: boolean }) 
           )}
 
           {compact && (
-            <button onClick={() => setEditDialogOpen(true)} className="mt-3 w-full py-2 rounded-xl border-[2px] border-dashed border-[#2D2D2D] text-xs font-bold text-[#5C5C5C] hover:bg-[#F0ECE4] transition-colors">
+            <button onClick={() => setEditDialogOpen(true)} className="w-full py-2 rounded-sm border-[2px] border-dashed border-[#2D2D2D] text-xs font-bold text-[#5C5C5C] hover:bg-[#F0ECE4] transition-colors">
               Manage Modules
             </button>
           )}

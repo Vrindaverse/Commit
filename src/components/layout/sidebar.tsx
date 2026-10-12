@@ -610,30 +610,6 @@ export default function Sidebar() {
 
 
 
-      {/* Mobile avatar — opens profile popup */}
-
-      {true && (
-
-        <div className="md:hidden top-4 left-4 z-40">
-
-          <button
-
-            onClick={() => setProfileOpen(true)}
-
-            aria-label="Open profile"
-
-            className="relative rounded-full w-10 h-10 bg-[#CDEAC0] flex items-center justify-center shadow-[2px_2px_0px_0px_var(--neo-shadow)] hover:bg-[#b8d8b0] transition-colors">
-
-            <div className="w-8 h-8 rounded-full bg-[#2D2D2D] flex items-center justify-center text-[2xl] font-bold">C</div>
-
-          </button>
-
-        </div>
-
-      )}
-
-
-
       {/* Profile popup */}
 
       {profileOpen && <ProfilePopup isOpen={profileOpen} onClose={() => setProfileOpen(false)} />}

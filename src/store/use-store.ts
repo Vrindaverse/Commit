@@ -3,12 +3,19 @@
 import { create } from 'zustand';
 import { Task, Goal, Project, Habit, JournalEntry, Milestone, LearningPath, Subject, Exam, Settings, Expense, Loan } from '@/types';
 import { toast } from '@/components/shared/toast';
+import { calcStreak, habitCountOn, isHabitDoneOn } from '@/lib/habits';
 
 let idCounter = 100;
 export const genId = () => `gen_${++idCounter}`;
 
 async function handleResponse<T>(r: Response): Promise<T> {
   if (!r.ok) {
+    if (r.status === 401) {
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+      throw new Error('Unauthorized');
+    }
     const body = await r.text().catch(() => '(unable to read body)');
     throw new Error(`API error: ${r.status} ${r.statusText} — ${body}`);
   }
@@ -132,6 +139,7 @@ export const useLifeStore = create<LifeStore>((set, get) => ({
     dailyReminder: true,
     goalAlerts: true,
     accentColor: '#F7E8A4',
+    currency: 'INR',
     budgets: {},
     createdAt: '',
     updatedAt: '',
@@ -157,6 +165,7 @@ export const useLifeStore = create<LifeStore>((set, get) => ({
       dailyReminder: true,
       goalAlerts: true,
       accentColor: '#F7E8A4',
+      currency: 'INR',
       budgets: {},
       createdAt: '',
       updatedAt: '',
@@ -189,8 +198,10 @@ export const useLifeStore = create<LifeStore>((set, get) => ({
       });
     } catch (e) {
       console.error('Failed to hydrate store from API:', e);
-      set({ hydrated: true });
-      toast.error('Could not load your data. Please refresh the page.');
+      const message = e instanceof Error ? e.message : 'Unknown error';
+      if (!message.includes('Unauthorized')) {
+        toast.error('Could not load your data. Please refresh the page.');
+      }
     }
   },
 
@@ -559,31 +570,4 @@ export const useLifeStore = create<LifeStore>((set, get) => ({
   checkAchievements: () => {},
 }));
 
-function calcStreak(logs: { date: string; count: number }[]): number {
-  if (logs.length === 0) return 0;
-
-  const logMap = new Map<string, number>();
-  for (const log of logs) {
-    logMap.set(log.date, log.count);
-  }
-
-  const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
-
-  const current = new Date();
-  if (logMap.get(todayStr) !== 1) {
-    current.setDate(current.getDate() - 1);
-  }
-
-  let streak = 0;
-  while (true) {
-    const dateStr = current.toISOString().split('T')[0];
-    if (logMap.get(dateStr) === 1) {
-      streak++;
-      current.setDate(current.getDate() - 1);
-    } else {
-      break;
-    }
-  }
-  return streak;
-}
+export { calcStreak, isHabitDoneOn, habitCountOn };

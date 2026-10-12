@@ -8,6 +8,7 @@ import ProgressBar from '@/components/shared/progress-bar';
 import PageHeader from '@/components/shared/page-header';
 import { Dialog, DialogContent, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { useLifeStore, genId } from '@/store/use-store';
+import { localDateKey } from '@/lib/date';
 import { Project, TaskStatus } from '@/types';
 
 const projectIcons: Record<string, React.ReactNode> = {
@@ -119,7 +120,7 @@ function ProjectCard({ project, index, expandedId, onToggleExpand }: ProjectCard
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
-  const [newTaskDue, setNewTaskDue] = useState(new Date().toISOString().split('T')[0]);
+  const [newTaskDue, setNewTaskDue] = useState(localDateKey());
   const [newMilestone, setNewMilestone] = useState('');
   const [showNewTask, setShowNewTask] = useState(false);
   const isExpanded = expandedId === project.id;
@@ -139,7 +140,7 @@ function ProjectCard({ project, index, expandedId, onToggleExpand }: ProjectCard
       tags: [],
     });
     setNewTaskTitle('');
-    setNewTaskDue(new Date().toISOString().split('T')[0]);
+    setNewTaskDue(localDateKey());
   };
 
   const handleAddMilestone = () => {

@@ -3,20 +3,28 @@ import { eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { learningPaths } from '@/db/schema';
 import { requireUserId } from '@/lib/auth/dal';
-import { unauthorized } from '@/lib/api';
+import { readBody, errorResponse, unauthorized } from '@/lib/api';
+import { learningCreateSchema } from '@/lib/validation';
 
 export async function GET() {
   const userId = await requireUserId();
   if (!userId) return unauthorized();
-  const rows = await db.select().from(learningPaths).where(eq(learningPaths.userId, userId)).orderBy(learningPaths.createdAt);
-  return NextResponse.json(rows);
+  try {
+    const rows = await db.select().from(learningPaths).where(eq(learningPaths.userId, userId)).orderBy(learningPaths.createdAt);
+    return NextResponse.json(rows);
+  } catch (error) {
+    return errorResponse(error);
+  }
 }
 
 export async function POST(req: NextRequest) {
   const userId = await requireUserId();
   if (!userId) return unauthorized();
-  const body = await req.json();
-  const { id: _, userId: __, ...clean } = body;
-  const row = await db.insert(learningPaths).values({ ...clean, userId }).returning();
-  return NextResponse.json(row[0], { status: 201 });
+  try {
+    const data = await readBody(req, learningCreateSchema);
+    const row = await db.insert(learningPaths).values({ ...data, userId }).returning();
+    return NextResponse.json(row[0], { status: 201 });
+  } catch (error) {
+    return errorResponse(error);
+  }
 }

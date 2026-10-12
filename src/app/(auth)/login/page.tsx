@@ -3,7 +3,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import AuthCard from "@/components/auth/auth-card";
 import { LoginForm } from "@/components/auth/forms";
-import { verifySession } from "@/lib/auth/dal";
+import { getCurrentUser } from "@/lib/auth/dal";
+import { safeNextPath } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Sign in",
@@ -16,11 +17,9 @@ export default async function LoginPage({
   searchParams: Promise<{ next?: string }>;
 }) {
   const { next } = await searchParams;
-  try {
-    await verifySession();
-    redirect(next || '/');
-  } catch {
-    // Not authenticated, show login page
+  const user = await getCurrentUser();
+  if (user) {
+    redirect(safeNextPath(next) ?? '/');
   }
   return (
     <div className="min-h-screen w-full bg-[#F8F5F0] flex items-center justify-center p-4 md:p-8">

@@ -7,6 +7,7 @@ import PageHeader from '@/components/shared/page-header';
 import { useLifeStore } from '@/store/use-store';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/components/shared/toast';
+import { CURRENCIES, DEFAULT_CURRENCY } from '@/lib/currency';
 
 const accentColors = ['#F7E8A4', '#B8D8F8', '#CDEAC0', '#F8C8C8', '#DCCEF5', '#FFD8BE'];
 
@@ -100,7 +101,9 @@ export default function SettingsPage() {
                 <button
                   key={c}
                   onClick={() => updateSettings({ accentColor: c })}
-                  className="w-7 h-7 rounded-lg border-[2px] border-[#2D2D2D] hover:shadow-[2px_2px_0px_0px_var(--neo-shadow)] transition-all relative"
+                  aria-label={`Accent color ${c}`}
+                  aria-pressed={settings.accentColor === c}
+                  className="w-11 h-11 min-h-[44px] min-w-[44px] rounded-lg border-[2px] border-[#2D2D2D] hover:shadow-[2px_2px_0px_0px_var(--neo-shadow)] transition-all relative"
                   style={{ backgroundColor: c }}
                 >
                   {settings.accentColor === c && (
@@ -116,6 +119,24 @@ export default function SettingsPage() {
               ))}
             </div>
           </SettingRow>
+          <SettingRow label="Currency" description="Used for all money amounts across the app">
+            <div className="flex flex-wrap gap-2 justify-end">
+              {CURRENCIES.map((c) => (
+                <button
+                  key={c.code}
+                  onClick={() => updateSettings({ currency: c.code })}
+                  aria-pressed={(settings.currency || DEFAULT_CURRENCY) === c.code}
+                  className={`min-h-[44px] min-w-[44px] px-3 rounded-xl border-[2px] text-xs font-extrabold transition-all ${
+                    (settings.currency || DEFAULT_CURRENCY) === c.code
+                      ? 'bg-[#F7E8A4] border-[#2D2D2D] shadow-[2px_2px_0px_0px_var(--neo-shadow)]'
+                      : 'bg-[#FFFDF8] border-transparent text-[#5C5C5C] hover:bg-[#F0ECE4]'
+                  }`}
+                >
+                  {c.symbol} {c.code}
+                </button>
+              ))}
+            </div>
+          </SettingRow>
         </NeoCard>
 
         <NeoCard color="#F8C8C8">
@@ -124,10 +145,10 @@ export default function SettingsPage() {
             <h2 className="text-base font-extrabold">Data</h2>
           </div>
           <SettingRow label="Export Data" description="Download your Commit data as JSON">
-            <button onClick={handleExport} className="neo-button px-4 py-1.5 text-xs bg-[#FFFDF8]">Export</button>
+            <button onClick={handleExport} className="neo-button min-h-[44px] px-4 py-1.5 text-xs bg-[#FFFDF8]">Export</button>
           </SettingRow>
           <SettingRow label="Factory Reset" description="Clear all data and start fresh">
-            <button onClick={handleReset} className="neo-button px-4 py-1.5 text-xs bg-[#F8C8C8] flex items-center gap-1">
+            <button onClick={handleReset} className="neo-button min-h-[44px] px-4 py-1.5 text-xs bg-[#F8C8C8] flex items-center gap-1">
               <RotateCcw size={12} /> Reset
             </button>
           </SettingRow>
@@ -139,7 +160,7 @@ export default function SettingsPage() {
             <h2 className="text-base font-extrabold">Account</h2>
           </div>
           <SettingRow label="Sign Out" description="Log out of your account">
-            <button onClick={handleLogout} className="neo-button px-4 py-1.5 text-xs bg-[#B8D8F8] flex items-center gap-1">
+            <button onClick={handleLogout} className="neo-button min-h-[44px] px-4 py-1.5 text-xs bg-[#B8D8F8] flex items-center gap-1">
               <LogOut size={12} /> Sign out
             </button>
           </SettingRow>
@@ -163,7 +184,7 @@ export default function SettingsPage() {
           <SettingRow label="Email" description="Say hello or send feedback">
             <a
               href="mailto:vrindaverse78@gmail.com"
-              className="neo-button px-4 py-1.5 text-xs bg-[#FFFDF8] flex items-center gap-2"
+              className="neo-button min-h-[44px] px-4 py-1.5 text-xs bg-[#FFFDF8] flex items-center gap-2"
             >
               <Mail size={12} /> vrindaverse78@gmail.com
             </a>
@@ -171,7 +192,7 @@ export default function SettingsPage() {
           <SettingRow label="Phone" description="Call or WhatsApp">
             <a
               href="tel:+919149411249"
-              className="neo-button px-4 py-1.5 text-xs bg-[#FFFDF8] flex items-center gap-2"
+              className="neo-button min-h-[44px] px-4 py-1.5 text-xs bg-[#FFFDF8] flex items-center gap-2"
             >
               <Phone size={12} /> +91 91494 11249
             </a>
@@ -181,7 +202,7 @@ export default function SettingsPage() {
               href="https://github.com/Vrindaverse"
               target="_blank"
               rel="noopener noreferrer"
-              className="neo-button px-4 py-1.5 text-xs bg-[#FFFDF8] flex items-center gap-2"
+              className="neo-button min-h-[44px] px-4 py-1.5 text-xs bg-[#FFFDF8] flex items-center gap-2"
             >
               <Code2 size={12} /> @Vrindaverse
             </a>

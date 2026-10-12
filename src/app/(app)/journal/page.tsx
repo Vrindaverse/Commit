@@ -6,6 +6,7 @@ import { NotebookPen, Smile, Meh, Frown, Plus, X, Search, Calendar } from 'lucid
 import NeoCard from '@/components/shared/neo-card';
 import PageHeader from '@/components/shared/page-header';
 import { useLifeStore, genId } from '@/store/use-store';
+import { localDateKey } from '@/lib/date';
 import { Mood, JournalEntry } from '@/types';
 import { format, parse } from 'date-fns';
 
@@ -30,7 +31,7 @@ function NewEntryForm({ onDone }: { onDone: () => void }) {
     if (!title.trim() || !content.trim()) return;
     addEntry({
       id: genId(),
-      date: new Date().toISOString().split('T')[0],
+      date: localDateKey(),
       title: title.trim(),
       content: content.trim(),
       mood,

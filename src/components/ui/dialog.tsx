@@ -86,7 +86,7 @@ function DialogContent({
               <Button
                 aria-label="Close dialog"
                 variant="ghost"
-                className="absolute top-3 right-3 z-10 size-9 cursor-pointer rounded-full border-2 border-[#2D2D2D]/80 bg-[#F8F5F0] text-[#2A2A2A] shadow-[2px_2px_0px_0px_var(--neo-shadow)] transition-all hover:bg-[#F0ECE4] hover:shadow-[3px_3px_0px_0px_var(--neo-shadow)] active:translate-y-0.5 active:shadow-none [&_svg]:size-4"
+                className="absolute top-3 right-3 z-10 size-11 min-h-[44px] min-w-[44px] cursor-pointer rounded-full border-2 border-[#2D2D2D]/80 bg-[#F8F5F0] text-[#2A2A2A] shadow-[2px_2px_0px_0px_var(--neo-shadow)] transition-all hover:bg-[#F0ECE4] hover:shadow-[3px_3px_0px_0px_var(--neo-shadow)] active:translate-y-0.5 active:shadow-none [&_svg]:size-4"
               />
             }
           >

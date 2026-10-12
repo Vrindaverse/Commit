@@ -131,6 +131,7 @@ export interface Settings {
   dailyReminder: boolean;
   goalAlerts: boolean;
   accentColor: string;
+  currency: string;
   budgets: BudgetMap;
   createdAt?: string;
   updatedAt?: string;

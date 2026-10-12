@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { ZodError, type ZodType } from 'zod';
-import { OtpError } from '@/lib/auth/otp';
 
 export class ApiError extends Error {
   status: number;
@@ -29,20 +28,9 @@ export async function readBody<T>(req: Request, schema: ZodType<T>): Promise<T> 
   return result.data;
 }
 
-const OTP_STATUS: Record<OtpError['code'], number> = {
-  COOLDOWN: 429,
-  INVALID: 401,
-  EXPIRED: 410,
-  TOO_MANY_ATTEMPTS: 429,
-  NOT_FOUND: 404,
-};
-
 export function errorResponse(error: unknown): NextResponse {
   if (error instanceof ApiError) {
     return NextResponse.json({ error: error.message, code: error.code }, { status: error.status });
-  }
-  if (error instanceof OtpError) {
-    return NextResponse.json({ error: error.message, code: error.code }, { status: OTP_STATUS[error.code] ?? 400 });
   }
   if (error instanceof ZodError) {
     const issue = error.issues[0];
@@ -59,6 +47,4 @@ export function unauthorized(message = 'You must be signed in.'): NextResponse {
   return NextResponse.json({ error: message, code: 'UNAUTHORIZED' }, { status: 401 });
 }
 
-export function forbidden(message: string): NextResponse {
-  return NextResponse.json({ error: message, code: 'FORBIDDEN' }, { status: 403 });
-}
+

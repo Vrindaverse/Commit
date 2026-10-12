@@ -43,6 +43,13 @@
       "when": 1791611184432,
       "tag": "0005_wooden_bug",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791791904101,
+      "tag": "0006_marvelous_joshua_kane",
+      "breakpoints": true
     }
   ]
 }

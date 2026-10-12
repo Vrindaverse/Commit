@@ -3,12 +3,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   LayoutDashboard, Target, CheckSquare, Rocket, BookOpen,
   GraduationCap, Flame, Trophy, BarChart3, Settings,
-  NotebookPen, FlameIcon, X, CheckCircle2, ChevronLeft, ChevronRight, Wallet,
+  NotebookPen, FlameIcon, X, CheckCircle2, ChevronLeft, ChevronRight, Wallet, Menu,
 } from 'lucide-react';
+import { localDateKey } from '@/lib/date';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -117,18 +118,22 @@ function useLoginStreak() {
     setMounted(true); // eslint-disable-line react-hooks/set-state-in-effect
     (async () => {
       try {
-        const res = await fetch('/api/login-logs');
+        const today = localDateKey();
+        const res = await fetch(`/api/login-logs?today=${today}`);
         if (!res.ok) throw new Error(`Failed to fetch login logs: ${res.status}`);
         const data: { logs: { date: string }[]; streak: number } = await res.json();
         const existing = data.logs.map(d => d.date);
-        const today = new Date().toISOString().split('T')[0];
         const alreadyLogged = existing.includes(today);
         if (alreadyLogged) {
           setLogs(existing);
           setLoggedInToday(true);
           setStreak(data.streak);
         } else {
-          const postRes = await fetch('/api/login-logs', { method: 'POST' });
+          const postRes = await fetch('/api/login-logs', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ date: today }),
+          });
           if (!postRes.ok) throw new Error(`Failed to post login log: ${postRes.status}`);
           const postData: { log: { date: string }; streak: number } = await postRes.json();
           existing.push(postData.log.date);
@@ -145,10 +150,9 @@ function useLoginStreak() {
   return { mounted, logs, loggedInToday, streak };
 }
 
-function StreakPopup({ onClose }: { onClose: () => void }) {
-  const { logs, streak } = useLoginStreak();
+function StreakPopup({ logs, streak, onClose }: { logs: string[]; streak: number; onClose: () => void }) {
   const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
+  const todayStr = localDateKey(today);
   const logSet = new Set(logs);
   const [monthOffset, setMonthOffset] = useState(0);
 
@@ -163,7 +167,7 @@ function StreakPopup({ onClose }: { onClose: () => void }) {
   const cells: { day: number; date: string; logged: boolean; isToday: boolean }[] = [];
   for (let d = 1; d <= daysInMonth; d++) {
     const date = new Date(year, month, d);
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = localDateKey(date);
     cells.push({
       day: d,
       date: dateStr,
@@ -211,7 +215,7 @@ function StreakPopup({ onClose }: { onClose: () => void }) {
               <p className="text-[10px] text-[#5C5C5C] font-medium">Your daily check-in history</p>
             </div>
           </div>
-          <button onClick={onClose} aria-label="Close login activity" className="w-7 h-7 rounded-lg border-[2px] border-[#2D2D2D] flex items-center justify-center hover:bg-[#F0ECE4] transition-colors">
+          <button onClick={onClose} aria-label="Close login activity" className="w-11 h-11 min-h-[44px] min-w-[44px] rounded-lg border-[2px] border-[#2D2D2D] flex items-center justify-center hover:bg-[#F0ECE4] transition-colors">
             <X size={12} />
           </button>
         </div>
@@ -237,11 +241,11 @@ function StreakPopup({ onClose }: { onClose: () => void }) {
 
         {/* Month header with navigation */}
         <div className="flex items-center justify-between mb-2">
-          <button onClick={() => setMonthOffset(m => m - 1)} aria-label="Previous month" className="w-7 h-7 rounded-lg border-[2px] border-[#2D2D2D] flex items-center justify-center hover:bg-[#F0ECE4] transition-colors">
+          <button onClick={() => setMonthOffset(m => m - 1)} aria-label="Previous month" className="w-11 h-11 min-h-[44px] min-w-[44px] rounded-lg border-[2px] border-[#2D2D2D] flex items-center justify-center hover:bg-[#F0ECE4] transition-colors">
             <ChevronLeft size={12} />
           </button>
           <span className="text-sm font-extrabold">{monthName}</span>
-          <button onClick={() => setMonthOffset(m => m + 1)} aria-label="Next month" className="w-7 h-7 rounded-lg border-[2px] border-[#2D2D2D] flex items-center justify-center hover:bg-[#F0ECE4] transition-colors">
+          <button onClick={() => setMonthOffset(m => m + 1)} aria-label="Next month" className="w-11 h-11 min-h-[44px] min-w-[44px] rounded-lg border-[2px] border-[#2D2D2D] flex items-center justify-center hover:bg-[#F0ECE4] transition-colors">
             <ChevronRight size={12} />
           </button>
         </div>
@@ -283,9 +287,18 @@ function StreakPopup({ onClose }: { onClose: () => void }) {
   );
 }
 
-function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
+function SidebarContent({
+  onNavigate,
+  streak,
+  loggedInToday,
+  logs,
+}: {
+  onNavigate?: () => void;
+  streak: number;
+  loggedInToday: boolean;
+  logs: string[];
+}) {
   const pathname = usePathname();
-  const { loggedInToday, streak } = useLoginStreak();
   const [showStreak, setShowStreak] = useState(false);
 
   return (
@@ -311,7 +324,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               <motion.div
                 whileHover={{ x: 2 }}
                 whileTap={{ scale: 0.97 }}
-                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl border-[2px] transition-all duration-150 ${
+                className={`flex items-center gap-3 px-3.5 py-2.5 min-h-[44px] rounded-xl border-[2px] transition-all duration-150 ${
                   isActive
                     ? 'tint-yellow bg-[#F7E8A4] border-[#2D2D2D] text-[#2A2A2A] shadow-[2px_2px_0px_0px_var(--neo-shadow)]'
                     : 'border-transparent text-[#5C5C5C] hover:text-[#2A2A2A] hover:bg-[#F0ECE4]'
@@ -342,18 +355,66 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </div>
 
       <AnimatePresence>
-        {showStreak && <StreakPopup onClose={() => setShowStreak(false)} />}
+        {showStreak && <StreakPopup logs={logs} streak={streak} onClose={() => setShowStreak(false)} />}
       </AnimatePresence>
     </>
   );
 }
 
 export default function Sidebar() {
-  const { streak } = useLoginStreak();
+  const { streak, loggedInToday, logs } = useLoginStreak();
   const [showStreak, setShowStreak] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const pathname = usePathname();
+  const drawerRef = useRef<HTMLElement>(null);
+  const [lastPathname, setLastPathname] = useState(pathname);
+
+  // Close the drawer whenever the route changes (links, back button, etc.).
+  if (lastPathname !== pathname) {
+    setLastPathname(pathname);
+    setMobileOpen(false);
+  }
 
   useEffect(() => { setMounted(true); }, []); // eslint-disable-line react-hooks/set-state-in-effect
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const drawer = drawerRef.current;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setMobileOpen(false);
+        return;
+      }
+      if (e.key !== 'Tab' || !drawer) return;
+      // Keep keyboard focus inside the drawer while it is open.
+      const focusable = Array.from(
+        drawer.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'),
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement;
+      if (!drawer.contains(active)) {
+        e.preventDefault();
+        first.focus();
+      } else if (e.shiftKey && active === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    drawerRef.current?.focus();
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [mobileOpen]);
 
   return (
     <>
@@ -369,25 +430,78 @@ export default function Sidebar() {
         </div>
       )}
 
-      <div className="relative">
-        {/* Mobile streak badge — scrolls with page */}
-        {mounted && (
-          <div className="md:hidden absolute top-4 right-4 z-50">
-            <button onClick={() => setShowStreak(true)} aria-label={`Login streak: ${streak} day${streak === 1 ? '' : 's'}`} className="rounded-xl border-[3px] border-[#2D2D2D] bg-[#CDEAC0] px-3 py-1.5 flex items-center gap-1.5 shadow-[2px_2px_0px_0px_var(--neo-shadow)] hover:bg-[#b8d8b0] transition-colors">
-              <FlameIcon size={14} />
-              <span className="text-xs font-extrabold">{streak}</span>
-            </button>
-          </div>
-        )}
-      </div>
+      {/* Mobile hamburger — opens the navigation drawer */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        aria-label="Open navigation menu"
+        aria-expanded={mobileOpen}
+        aria-controls="mobile-sidebar"
+        className="md:hidden fixed top-4 left-4 z-40 w-11 h-11 min-h-[44px] min-w-[44px] rounded-xl border-[3px] border-[#2D2D2D] bg-[#FFFDF8] flex items-center justify-center shadow-[2px_2px_0px_0px_var(--neo-shadow)] hover:bg-[#F0ECE4] transition-colors"
+      >
+        <Menu size={18} />
+      </button>
+
+      {/* Mobile streak badge — scrolls with page */}
+      {mounted && (
+        <div className="md:hidden absolute top-4 right-4 z-30">
+          <button onClick={() => setShowStreak(true)} aria-label={`Login streak: ${streak} day${streak === 1 ? '' : 's'}`} className="min-h-[44px] min-w-[44px] rounded-xl border-[3px] border-[#2D2D2D] bg-[#CDEAC0] px-3 flex items-center gap-1.5 shadow-[2px_2px_0px_0px_var(--neo-shadow)] hover:bg-[#b8d8b0] transition-colors">
+            <FlameIcon size={14} />
+            <span className="text-xs font-extrabold">{streak}</span>
+          </button>
+        </div>
+      )}
 
       {/* Desktop sidebar - floating rectangle */}
       <aside className="hidden md:flex flex-col border-[3px] border-[#2D2D2D] bg-[#FFFDF8] fixed right-4 top-4 bottom-4 z-40 w-64 rounded-[20px] shadow-[6px_6px_0px_0px_var(--neo-shadow)] tint-purple">
-        <SidebarContent />
+        <SidebarContent streak={streak} loggedInToday={loggedInToday} logs={logs} />
       </aside>
 
+      {/* Mobile navigation drawer */}
       <AnimatePresence>
-        {showStreak && <StreakPopup onClose={() => setShowStreak(false)} />}
+        {mobileOpen && (
+          <>
+            <motion.div
+              key="mobile-sidebar-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileOpen(false)}
+              className="md:hidden fixed inset-0 z-40 bg-black/30 backdrop-blur-sm"
+            />
+            <motion.aside
+              key="mobile-sidebar"
+              id="mobile-sidebar"
+              ref={drawerRef}
+              tabIndex={-1}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Navigation"
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              className="md:hidden fixed left-0 top-0 bottom-0 z-50 flex flex-col w-72 max-w-[85vw] border-[3px] border-[#2D2D2D] bg-[#FFFDF8] rounded-r-[20px] shadow-[6px_6px_0px_0px_var(--neo-shadow)] tint-purple outline-none"
+            >
+              <button
+                onClick={() => setMobileOpen(false)}
+                aria-label="Close navigation menu"
+                className="absolute top-3 right-3 z-10 w-11 h-11 min-h-[44px] min-w-[44px] rounded-lg border-[2px] border-[#2D2D2D] bg-[#FFFDF8] flex items-center justify-center hover:bg-[#F0ECE4] transition-colors"
+              >
+                <X size={14} />
+              </button>
+              <SidebarContent
+                onNavigate={() => setMobileOpen(false)}
+                streak={streak}
+                loggedInToday={loggedInToday}
+                logs={logs}
+              />
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showStreak && <StreakPopup logs={logs} streak={streak} onClose={() => setShowStreak(false)} />}
       </AnimatePresence>
     </>
   );

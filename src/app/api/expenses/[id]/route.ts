@@ -3,27 +3,35 @@ import { and, eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { expenses } from '@/db/schema';
 import { requireUserId } from '@/lib/auth/dal';
-import { unauthorized } from '@/lib/api';
+import { readBody, errorResponse, unauthorized } from '@/lib/api';
+import { expenseUpdateSchema } from '@/lib/validation';
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const userId = await requireUserId();
   if (!userId) return unauthorized();
-  const body = await req.json();
-  const { id: _, userId: __, createdAt: ___, ...clean } = body;
-  const [row] = await db
-    .update(expenses)
-    .set({ ...clean, updatedAt: new Date() })
-    .where(and(eq(expenses.id, id), eq(expenses.userId, userId)))
-    .returning();
-  if (!row) return NextResponse.json({ error: 'Not found', code: 'NOT_FOUND' }, { status: 404 });
-  return NextResponse.json(row);
+  try {
+    const data = await readBody(req, expenseUpdateSchema);
+    const [row] = await db
+      .update(expenses)
+      .set({ ...data, updatedAt: new Date() })
+      .where(and(eq(expenses.id, id), eq(expenses.userId, userId)))
+      .returning();
+    if (!row) return NextResponse.json({ error: 'Not found', code: 'NOT_FOUND' }, { status: 404 });
+    return NextResponse.json(row);
+  } catch (error) {
+    return errorResponse(error);
+  }
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const userId = await requireUserId();
   if (!userId) return unauthorized();
-  await db.delete(expenses).where(and(eq(expenses.id, id), eq(expenses.userId, userId)));
-  return NextResponse.json({ success: true });
+  try {
+    await db.delete(expenses).where(and(eq(expenses.id, id), eq(expenses.userId, userId)));
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return errorResponse(error);
+  }
 }

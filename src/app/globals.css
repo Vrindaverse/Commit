@@ -220,15 +220,15 @@
 
 /* Mobile-first improvements */
 @media (max-width: 768px) {
-   /* Larger touch targets for mobile */
-   .neo-button {
-     min-height: 48px;
-     min-width: 48px;
-   }
+  /* Larger touch targets for mobile */
+  .neo-button {
+    min-height: 48px;
+    min-width: 48px;
+  }
   
   .neo-input {
     min-height: 48px;
-    font-size: 16px; /* Prevents iOS zoom on focus */
+    font-size: 16px;
   }
   
   textarea {
@@ -257,8 +257,9 @@
     min-width: 40px;
   }
   
-  /* Stat cards on mobile */
-  .sm\:grid-cols-2 > div {
+  /* Stat cards on mobile - use min-width instead of Tailwind class */
+  .grid-cols-2 > div,
+  [style*="grid-cols-2"] > div {
     min-height: 60px;
   }
   
@@ -278,13 +279,15 @@
     overflow-y: auto;
   }
   
-  /* Form layout adjustments */
-  form .flex.flex-col.sm\:flex-row {
+  /* Form layout adjustments - target forms with flex-col that become flex-row on larger screens */
+  form .flex.flex-col[style*="flex-row"],
+  form .flex.flex-col.sm-flex-row {
     flex-direction: column;
     gap: 0.75rem;
   }
   
-  form .flex.flex-col.sm\:flex-row > * {
+  form .flex.flex-col[style*="flex-row"] > *,
+  form .flex.flex-col.sm-flex-row > * {
     width: 100%;
   }
 }

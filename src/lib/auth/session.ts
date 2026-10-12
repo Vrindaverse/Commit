@@ -88,7 +88,7 @@ export async function getSession(): Promise<{ sessionId: string; user: Authentic
 }
 
 export async function setChallengeCookie(userId: string, purpose: ChallengePurpose): Promise<void> {
-  const token = await signChallengeToken({ uid: userId, purpose });
+  const token = await signChallengeToken({ uid: userId, purpose }, CHALLENGE_TTL_MS);
   const cookieStore = await cookies();
   cookieStore.set(CHALLENGE_COOKIE, token, {
     httpOnly: true,

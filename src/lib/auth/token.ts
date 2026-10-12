@@ -1,16 +1,9 @@
 import { SignJWT, jwtVerify } from 'jose';
-import { getSessionSecret, CHALLENGE_TTL_MS } from './config';
+import { getSessionSecret } from './config';
 
 export interface SessionTokenPayload {
   sid: string;
   uid: string;
-}
-
-export type ChallengePurpose = 'email_verification' | 'login' | 'password_reset';
-
-export interface ChallengeTokenPayload {
-  uid: string;
-  purpose: ChallengePurpose;
 }
 
 export async function signSessionToken(payload: SessionTokenPayload, ttlMs: number): Promise<string> {
@@ -32,11 +25,18 @@ export async function verifySessionToken(token?: string): Promise<SessionTokenPa
   }
 }
 
-export async function signChallengeToken(payload: ChallengeTokenPayload): Promise<string> {
+export type ChallengePurpose = 'email_verification' | 'login' | 'password_reset';
+
+export interface ChallengeTokenPayload {
+  uid: string;
+  purpose: ChallengePurpose;
+}
+
+export async function signChallengeToken(payload: ChallengeTokenPayload, ttlMs: number): Promise<string> {
   return new SignJWT({ uid: payload.uid, purpose: payload.purpose })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime(Math.floor((Date.now() + CHALLENGE_TTL_MS) / 1000))
+    .setExpirationTime(Math.floor((Date.now() + ttlMs) / 1000))
     .sign(getSessionSecret());
 }
 
@@ -44,10 +44,7 @@ export async function verifyChallengeToken(token?: string): Promise<ChallengeTok
   if (!token) return null;
   try {
     const { payload } = await jwtVerify(token, getSessionSecret(), { algorithms: ['HS256'] });
-    const purposes: ChallengePurpose[] = ['email_verification', 'login', 'password_reset'];
-    if (typeof payload.uid !== 'string' || !purposes.includes(payload.purpose as ChallengePurpose)) {
-      return null;
-    }
+    if (typeof payload.uid !== 'string' || typeof payload.purpose !== 'string') return null;
     return { uid: payload.uid, purpose: payload.purpose as ChallengePurpose };
   } catch {
     return null;

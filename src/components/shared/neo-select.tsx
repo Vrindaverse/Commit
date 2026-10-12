@@ -31,7 +31,9 @@ export function NeoSelect({ value, onChange, options, className = '' }: NeoSelec
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="neo-input text-xs py-1.5 w-full flex items-center justify-between gap-2 cursor-pointer"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        className="neo-input text-xs py-1.5 min-h-[44px] w-full flex items-center justify-between gap-2 cursor-pointer"
       >
         <span>{selected?.label || value}</span>
         <ChevronDown size={12} className={`transition-transform shrink-0 ${open ? 'rotate-180' : ''}`} />
@@ -43,7 +45,7 @@ export function NeoSelect({ value, onChange, options, className = '' }: NeoSelec
               key={opt.value}
               type="button"
               onClick={() => { onChange(opt.value); setOpen(false); }}
-              className={`w-full text-left px-3 py-2 text-xs font-medium transition-colors cursor-pointer ${
+              className={`w-full text-left px-3 py-2 min-h-[44px] flex items-center text-xs font-medium transition-colors cursor-pointer ${
                 opt.value === value
                   ? 'bg-[#F7E8A4] font-extrabold'
                   : 'hover:bg-[#F0ECE4]'

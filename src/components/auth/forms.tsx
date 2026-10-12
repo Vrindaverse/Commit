@@ -5,6 +5,7 @@ import type { FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Mail } from 'lucide-react';
 import { toast } from '@/components/shared/toast';
+import { safeNextPath } from '@/lib/utils';
 
 function Field({
   label,
@@ -121,7 +122,7 @@ export function LoginForm({ next }: { next?: string }) {
         return;
       }
       toast.success('Welcome back!');
-      router.push(next || '/');
+      router.push(safeNextPath(next) ?? '/');
       router.refresh();
     } catch {
       setError('Unable to reach the server. Please try again.');

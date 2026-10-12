@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import PageHeader from '@/components/shared/page-header';
 import { useLifeStore } from '@/store/use-store';
+import { localDateKey } from '@/lib/date';
 
 interface AchievementDef {
   id: string;
@@ -47,7 +48,7 @@ function useAchievements() {
   const [loginStreak, setLoginStreak] = useState(0);
 
   useEffect(() => {
-    fetch('/api/login-logs').then(r => { if (!r.ok) throw new Error('Failed to fetch login logs'); return r.json(); }).then((data: { logs: { date: string }[]; streak: number }) => {
+    fetch(`/api/login-logs?today=${localDateKey()}`).then(r => { if (!r.ok) throw new Error('Failed to fetch login logs'); return r.json(); }).then((data: { logs: { date: string }[]; streak: number }) => {
       setLoginLogs(data.logs.map(d => d.date));
       setLoginStreak(data.streak);
     }).catch(() => {});
@@ -90,7 +91,7 @@ function useAchievements() {
 
     const loginTotal = loginLogs.length;
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = localDateKey();
 
     const date = () => today;
 

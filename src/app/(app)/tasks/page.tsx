@@ -7,6 +7,7 @@ import NeoCard from '@/components/shared/neo-card';
 import PageHeader from '@/components/shared/page-header';
 import { Dialog, DialogContent, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { useLifeStore, genId } from '@/store/use-store';
+import { localDateKey } from '@/lib/date';
 import { Task, TaskStatus, Priority } from '@/types';
 
 const priorityColors: Record<string, string> = {
@@ -38,7 +39,7 @@ function AddTaskForm({ onDone, defaultStatus }: { onDone: () => void; defaultSta
       description: description.trim(),
       status: defaultStatus || 'todo',
       priority,
-      dueDate: dueDate || new Date().toISOString().split('T')[0],
+      dueDate: dueDate || localDateKey(),
       time: time || undefined,
       tags,
     });
@@ -422,7 +423,7 @@ function CalendarPreview() {
     d.setHours(0, 0, 0, 0);
     return d;
   }, []);
-  const todayStr = today.toISOString().split('T')[0];
+  const todayStr = localDateKey(today);
 
   const [viewDate, setViewDate] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
   const [selectedDay, setSelectedDay] = useState<number | null>(today.getDate());

@@ -164,6 +164,7 @@ export const settings = pgTable('settings', {
   dailyReminder: boolean('daily_reminder').default(true).notNull(),
   goalAlerts: boolean('goal_alerts').default(true).notNull(),
   accentColor: text('accent_color').default('#F7E8A4').notNull(),
+  currency: text('currency').default('INR').notNull(),
   budgets: jsonb('budgets').default({}).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -177,7 +178,7 @@ export const loginLogs = pgTable('login_logs', {
   date: text('date').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (t) => [
-  index('login_logs_user_date_idx').on(t.userId, t.date),
+  uniqueIndex('login_logs_user_date_unique').on(t.userId, t.date),
 ]);
 
 export const expenses = pgTable('expenses', {

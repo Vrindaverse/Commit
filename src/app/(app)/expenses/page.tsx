@@ -722,6 +722,7 @@ function PeriodHero({
   bg,
   accent,
   tint,
+  currency,
   children,
 }: {
   kicker: string;
@@ -734,6 +735,7 @@ function PeriodHero({
   bg: string;
   accent: string;
   tint: string;
+  currency: string;
   children?: React.ReactNode;
 }) {
   return (
@@ -754,11 +756,11 @@ function PeriodHero({
           <p className="text-[11px] font-extrabold text-[#5C5C5C] text-right">{dateLabel}</p>
         </div>
         <p className={`text-4xl font-extrabold mt-2 ${net >= 0 ? 'text-[#4C8C4A]' : 'text-[#B85042]'}`}>
-          {net >= 0 ? '+' : '-'}{money(Math.abs(net))}
+          {net >= 0 ? '+' : '-'}{money(Math.abs(net), currency)}
         </p>
         <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-[11px] font-extrabold">
-          <span className="text-[#4C8C4A] flex items-center gap-1"><ArrowUpRight size={12} /> {moneyShort(income)} in</span>
-          <span className="text-[#B85042] flex items-center gap-1"><ArrowDownRight size={12} /> {moneyShort(expense)} out</span>
+          <span className="text-[#4C8C4A] flex items-center gap-1"><ArrowUpRight size={12} /> {moneyShort(income, currency)} in</span>
+          <span className="text-[#B85042] flex items-center gap-1"><ArrowDownRight size={12} /> {moneyShort(expense, currency)} out</span>
           <span className="text-[#5C5C5C]">{rate}% saved</span>
           {typeof delta === 'number' && (
             <span className={`flex items-center gap-0.5 ${delta > 0 ? 'text-[#B85042]' : 'text-[#4C8C4A]'}`}>
@@ -778,11 +780,13 @@ function BreakdownCard({
   color,
   rows,
   max,
+  currency,
 }: {
   title: string;
   color: string;
   rows: { key: ExpenseCategory; label: string; color: string; icon: React.ReactNode; total: number }[];
   max: number;
+  currency: string;
 }) {
   return (
     <NeoCard color={color}>
@@ -802,7 +806,7 @@ function BreakdownCard({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs font-bold">{c.label}</span>
-                  <span className="text-xs font-extrabold">{money(c.total)}</span>
+                  <span className="text-xs font-extrabold">{money(c.total, currency)}</span>
                 </div>
                 <div className="h-2 rounded-full bg-[#F0ECE4] border-[2px] border-[#2D2D2D] overflow-hidden">
                   <div
@@ -829,6 +833,7 @@ export default function ExpensesPage() {
   const updateLoan = useLifeStore((s) => s.updateLoan);
   const deleteLoan = useLifeStore((s) => s.deleteLoan);
   const budgetsStored = useLifeStore((s) => s.settings.budgets);
+  const currency = useLifeStore((s) => s.settings.currency);
   const budgets = useMemo(() => budgetsStored ?? {}, [budgetsStored]);
   const updateSettings = useLifeStore((s) => s.updateSettings);
 
@@ -1315,18 +1320,18 @@ export default function ExpensesPage() {
                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                       <div className="rounded-xl border-[2px] border-[#2D2D2D] bg-[#FFFDF8] p-3 tint-pink">
                         <p className="text-[10px] font-bold uppercase tracking-wide text-[#5C5C5C]">I owe</p>
-                        <p className="text-lg font-extrabold text-[#B85042]">{money(loanStats.borrowedOut)}</p>
-                        <p className="text-[10px] font-bold text-[#5C5C5C]">of {money(loanStats.borrowed)} borrowed</p>
+                        <p className="text-lg font-extrabold text-[#B85042]">{money(loanStats.borrowedOut, currency)}</p>
+                        <p className="text-[10px] font-bold text-[#5C5C5C]">of {money(loanStats.borrowed, currency)} borrowed</p>
                       </div>
                       <div className="rounded-xl border-[2px] border-[#2D2D2D] bg-[#FFFDF8] p-3 tint-green">
                         <p className="text-[10px] font-bold uppercase tracking-wide text-[#5C5C5C]">Owed to me</p>
-                        <p className="text-lg font-extrabold text-[#4C8C4A]">{money(loanStats.lentOut)}</p>
-                        <p className="text-[10px] font-bold text-[#5C5C5C]">of {money(loanStats.lent)} lent</p>
+                        <p className="text-lg font-extrabold text-[#4C8C4A]">{money(loanStats.lentOut, currency)}</p>
+                        <p className="text-[10px] font-bold text-[#5C5C5C]">of {money(loanStats.lent, currency)} lent</p>
                       </div>
                       <div className="rounded-xl border-[2px] border-[#2D2D2D] bg-[#FFFDF8] p-3 tint-blue">
                         <p className="text-[10px] font-bold uppercase tracking-wide text-[#5C5C5C]">Net position</p>
                         <p className={`text-lg font-extrabold ${loanStats.net >= 0 ? 'text-[#4C8C4A]' : 'text-[#B85042]'}`}>
-                          {money(loanStats.net)}
+                          {money(loanStats.net, currency)}
                         </p>
                         <p className="text-[10px] font-bold text-[#5C5C5C]">across {loans.length} loan{loans.length === 1 ? '' : 's'}</p>
                       </div>
@@ -1367,8 +1372,8 @@ export default function ExpensesPage() {
             </div>
           </div>
           <div className="text-right shrink-0">
-            <p className="text-sm font-extrabold">{money(outstanding)}</p>
-            <p className="text-[10px] font-bold text-[#5C5C5C]">left of {money(principal)}</p>
+            <p className="text-sm font-extrabold">{money(outstanding, currency)}</p>
+            <p className="text-[10px] font-bold text-[#5C5C5C]">left of {money(principal, currency)}</p>
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <button
@@ -1542,7 +1547,7 @@ export default function ExpensesPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
         <StatCard
           label="Earnings"
-          value={money(summary.income)}
+          value={money(summary.income, currency)}
           sub={range.label}
           color="#CDEAC0"
           icon={<TrendingUp size={15} />}
@@ -1550,7 +1555,7 @@ export default function ExpensesPage() {
         />
         <StatCard
           label="Expenses"
-          value={money(summary.expense)}
+          value={money(summary.expense, currency)}
           sub={range.label}
           color="#F8C8C8"
           icon={<TrendingDown size={15} />}
@@ -1559,7 +1564,7 @@ export default function ExpensesPage() {
         />
         <StatCard
           label="Savings"
-          value={money(summary.savings)}
+          value={money(summary.savings, currency)}
           sub={savingsGoal > 0 ? `${Math.round(periodSavingsPct)}% of goal` : `${summary.rate}% of earnings`}
           color="#F7E8A4"
           icon={<PiggyBank size={15} />}
@@ -1567,8 +1572,8 @@ export default function ExpensesPage() {
         />
         <StatCard
           label="Loans Outstanding"
-          value={moneyShort(loanStats.net)}
-          sub={`lent ${moneyShort(loanStats.lentOut)} · owe ${moneyShort(loanStats.borrowedOut)}`}
+          value={moneyShort(loanStats.net, currency)}
+          sub={`lent ${moneyShort(loanStats.lentOut, currency)} · owe ${moneyShort(loanStats.borrowedOut, currency)}`}
           color="#B8D8F8"
           icon={<HandCoins size={15} />}
           tint="tint-blue"
@@ -1591,13 +1596,13 @@ export default function ExpensesPage() {
                   <Wallet size={16} />
                 </div>
               </div>
-              <p className="text-4xl font-extrabold mt-1 text-[#2A2A2A]">{money(allTime.balance)}</p>
+              <p className="text-4xl font-extrabold mt-1 text-[#2A2A2A]">{money(allTime.balance, currency)}</p>
               <div className="flex gap-4 mt-1 text-[11px] font-extrabold">
                 <span className="text-[#4C8C4A] flex items-center gap-1">
-                  <ArrowUpRight size={12} /> {moneyShort(allTime.income)} in
+                  <ArrowUpRight size={12} /> {moneyShort(allTime.income, currency)} in
                 </span>
                 <span className="text-[#B85042] flex items-center gap-1">
-                  <ArrowDownRight size={12} /> {moneyShort(allTime.expense)} out
+                  <ArrowDownRight size={12} /> {moneyShort(allTime.expense, currency)} out
                 </span>
               </div>
 
@@ -1608,7 +1613,7 @@ export default function ExpensesPage() {
                       {a.icon} {a.label}
                     </p>
                     <p className={`text-sm font-extrabold mt-0.5 ${a.balance < 0 ? 'text-[#B85042]' : 'text-[#2A2A2A]'}`}>
-                      {moneyShort(a.balance)}
+                      {moneyShort(a.balance, currency)}
                     </p>
                   </div>
                 ))}
@@ -1638,7 +1643,7 @@ export default function ExpensesPage() {
                     <PiggyBank size={12} /> Savings goal
                   </span>
                   <span className="text-[11px] font-extrabold">
-                    {moneyShort(summary.savings)} / {moneyShort(savingsGoal)}
+                    {moneyShort(summary.savings, currency)} / {moneyShort(savingsGoal, currency)}
                   </span>
                 </div>
                 <div className="h-3 rounded-full border-[2px] border-[#2D2D2D] bg-[#F0ECE4] overflow-hidden">
@@ -1653,8 +1658,8 @@ export default function ExpensesPage() {
             {overallBudget > 0 ? (
               <>
                 <p className="text-2xl font-extrabold">
-                  {money(monthStats.expense)}
-                  <span className="text-sm font-bold text-[#5C5C5C]"> / {moneyShort(overallBudget)}</span>
+                  {money(monthStats.expense, currency)}
+                  <span className="text-sm font-bold text-[#5C5C5C]"> / {moneyShort(overallBudget, currency)}</span>
                 </p>
                 <div className="h-3 rounded-full mt-2 border-[2px] border-[#2D2D2D] bg-[#F0ECE4] overflow-hidden">
                   <div
@@ -1665,8 +1670,8 @@ export default function ExpensesPage() {
                 <p className="text-[11px] font-bold text-[#5C5C5C] mt-2 flex items-center gap-1">
                   <PiggyBank size={12} />
                   {overallPct >= 100
-                    ? `Over budget by ${money(monthStats.expense - overallBudget)}`
-                    : `${money(overallBudget - monthStats.expense)} left this month`}
+                    ? `Over budget by ${money(monthStats.expense - overallBudget, currency)}`
+                    : `${money(overallBudget - monthStats.expense, currency)} left this month`}
                 </p>
               </>
             ) : (
@@ -1689,7 +1694,7 @@ export default function ExpensesPage() {
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wide text-[#5C5C5C]">Saved</p>
                 <p className={`text-sm font-extrabold ${summary.savings >= 0 ? 'text-[#4C8C4A]' : 'text-[#B85042]'}`}>
-                  {moneyShort(summary.savings)}
+                  {moneyShort(summary.savings, currency)}
                 </p>
               </div>
               <div>
@@ -1698,7 +1703,7 @@ export default function ExpensesPage() {
               </div>
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wide text-[#5C5C5C]">Daily avg</p>
-                <p className="text-sm font-extrabold">{moneyShort(monthStats.dailyAvg)}</p>
+                <p className="text-sm font-extrabold">{moneyShort(monthStats.dailyAvg, currency)}</p>
               </div>
             </div>
           </NeoCard>
@@ -1707,6 +1712,7 @@ export default function ExpensesPage() {
         <>
           <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-5 mb-5">
             <PeriodHero
+              currency={currency}
               kicker="Week at a glance"
               dateLabel={range.label}
               income={summary.income}
@@ -1770,8 +1776,8 @@ export default function ExpensesPage() {
                         {format(parse(selectedDay, 'yyyy-MM-dd', new Date()), 'EEEE, dd MMM')}
                       </p>
                       <div className="flex items-center gap-2 text-[10px] font-extrabold">
-                        <span className="text-[#4C8C4A]">+{moneyShort(dayDetail.income)}</span>
-                        <span className="text-[#B85042]">-{moneyShort(dayDetail.expense)}</span>
+                        <span className="text-[#4C8C4A]">+{moneyShort(dayDetail.income, currency)}</span>
+                        <span className="text-[#B85042]">-{moneyShort(dayDetail.expense, currency)}</span>
                       </div>
                     </div>
                     {dayDetail.items.length === 0 ? (
@@ -1788,7 +1794,7 @@ export default function ExpensesPage() {
                               </span>
                               <span className="text-xs font-bold flex-1 min-w-0 truncate">{t.title}</span>
                               <span className={`text-xs font-extrabold whitespace-nowrap ${isIncome ? 'text-[#4C8C4A]' : 'text-[#2A2A2A]'}`}>
-                                {isIncome ? '+' : '-'}{moneyShort(t.amount)}
+                                {isIncome ? '+' : '-'}{moneyShort(t.amount, currency)}
                               </span>
                             </div>
                           );
@@ -1805,6 +1811,7 @@ export default function ExpensesPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
             <BreakdownCard
+              currency={currency}
               title={`Spending by Category · ${range.label}`}
               color="#DCCEF5"
               rows={breakdown.list}
@@ -1818,7 +1825,7 @@ export default function ExpensesPage() {
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[11px] font-bold text-[#5C5C5C]">Budget pace</span>
                     <span className="text-[11px] font-extrabold">
-                      {weeklyBudget > 0 ? `${money(summary.expense)} / ${money(weeklyBudget)}` : 'no monthly budget set'}
+                      {weeklyBudget > 0 ? `${money(summary.expense, currency)} / ${money(weeklyBudget, currency)}` : 'no monthly budget set'}
                     </span>
                   </div>
                   {weeklyBudget > 0 && (
@@ -1835,11 +1842,11 @@ export default function ExpensesPage() {
                   <div className="rounded-xl border-[2px] border-[#2D2D2D] bg-[#FFFDF8] p-2.5">
                     <p className="text-[10px] font-bold uppercase text-[#5C5C5C]">Busiest day</p>
                     <p className="text-sm font-extrabold mt-0.5">{weekBusiest ? weekBusiest.dow : '—'}</p>
-                    <p className="text-[10px] font-bold text-[#5C5C5C]">{weekBusiest ? money(weekBusiest.amount) : 'no spend'}</p>
+                    <p className="text-[10px] font-bold text-[#5C5C5C]">{weekBusiest ? money(weekBusiest.amount, currency) : 'no spend'}</p>
                   </div>
                   <div className="rounded-xl border-[2px] border-[#2D2D2D] bg-[#FFFDF8] p-2.5">
                     <p className="text-[10px] font-bold uppercase text-[#5C5C5C]">Avg / day</p>
-                    <p className="text-sm font-extrabold mt-0.5">{money(summary.expense / 7)}</p>
+                    <p className="text-sm font-extrabold mt-0.5">{money(summary.expense / 7, currency)}</p>
                     <p className="text-[10px] font-bold text-[#5C5C5C]">{summary.rate}% saved</p>
                   </div>
                   <div className="rounded-xl border-[2px] border-[#2D2D2D] bg-[#FFFDF8] p-2.5">
@@ -1861,7 +1868,7 @@ export default function ExpensesPage() {
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-bold">{a.label}</span>
                             <span className={`text-xs font-extrabold ${a.balance < 0 ? 'text-[#B85042]' : 'text-[#2A2A2A]'}`}>
-                              {moneyShort(a.balance)}
+                              {moneyShort(a.balance, currency)}
                             </span>
                           </div>
                           <div className="h-1.5 rounded-full bg-[#F0ECE4] border-[1.5px] border-[#2D2D2D] overflow-hidden mt-0.5">
@@ -1883,6 +1890,7 @@ export default function ExpensesPage() {
         <>
           <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-5 mb-5">
             <PeriodHero
+              currency={currency}
               kicker="Day at a glance"
               dateLabel={range.label}
               income={summary.income}
@@ -1904,7 +1912,7 @@ export default function ExpensesPage() {
                       {a.icon}
                     </span>
                     <span className="text-[11px] font-bold">
-                      {a.label} <span className={`font-extrabold ${a.balance < 0 ? 'text-[#B85042]' : 'text-[#2A2A2A]'}`}>{moneyShort(a.balance)}</span>
+                      {a.label} <span className={`font-extrabold ${a.balance < 0 ? 'text-[#B85042]' : 'text-[#2A2A2A]'}`}>{moneyShort(a.balance, currency)}</span>
                     </span>
                   </span>
                 ))}
@@ -1912,6 +1920,7 @@ export default function ExpensesPage() {
             </PeriodHero>
 
             <BreakdownCard
+              currency={currency}
               title="Where it went today"
               color="#F8C8C8"
               rows={breakdown.list}
@@ -1982,7 +1991,7 @@ export default function ExpensesPage() {
                        active ? 'border-[#2D2D2D] shadow-[2px_2px_0px_0px_var(--neo-shadow)] -translate-y-0.5' : 'border-[#2D2D2D]/40 hover:-translate-y-0.5'
                      }`}
                      style={{ backgroundColor: active ? '#FFFDF8' : HEAT_COLORS[cell.level] }}
-                     title={hasActivity ? `${format(parse(dateKey, 'yyyy-MM-dd', new Date()), 'dd MMM')} · out ${money(cell.spend)} · in ${money(cell.income)}` : undefined}
+                     title={hasActivity ? `${format(parse(dateKey, 'yyyy-MM-dd', new Date()), 'dd MMM')} · out ${money(cell.spend, currency)} · in ${money(cell.income, currency)}` : undefined}
                    >
                     <span className={`text-[10px] font-extrabold leading-none ${cell.isToday ? 'text-[#B85042]' : 'text-[#2A2A2A]'}`}>
                       {cell.day}
@@ -2033,15 +2042,15 @@ export default function ExpensesPage() {
               <div className="grid grid-cols-3 gap-2 mb-3">
                 <div className="rounded-xl border-[2px] border-[#2D2D2D] bg-[#CDEAC0] p-2">
                   <p className="text-[9px] font-bold uppercase text-[#5C5C5C]">In</p>
-                  <p className="text-sm font-extrabold">{moneyShort(dayDetail.income)}</p>
+                  <p className="text-sm font-extrabold">{moneyShort(dayDetail.income, currency)}</p>
                 </div>
                 <div className="rounded-xl border-[2px] border-[#2D2D2D] bg-[#F8C8C8] p-2">
                   <p className="text-[9px] font-bold uppercase text-[#5C5C5C]">Out</p>
-                  <p className="text-sm font-extrabold">{moneyShort(dayDetail.expense)}</p>
+                  <p className="text-sm font-extrabold">{moneyShort(dayDetail.expense, currency)}</p>
                 </div>
                 <div className={`rounded-xl border-[2px] border-[#2D2D2D] p-2 ${dayDetail.net >= 0 ? 'bg-[#F7E8A4]' : 'bg-[#FFD8BE]'}`}>
                   <p className="text-[9px] font-bold uppercase text-[#5C5C5C]">Net</p>
-                  <p className="text-sm font-extrabold">{moneyShort(dayDetail.net)}</p>
+                  <p className="text-sm font-extrabold">{moneyShort(dayDetail.net, currency)}</p>
                 </div>
               </div>
 
@@ -2061,7 +2070,7 @@ export default function ExpensesPage() {
                         </span>
                         <span className="text-xs font-bold flex-1 min-w-0 truncate">{t.title}</span>
                         <span className={`text-xs font-extrabold whitespace-nowrap ${isIncome ? 'text-[#4C8C4A]' : 'text-[#2A2A2A]'}`}>
-                          {isIncome ? '+' : '-'}{moneyShort(t.amount)}
+                          {isIncome ? '+' : '-'}{moneyShort(t.amount, currency)}
                         </span>
                       </div>
                     );
@@ -2093,12 +2102,12 @@ export default function ExpensesPage() {
                   <div
                     className="w-3.5 rounded-t-md border-[2px] border-[#2D2D2D] bg-[#CDEAC0]"
                     style={{ height: `${Math.max(3, (m.income / trendMax) * 100)}%` }}
-                    title={`Earnings ${money(m.income)}`}
+                    title={`Earnings ${money(m.income, currency)}`}
                   />
                   <div
                     className="w-3.5 rounded-t-md border-[2px] border-[#2D2D2D] bg-[#F8C8C8]"
                     style={{ height: `${Math.max(3, (m.expense / trendMax) * 100)}%` }}
-                    title={`Spent ${money(m.expense)}`}
+                    title={`Spent ${money(m.expense, currency)}`}
                   />
                 </div>
                 <span className="text-[10px] font-bold text-[#5C5C5C]">{m.label}</span>
@@ -2123,18 +2132,18 @@ export default function ExpensesPage() {
               <p className="text-sm font-extrabold mt-0.5 truncate">
                 {insights.topCat ? insights.topCat.label : '—'}
               </p>
-              <p className="text-[10px] font-bold text-[#5C5C5C]">{insights.topCat ? money(insights.topCat.total) : 'no spend'}</p>
+              <p className="text-[10px] font-bold text-[#5C5C5C]">{insights.topCat ? money(insights.topCat.total, currency) : 'no spend'}</p>
             </div>
             <div className="rounded-xl border-[2px] border-[#2D2D2D] bg-[#FFFDF8] p-3">
               <p className="text-[10px] font-bold uppercase tracking-wide text-[#5C5C5C] flex items-center gap-1"><TrendingDown size={12} /> Biggest expense</p>
               <p className="text-sm font-extrabold mt-0.5 truncate">
                 {insights.largest ? insights.largest.title : '—'}
               </p>
-              <p className="text-[10px] font-bold text-[#5C5C5C]">{insights.largest ? money(insights.largest.amount) : 'no spend'}</p>
+              <p className="text-[10px] font-bold text-[#5C5C5C]">{insights.largest ? money(insights.largest.amount, currency) : 'no spend'}</p>
             </div>
             <div className="rounded-xl border-[2px] border-[#2D2D2D] bg-[#FFFDF8] p-3">
               <p className="text-[10px] font-bold uppercase tracking-wide text-[#5C5C5C] flex items-center gap-1"><Scale size={12} /> Avg / day</p>
-              <p className="text-sm font-extrabold mt-0.5">{money(insights.avgPerDay)}</p>
+              <p className="text-sm font-extrabold mt-0.5">{money(insights.avgPerDay, currency)}</p>
               <p className="text-[10px] font-bold text-[#5C5C5C]">{insights.txCount} transaction{insights.txCount === 1 ? '' : 's'}</p>
             </div>
             <div className="rounded-xl border-[2px] border-[#2D2D2D] bg-[#FFFDF8] p-3">
@@ -2147,7 +2156,7 @@ export default function ExpensesPage() {
           </div>
         {period === 'monthly' && monthStats.isCurrent && (
             <p className="text-[11px] font-bold text-[#5C5C5C] mt-3 pt-3 border-t-[2px] border-[#2D2D2D] flex items-center gap-1">
-              <TrendingUp size={12} /> Projected month-end spend {money(monthStats.projected)}
+              <TrendingUp size={12} /> Projected month-end spend {money(monthStats.projected, currency)}
             </p>
           )}
         </NeoCard>
@@ -2156,6 +2165,7 @@ export default function ExpensesPage() {
       {period === 'monthly' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
         <BreakdownCard
+          currency={currency}
           title={`Spending by Category · ${range.label}`}
           color="#DCCEF5"
           rows={breakdown.list}
@@ -2190,7 +2200,7 @@ export default function ExpensesPage() {
                       {b.label}
                     </span>
                     <span className={`text-[11px] font-extrabold ${b.over ? 'text-[#B85042]' : 'text-[#5C5C5C]'}`}>
-                      {money(b.spent)} / {money(b.limit)}
+                      {money(b.spent, currency)} / {money(b.limit, currency)}
                     </span>
                   </div>
                   <div className="h-2 rounded-full bg-[#F0ECE4] border-[2px] border-[#2D2D2D] overflow-hidden">
@@ -2263,13 +2273,13 @@ export default function ExpensesPage() {
               {listSummary.count} transaction{listSummary.count === 1 ? '' : 's'}
             </span>
             <span className="px-2.5 py-1 rounded-full border-[2px] border-[#2D2D2D] bg-[#CDEAC0] flex items-center gap-1">
-              <ArrowUpRight size={12} /> {money(listSummary.income)}
+              <ArrowUpRight size={12} /> {money(listSummary.income, currency)}
             </span>
             <span className="px-2.5 py-1 rounded-full border-[2px] border-[#2D2D2D] bg-[#F8C8C8] flex items-center gap-1">
-              <ArrowDownRight size={12} /> {money(listSummary.expense)}
+              <ArrowDownRight size={12} /> {money(listSummary.expense, currency)}
             </span>
             <span className={`px-2.5 py-1 rounded-full border-[2px] border-[#2D2D2D] flex items-center gap-1 ${listSummary.net >= 0 ? 'bg-[#CDEAC0]' : 'bg-[#F8C8C8]'}`}>
-              <Scale size={12} /> Net {money(listSummary.net)}
+              <Scale size={12} /> Net {money(listSummary.net, currency)}
             </span>
             {hasFilters && (
               <button onClick={clearFilters} className="px-2.5 py-1 rounded-full border-[2px] border-[#2D2D2D] bg-[#FFFDF8] hover:bg-[#F0ECE4] flex items-center gap-1">
@@ -2294,7 +2304,7 @@ export default function ExpensesPage() {
                     {format(parse(date, 'yyyy-MM-dd', new Date()), 'EEE, dd MMM yyyy')}
                   </p>
                   <p className={`text-xs font-extrabold ${dayNet >= 0 ? 'text-[#4C8C4A]' : 'text-[#B85042]'}`}>
-                    {dayNet >= 0 ? '+' : '-'}{money(Math.abs(dayNet))}
+                    {dayNet >= 0 ? '+' : '-'}{money(Math.abs(dayNet), currency)}
                   </p>
                 </div>
                 <div className="space-y-2">
@@ -2330,7 +2340,7 @@ export default function ExpensesPage() {
                               </p>
                             </div>
                             <p className={`text-base font-extrabold whitespace-nowrap ${isIncome ? 'text-[#4C8C4A]' : 'text-[#2A2A2A]'}`}>
-                              {isIncome ? '+' : '-'}{money(t.amount)}
+                              {isIncome ? '+' : '-'}{money(t.amount, currency)}
                             </p>
                             <div className="flex items-center gap-1 shrink-0">
 <button

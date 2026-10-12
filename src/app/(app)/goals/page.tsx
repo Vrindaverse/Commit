@@ -12,6 +12,7 @@ import PageHeader from '@/components/shared/page-header';
 import { Dialog, DialogContent, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { NeoSelect } from '@/components/shared/neo-select';
 import { useLifeStore, genId } from '@/store/use-store';
+import { localDateKey } from '@/lib/date';
 import { Goal, GoalCategory } from '@/types';
 
 const colorOptions = ['#B8D8F8', '#CDEAC0', '#F7E8A4', '#FFD8BE', '#F8C8C8', '#DCCEF5'];
@@ -44,7 +45,7 @@ function AddGoalForm({ onDone }: { onDone: () => void }) {
       title: title.trim(),
       description: description.trim(),
       category,
-      deadline: deadline || new Date().toISOString().split('T')[0],
+      deadline: deadline || localDateKey(),
       progress: 0,
       milestones: [],
       color,

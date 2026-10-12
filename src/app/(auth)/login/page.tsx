@@ -6,7 +6,8 @@ import { LoginForm } from "@/components/auth/forms";
 import { verifySession } from "@/lib/auth/dal";
 
 export const metadata: Metadata = {
-  title: "Sign in — Commit",
+  title: "Sign in",
+  description: "Sign in to your Commit account to continue to your personal dashboard.",
 };
 
 export default async function LoginPage({

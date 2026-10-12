@@ -63,7 +63,7 @@ function AddExamForm({ onDone }: { onDone: () => void }) {
     e.preventDefault();
     if (!subject.trim() || !date) return;
     addExam({
-      id: genId(), subject: subject.trim(), date, time: time || 'TBD',
+      id: genId(), subject: subject.trim(), date, time: time.trim(),
       syllabus: syllabus.split(',').map(s => s.trim()).filter(Boolean),
       color: subjects.find(s => s.name === subject)?.color || '#B8D8F8',
     });
@@ -174,14 +174,14 @@ function SubjectModal({ subjectId, onClose }: { subjectId: string; onClose: () =
                     <div className={`w-4 h-4 rounded-full border-[2px] border-[#2D2D2D] ${a.submitted ? 'bg-[#CDEAC0]' : ''} transition-colors`} />
                   </button>
                   <span className={`flex-1 font-medium ${a.submitted ? 'line-through text-[#5C5C5C]' : ''}`}>{a.title}</span>
-                  <span className="text-xs text-[#5C5C5C]">{a.due}</span>
+                  <span className="text-xs text-[#5C5C5C]">{a.due || 'No due date'}</span>
                 </div>
               ))}
             </div>
             <div className="flex gap-2 mt-3">
               <input value={newAss} onChange={e => setNewAss(e.target.value)} placeholder="Add assignment..." className="neo-input flex-1 text-xs py-1.5" />
               <input type="date" value={newDue} onChange={e => setNewDue(e.target.value)} className="neo-input text-xs py-1.5 w-28" />
-              <button onClick={() => { if (newAss.trim()) { addAssignment(subject.id, newAss.trim(), newDue || 'TBD'); setNewAss(''); setNewDue(''); } }} className="neo-button px-3 py-1.5 text-xs bg-[#B8D8F8] font-extrabold"><Plus size={12} /></button>
+              <button onClick={() => { if (newAss.trim()) { addAssignment(subject.id, newAss.trim(), newDue); setNewAss(''); setNewDue(''); } }} className="neo-button px-3 py-1.5 text-xs bg-[#B8D8F8] font-extrabold"><Plus size={12} /></button>
             </div>
           </div>
 
@@ -289,9 +289,11 @@ function ExamCard({ exam, index, isLast }: { exam: Exam; index: number; isLast: 
               </span>
             )}
           </div>
-          <div className="flex items-center gap-1 text-xs text-[#5C5C5C] font-medium mt-1">
-            <Clock size={10} /> {exam.time}
-          </div>
+          {exam.time ? (
+            <div className="flex items-center gap-1 text-xs text-[#5C5C5C] font-medium mt-1">
+              <Clock size={10} /> {exam.time}
+            </div>
+          ) : null}
           <div className="flex gap-1 mt-1.5 flex-wrap">
             {exam.syllabus.map((topic, j) => (
               <span key={j} className="text-[9px] font-medium px-1.5 py-0.5 rounded-full border-[2px] border-[#2D2D2D] bg-[#FFFDF8]">{topic}</span>

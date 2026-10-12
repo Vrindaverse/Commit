@@ -298,7 +298,7 @@ export default function GoalsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <PageHeader title="Goals" description="Track your long-term vision and short-term objectives" icon={<Target size={20} />} />
         <button onClick={() => setShowAdd(!showAdd)} className="neo-button px-4 py-2 text-sm bg-[#F7E8A4] flex items-center gap-2 whitespace-nowrap">
           <Plus size={16} /> {showAdd ? 'Cancel' : 'New Goal'}

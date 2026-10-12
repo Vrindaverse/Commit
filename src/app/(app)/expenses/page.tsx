@@ -18,21 +18,14 @@ import {
   getDaysInMonth, getDay, isSameMonth, startOfWeek, endOfWeek, startOfMonth, endOfMonth,
 } from 'date-fns';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectItem,
 } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Card } from '@/components/ui/card';
 import {
   Dialog,
   DialogTrigger,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
 } from '@/components/ui/dialog';
 
 const CURRENCY = '₹';
@@ -1306,7 +1299,7 @@ export default function ExpensesPage() {
           <button onClick={() => shiftPeriod(-1)} className="neo-button p-1.5 bg-[#FFFDF8]" aria-label="Previous period">
             <ChevronLeft size={14} />
           </button>
-          <span className="text-sm font-extrabold px-2 min-w-[160px] text-center">{range.label}</span>
+          <span className="text-sm font-extrabold px-2 min-w-[120px] sm:min-w-[160px] text-center">{range.label}</span>
           <button
             onClick={() => shiftPeriod(1)}
             disabled={range.start >= dayKey(new Date())}

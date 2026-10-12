@@ -15,9 +15,9 @@ const PALETTE = {
 
 const COPY: Record<OtpPurpose, { heading: string; blurb: string; subject: string; accent: string }> = {
   login: {
-    heading: 'Sign in to LifeOS',
+    heading: 'Sign in to Commit',
     blurb: 'Use this code to finish signing in. It expires in 10 minutes.',
-    subject: 'Your LifeOS sign-in code',
+    subject: 'Your Commit sign-in code',
     accent: PALETTE.yellow,
   },
   email_verification: {
@@ -29,7 +29,7 @@ const COPY: Record<OtpPurpose, { heading: string; blurb: string; subject: string
   password_reset: {
     heading: 'Reset your password',
     blurb: 'Enter this code to choose a new password. It expires in 10 minutes.',
-    subject: 'Reset your LifeOS password',
+    subject: 'Reset your Commit password',
     accent: PALETTE.pink,
   },
 };
@@ -52,8 +52,8 @@ export function otpEmailHtml({ purpose, code, name }: { purpose: OtpPurpose; cod
             <tr>
               <td style="padding-bottom:20px;">
                 <div style="display:inline-flex;align-items:center;gap:10px;">
-                  <div style="width:34px;height:34px;border:3px solid ${PALETTE.ink};border-radius:12px;background:${PALETTE.yellow};text-align:center;line-height:28px;font-weight:800;font-size:16px;color:${PALETTE.ink};">L</div>
-                  <span style="font-size:16px;font-weight:800;color:${PALETTE.ink};">LifeOS</span>
+                  <div style="width:34px;height:34px;border:3px solid ${PALETTE.ink};border-radius:12px;background:${PALETTE.yellow};text-align:center;line-height:28px;font-weight:800;font-size:16px;color:${PALETTE.ink};">C</div>
+                  <span style="font-size:16px;font-weight:800;color:${PALETTE.ink};">Commit</span>
                 </div>
               </td>
             </tr>
@@ -84,7 +84,7 @@ export function otpEmailHtml({ purpose, code, name }: { purpose: OtpPurpose; cod
             </tr>
             <tr>
               <td style="padding-top:20px;text-align:center;font-size:11px;color:${PALETTE.muted};font-weight:600;">
-                LifeOS &middot; Your personal command center
+                Commit &middot; Your personal command center
               </td>
             </tr>
           </table>

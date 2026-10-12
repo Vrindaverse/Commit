@@ -493,10 +493,10 @@ function CalendarPreview() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
         <div className="flex items-center gap-2">
           <button onClick={prevMonth} className="neo-button p-1.5 bg-[#FFFDF8]"><ChevronLeft size={16} /></button>
-          <h3 className="text-lg font-extrabold min-w-[200px] text-center">{monthName}</h3>
+          <h3 className="text-lg font-extrabold min-w-[140px] sm:min-w-[200px] text-center">{monthName}</h3>
           <button onClick={nextMonth} className="neo-button p-1.5 bg-[#FFFDF8]"><ChevronRight size={16} /></button>
         </div>
         {!isCurrentMonth && (

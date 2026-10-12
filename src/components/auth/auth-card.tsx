@@ -13,7 +13,7 @@ export default function AuthCard({
     <div className="neo-card p-8 w-full">
       <div className="flex items-center gap-3 mb-7">
         <div className="w-11 h-11 rounded-xl border-[3px] border-[#2D2D2D] bg-[#F7E8A4] flex items-center justify-center text-xl font-extrabold flex-shrink-0">
-          L
+          C
         </div>
         <div>
           <h1 className="text-xl font-extrabold leading-tight text-[#2A2A2A]">Commit</h1>

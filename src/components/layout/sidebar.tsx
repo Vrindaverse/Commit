@@ -293,7 +293,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       <div className="flex items-center justify-between px-5 py-5 border-b-[3px] border-[#2D2D2D] rounded-t-[17px]">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl border-[3px] border-[#2D2D2D] bg-[#F7E8A4] flex items-center justify-center text-base font-extrabold flex-shrink-0">
-            L
+            C
           </div>
           <div>
             <h1 className="text-base font-extrabold leading-tight text-[#2A2A2A]">Commit</h1>

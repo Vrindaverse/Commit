@@ -227,7 +227,7 @@ export default function LearningPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <PageHeader title="Learning" description="Track your learning paths and skill development" icon={<BookOpen size={20} />} />
         <button onClick={() => setShowNew(!showNew)} className="neo-button px-4 py-2 text-sm bg-[#F7E8A4] flex items-center gap-2 whitespace-nowrap">
           <Plus size={16} /> {showNew ? 'Cancel' : 'New Path'}

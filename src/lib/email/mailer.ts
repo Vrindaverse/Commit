@@ -4,7 +4,7 @@ import { Resend } from 'resend';
 import type { OtpPurpose } from '@/lib/auth/otp';
 import { otpEmailHtml, otpSubject } from './templates';
 
-const FALLBACK_FROM = 'LifeOS <onboarding@resend.dev>';
+const FALLBACK_FROM = 'Commit <onboarding@resend.dev>';
 
 function getResend(): Resend {
   const apiKey = process.env.RESEND_API_KEY;
@@ -17,7 +17,7 @@ export function isEmailConfigured(): boolean {
 }
 
 function logOtpToConsole(to: string, purpose: OtpPurpose, code: string): void {
-  console.log(`\n[LifeOS] OTP for ${to} (${purpose}): ${code}\n`);
+  console.log(`\n[Commit] OTP for ${to} (${purpose}): ${code}\n`);
 }
 
 export async function sendOtpEmail({
@@ -54,7 +54,7 @@ export async function sendOtpEmail({
       throw new Error(`Failed to send email: ${error.name} ${error.message}`);
     }
     console.warn(
-      `[LifeOS] Resend rejected delivery to ${to} (${error.name}: ${error.message}). ` +
+      `[Commit] Resend rejected delivery to ${to} (${error.name}: ${error.message}). ` +
         'Falling back to console. Verify this address in your Resend account or add a sending domain + EMAIL_FROM.'
     );
     logOtpToConsole(to, purpose, code);

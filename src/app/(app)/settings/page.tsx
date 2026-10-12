@@ -6,17 +6,18 @@ import NeoCard from '@/components/shared/neo-card';
 import PageHeader from '@/components/shared/page-header';
 import { useLifeStore } from '@/store/use-store';
 import { useRouter } from 'next/navigation';
+import { toast } from '@/components/shared/toast';
 
 const accentColors = ['#F7E8A4', '#B8D8F8', '#CDEAC0', '#F8C8C8', '#DCCEF5', '#FFD8BE'];
 
 function SettingRow({ label, description, children }: { label: string; description: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between py-4 border-b-[2px] border-[#2D2D2D] last:border-b-0">
-      <div>
+    <div className="flex flex-col gap-3 py-4 border-b-[2px] border-[#2D2D2D] last:border-b-0 sm:flex-row sm:items-center sm:justify-between">
+      <div className="min-w-0">
         <p className="text-sm font-extrabold">{label}</p>
         <p className="text-xs text-[#5C5C5C] font-medium">{description}</p>
       </div>
-      {children}
+      <div className="shrink-0">{children}</div>
     </div>
   );
 }
@@ -43,20 +44,28 @@ export default function SettingsPage() {
   const handleExport = async () => {
     const endpoints = ['tasks', 'goals', 'projects', 'habits', 'learning', 'subjects', 'exams', 'journal', 'login-logs'];
     const data: Record<string, unknown> = {};
+    let failed = 0;
     for (const ep of endpoints) {
       try {
         const res = await fetch(`/api/${ep}`);
         if (!res.ok) throw new Error(`Export ${ep} failed: ${res.status}`);
         data[ep] = await res.json();
-      } catch { /* skip */ }
+      } catch {
+        failed += 1;
+      }
+    }
+    if (failed === endpoints.length) {
+      toast.error('Export failed. Please try again.');
+      return;
     }
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `lifeos-export-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `commit-export-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    toast.success(failed ? 'Export ready (some data skipped)' : 'Export downloaded');
   };
 
   const handleReset = async () => {
@@ -70,7 +79,9 @@ export default function SettingsPage() {
         await Promise.all(items.map(item => fetch(`/api/${ep}/${item.id}`, { method: 'DELETE' })));
       } catch { /* skip */ }
     }
-    window.location.reload();
+    clearStore();
+    toast.success('All data cleared');
+    setTimeout(() => window.location.reload(), 700);
   };
 
   return (

@@ -284,7 +284,7 @@ export default function ProjectsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <PageHeader title="Projects" description="Active projects and their progress" icon={<Rocket size={20} />} />
         <button onClick={() => setShowNew(!showNew)} className="neo-button px-4 py-2 text-sm bg-[#B8D8F8] flex items-center gap-2 whitespace-nowrap">
           <Plus size={16} /> {showNew ? 'Cancel' : 'New Project'}

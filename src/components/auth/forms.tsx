@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { Eye, EyeOff, Mail } from 'lucide-react';
+import { toast } from '@/components/shared/toast';
 
 function Field({
   label,
@@ -120,6 +120,7 @@ export function LoginForm({ next }: { next?: string }) {
         setError(data.error ?? 'Invalid email or password. Please try again.');
         return;
       }
+      toast.success('Welcome back!');
       router.push(next || '/');
       router.refresh();
     } catch {
@@ -182,6 +183,7 @@ export function SignupForm() {
         setError(data.error ?? 'Something went wrong. Please try again.');
         return;
       }
+      toast.success('Account created. Welcome!');
       router.push('/');
       router.refresh();
     } catch {

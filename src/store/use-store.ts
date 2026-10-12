@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import { Task, Goal, Project, Habit, JournalEntry, Milestone, LearningPath, Subject, Exam, Settings, Expense, Loan } from '@/types';
+import { toast } from '@/components/shared/toast';
 
 let idCounter = 100;
 export const genId = () => `gen_${++idCounter}`;
@@ -126,8 +127,8 @@ export const useLifeStore = create<LifeStore>((set, get) => ({
   sidebarCollapsed: false,
   settings: {
     id: '',
-    displayName: 'Vrinda',
-    email: 'vrinda@example.com',
+    displayName: '',
+    email: '',
     dailyReminder: true,
     goalAlerts: true,
     accentColor: '#F7E8A4',
@@ -189,6 +190,7 @@ export const useLifeStore = create<LifeStore>((set, get) => ({
     } catch (e) {
       console.error('Failed to hydrate store from API:', e);
       set({ hydrated: true });
+      toast.error('Could not load your data. Please refresh the page.');
     }
   },
 
@@ -196,6 +198,7 @@ export const useLifeStore = create<LifeStore>((set, get) => ({
   addTask: async (task) => {
     const created = await api.post<Task>('/api/tasks', task);
     set(s => ({ tasks: [...s.tasks, created] }));
+    toast.success('Task added');
   },
 
   updateTask: async (id, updates) => {
@@ -212,6 +215,7 @@ export const useLifeStore = create<LifeStore>((set, get) => ({
   addGoal: async (goal) => {
     const created = await api.post<Goal>('/api/goals', goal);
     set(s => ({ goals: [...s.goals, created] }));
+    toast.success('Goal added');
   },
 
   updateGoal: async (id, updates) => {
@@ -269,6 +273,7 @@ export const useLifeStore = create<LifeStore>((set, get) => ({
   addProject: async (project) => {
     const created = await api.post<Project>('/api/projects', project);
     set(s => ({ projects: [...s.projects, created] }));
+    toast.success('Project added');
   },
 
   deleteProject: async (id) => {
@@ -354,6 +359,7 @@ export const useLifeStore = create<LifeStore>((set, get) => ({
   addHabit: async (habit) => {
     const created = await api.post<Habit>('/api/habits', habit);
     set(s => ({ habits: [...s.habits, { ...created, streak: calcStreak(created.logs) }] }));
+    toast.success('Habit added');
   },
 
   deleteHabit: async (id) => {
@@ -387,6 +393,7 @@ export const useLifeStore = create<LifeStore>((set, get) => ({
   addLearningPath: async (path) => {
     const created = await api.post<LearningPath>('/api/learning', path);
     set(s => ({ learningPaths: [...s.learningPaths, created] }));
+    toast.success('Learning path added');
   },
 
   deleteLearningPath: async (id) => {
@@ -451,6 +458,7 @@ export const useLifeStore = create<LifeStore>((set, get) => ({
   addEntry: async (entry) => {
     const created = await api.post<JournalEntry>('/api/journal', entry);
     set(s => ({ journalEntries: [created, ...s.journalEntries] }));
+    toast.success('Journal entry saved');
   },
 
   deleteEntry: async (id) => {
@@ -462,6 +470,7 @@ export const useLifeStore = create<LifeStore>((set, get) => ({
   addSubject: async (subject) => {
     const created = await api.post<Subject>('/api/subjects', subject);
     set(s => ({ subjects: [...s.subjects, created] }));
+    toast.success('Subject added');
   },
 
   deleteSubject: async (id) => {
@@ -499,6 +508,7 @@ export const useLifeStore = create<LifeStore>((set, get) => ({
   addExam: async (exam) => {
     const created = await api.post<Exam>('/api/exams', exam);
     set(s => ({ exams: [...s.exams, created] }));
+    toast.success('Exam added');
   },
 
   deleteExam: async (id) => {
@@ -515,6 +525,7 @@ export const useLifeStore = create<LifeStore>((set, get) => ({
   addExpense: async (expense) => {
     const created = await api.post<Expense>('/api/expenses', expense);
     set(s => ({ expenses: [created, ...s.expenses] }));
+    toast.success('Transaction added');
   },
 
   updateExpense: async (id, updates) => {
@@ -531,6 +542,7 @@ export const useLifeStore = create<LifeStore>((set, get) => ({
   addLoan: async (loan) => {
     const created = await api.post<Loan>('/api/loans', loan);
     set(s => ({ loans: [created, ...s.loans] }));
+    toast.success('Loan added');
   },
 
   updateLoan: async (id, updates) => {

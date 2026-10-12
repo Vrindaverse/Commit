@@ -199,7 +199,7 @@ function HabitCalendar({ habits }: { habits: { id: string; name: string; color: 
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <button onClick={() => setViewDate(new Date(year, month - 1, 1))} className="neo-button p-1.5 bg-[#FFFDF8]"><ChevronLeft size={16} /></button>
-          <h3 className="text-base font-extrabold min-w-[180px] text-center">{monthName}</h3>
+          <h3 className="text-base font-extrabold min-w-[130px] sm:min-w-[180px] text-center">{monthName}</h3>
           <button onClick={() => setViewDate(new Date(year, month + 1, 1))} className="neo-button p-1.5 bg-[#FFFDF8]"><ChevronRight size={16} /></button>
         </div>
         {!isCurrentMonth && (
@@ -401,7 +401,7 @@ export default function HabitsPage() {
     <div>
       <PageHeader title="Habits" description="Track your daily habits and maintain streaks" icon={<Flame size={20} />} />
 
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <p className="text-sm font-bold text-[#5C5C5C]">{habits.length} habit{habits.length !== 1 ? 's' : ''} tracked</p>
         <button onClick={() => setShowAdd(!showAdd)} className="neo-button px-3 py-1.5 text-xs bg-[#F7E8A4] font-extrabold flex items-center gap-1">
           <Plus size={12} /> New Habit

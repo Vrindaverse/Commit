@@ -6,7 +6,8 @@ import { SignupForm } from "@/components/auth/forms";
 import { verifySession } from "@/lib/auth/dal";
 
 export const metadata: Metadata = {
-  title: "Create account — Commit",
+  title: "Create account",
+  description: "Create your free Commit account and set up your personal command center.",
 };
 
 export default async function SignupPage() {

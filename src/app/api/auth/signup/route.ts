@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { users } from '@/db/schema';
 import { readBody, errorResponse, ApiError } from '@/lib/api';

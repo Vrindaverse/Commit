@@ -8,7 +8,7 @@ import {
   Briefcase, Laptop, Gift, RotateCcw, Banknote, Landmark, CreditCard, Smartphone,
   ArrowUpRight, ArrowDownRight, Download, PiggyBank, Repeat, SlidersHorizontal,
   ChevronLeft, ChevronRight, CalendarDays, HandCoins, Check, Scale, Trophy, Target, Sparkles,
-  Loader2,
+  Loader2, Trash2,
 } from 'lucide-react';
 import NeoCard from '@/components/shared/neo-card';
 import PageHeader from '@/components/shared/page-header';
@@ -298,57 +298,69 @@ return (
       </div>
 
       <div className="space-y-3">
-        <div className="flex flex-col gap-3">
-           <input
-             value={title}
-             onChange={(e) => {
-               setTitle(e.target.value);
-               validate();
-             }}
-             placeholder={type === 'income' ? 'Where did it come from?' : 'What did you spend on?'}
-             className="neo-input flex-1 text-sm font-bold min-h-[48px]"
-             required
-             autoFocus
-           />
-           {titleError && <span className="text-xs block mb-2" style={{ color: '#EF4444' }}>{titleError}</span>}
-           <input
-             type="number"
-             inputMode="decimal"
-             min="0"
-             step="0.01"
-             value={amount}
-             onChange={(e) => {
-               setAmount(e.target.value);
-               validate();
-             }}
-             placeholder="0.00"
-             className="neo-input w-full text-sm font-bold min-h-[48px]"
-             required
-           />
-           {amountError && <span className="text-xs block mb-2" style={{ color: '#EF4444' }}>{amountError}</span>}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+           <div className="min-w-0">
+             <label className="text-xs font-bold text-[#5C5C5C] block mb-1.5">Title</label>
+             <input
+               value={title}
+               onChange={(e) => {
+                 setTitle(e.target.value);
+                 validate();
+               }}
+               placeholder={type === 'income' ? 'Where did it come from?' : 'What did you spend on?'}
+               className="neo-input w-full text-sm font-bold min-h-[48px]"
+               required
+               autoFocus
+             />
+             {titleError && <span className="text-xs block mt-1" style={{ color: '#EF4444' }}>{titleError}</span>}
+           </div>
+           <div className="min-w-0">
+             <label className="text-xs font-bold text-[#5C5C5C] block mb-1.5">Amount</label>
+             <input
+               type="number"
+               inputMode="decimal"
+               min="0"
+               step="0.01"
+               value={amount}
+               onChange={(e) => {
+                 setAmount(e.target.value);
+                 validate();
+               }}
+               placeholder="0.00"
+               className="neo-input w-full text-sm font-bold min-h-[48px]"
+               required
+             />
+             {amountError && <span className="text-xs block mt-1" style={{ color: '#EF4444' }}>{amountError}</span>}
+           </div>
         </div>
 
-         <div className="flex flex-col gap-3">
-           <input
-             type="date"
-             value={date}
-             onChange={(e) => {
-               setDate(e.target.value);
-               validate();
-             }}
-             className="neo-input text-sm font-bold w-full min-h-[48px]"
-             required
-           />
-           {dateError && <span className="text-xs block mb-2" style={{ color: '#EF4444' }}>{dateError}</span>}
-           <div className="w-full">
-            <Select
-              value={account}
-              onValueChange={(value) => setAccount(value as Account)}
-            >
-              {ACCOUNTS.map((a) => (
-                <SelectItem key={a} value={a}>{ACCOUNT_META[a].label}</SelectItem>
-              ))}
-            </Select>
+         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+           <div className="min-w-0">
+             <label className="text-xs font-bold text-[#5C5C5C] block mb-1.5">Date</label>
+             <input
+               type="date"
+               value={date}
+               onChange={(e) => {
+                 setDate(e.target.value);
+                 validate();
+               }}
+               className="neo-input text-sm font-bold w-full min-h-[48px]"
+               required
+             />
+             {dateError && <span className="text-xs block mt-1" style={{ color: '#EF4444' }}>{dateError}</span>}
+           </div>
+           <div className="min-w-0">
+             <label className="text-xs font-bold text-[#5C5C5C] block mb-1.5">Account</label>
+             <div className="w-full">
+              <Select
+                value={account}
+                onValueChange={(value) => setAccount(value as Account)}
+              >
+                {ACCOUNTS.map((a) => (
+                  <SelectItem key={a} value={a}>{ACCOUNT_META[a].label}</SelectItem>
+                ))}
+              </Select>
+            </div>
           </div>
         </div>
 
@@ -660,18 +672,18 @@ function StatCard({
 }) {
   return (
     <div className={`neo-card p-5 ${tint ?? ''}`}>
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-[#5C5C5C]">{label}</p>
+      <div className="flex items-center justify-between mb-2 gap-2">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-[#5C5C5C] truncate">{label}</p>
         <div
-          className="w-8 h-8 rounded-lg border-[2px] border-[#2D2D2D] flex items-center justify-center"
+          className="w-8 h-8 rounded-lg border-[2px] border-[#2D2D2D] flex items-center justify-center shrink-0"
           style={{ backgroundColor: color }}
         >
           {icon}
         </div>
       </div>
-      <p className="text-2xl font-extrabold text-[#2A2A2A]">{value}</p>
-      <div className="flex items-center gap-2 mt-0.5">
-        {sub ? <p className="text-[11px] font-bold text-[#5C5C5C]">{sub}</p> : null}
+      <p className="text-2xl font-extrabold text-[#2A2A2A] tabular-nums truncate">{value}</p>
+      <div className="flex items-center gap-2 mt-0.5 min-w-0">
+        {sub ? <p className="text-[11px] font-bold text-[#5C5C5C] truncate">{sub}</p> : null}
         {typeof trend === 'number' ? (
           <span
             className={`text-[11px] font-extrabold flex items-center gap-0.5 ${
@@ -843,8 +855,7 @@ export default function ExpensesPage() {
     const [isAdding, setIsAdding] = useState(false);
 
     // Confirmation dialog for deletion
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const [deleteId, setDeleteId] = useState<string | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<{ kind: 'expense' | 'loan'; id: string; label: string } | null>(null);
 
    const resetTouchState = () => {
      setIsDragging(false);
@@ -1256,8 +1267,7 @@ export default function ExpensesPage() {
           description="Expenses, earnings, savings and loans — daily, weekly, monthly"
           icon={<Wallet size={20} />}
         />
-          <div className="flex items-center gap-2">
-{showLoans && (
+          <div className="flex items-center gap-2 flex-wrap">
               <Dialog
                 open={showLoans}
                 onOpenChange={(open) => {
@@ -1267,18 +1277,18 @@ export default function ExpensesPage() {
                 }}
               >
                 <DialogTrigger asChild>
-                  <Button
-                    onClick={(e) => {
+                  <button
+                    type="button"
+                    onClick={() => {
                       triggerHapticFeedback();
                       setShowLoans(true); setShowForm(false); setShowBudgets(false); }}
-                    variant="outline"
-                    size="xs"
-                    className={`flex items-center gap-2 whitespace-nowrap tint-teal ${showLoans ? 'bg-[#BFE3E0]' : 'bg-[#FFFDF8]'}`}
+                    className={`neo-button px-4 py-3 text-sm font-bold flex items-center gap-2 whitespace-nowrap min-h-[48px] tint-teal ${showLoans ? 'bg-[#BFE3E0]' : 'bg-[#FFFDF8]'}`}
                   >
-                    <HandCoins size={15} /> Loans
-                  </Button>
+                    <HandCoins size={16} /> Loans
+                  </button>
                 </DialogTrigger>
 <DialogContent 
+                  showCloseButton={false}
                   className="sm:max-w-lg max-w-[95vw] p-0 overflow-hidden"
                   style={{ transform: `translateY(${loansDragOffset}px)` }}
                   onTouchStart={(e) => {
@@ -1410,8 +1420,7 @@ export default function ExpensesPage() {
 </button>
              <button
                onClick={() => {
-                 setDeleteId(l.id);
-                 setShowDeleteConfirm(true);
+                 setDeleteTarget({ kind: 'loan', id: l.id, label: l.title });
                }}
                className="p-1.5 rounded-lg text-[#5C5C5C] hover:text-[#B85042] hover:bg-[#F0ECE4] transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                aria-label="Delete loan"
@@ -1448,8 +1457,6 @@ export default function ExpensesPage() {
  </AnimatePresence>
                </DialogContent>
              </Dialog>
-           )}
-            {showBudgets && (
               <Dialog
                 open={showBudgets}
                 onOpenChange={(open) => {
@@ -1459,18 +1466,18 @@ export default function ExpensesPage() {
                 }}
               >
                 <DialogTrigger asChild>
-                  <Button
-                    onClick={(e) => {
+                  <button
+                    type="button"
+                    onClick={() => {
                       triggerHapticFeedback();
                       setShowBudgets(true); setShowForm(false); setShowLoans(false); }}
-                    variant="outline"
-                    size="xs"
-                    className={`flex items-center gap-2 whitespace-nowrap tint-blue bg-[#FFFDF8] min-h-[48px]`}
+                    className={`neo-button px-4 py-3 text-sm font-bold flex items-center gap-2 whitespace-nowrap min-h-[48px] tint-blue ${showBudgets ? 'bg-[#B8D8F8]' : 'bg-[#FFFDF8]'}`}
                   >
-                    <SlidersHorizontal size={15} /> Budgets
-                  </Button>
+                    <SlidersHorizontal size={16} /> Budgets
+                  </button>
                 </DialogTrigger>
                 <DialogContent 
+                  showCloseButton={false}
                   className="sm:w-[500px] max-w-[95vw] p-0 overflow-hidden"
                   style={{ transform: `translateY(${budgetDragOffset}px)` }}
                   onTouchStart={(e) => {
@@ -1506,7 +1513,6 @@ export default function ExpensesPage() {
                   <BudgetEditor budgets={budgets} onChange={setBudget} onClose={() => setShowBudgets(false)} />
                 </DialogContent>
               </Dialog>
-            )}
             <Dialog open={showForm} onOpenChange={(open) => {
               if (!open) {
                 setShowForm(false);
@@ -1516,17 +1522,19 @@ export default function ExpensesPage() {
             }}>
                <DialogTrigger asChild>
                  <button
+                   type="button"
                    onClick={() => {
                      triggerHapticFeedback();
                      startAdd();
                    }}
-                   className="neo-button px-6 py-3 text-base font-bold bg-[#CDEAC0] flex items-center gap-2 whitespace-nowrap tint-green text-[#2A2A2A]"
+                   className="neo-button px-4 py-3 text-sm font-bold bg-[#CDEAC0] flex items-center gap-2 whitespace-nowrap tint-green text-[#2A2A2A] min-h-[48px]"
                    aria-label="Add new transaction"
                  >
                    <Plus size={16} /> Add
                  </button>
                </DialogTrigger>
               <DialogContent 
+                showCloseButton={false}
                 className="sm:max-w-lg max-w-[95vw] p-0 overflow-hidden"
                 style={{ transform: `translateY(${dragOffset}px)` }}
                 onTouchStart={(e) => {
@@ -1594,8 +1602,9 @@ export default function ExpensesPage() {
             <button
               key={p.key}
               onClick={() => setPeriod(p.key)}
-              className={`px-4 py-1.5 text-xs font-extrabold transition-colors ${
-                period === p.key ? 'bg-[#B8D8F8] text-[#2A2A2A]' : 'bg-[#FFFDF8] text-[#5C5C5C]'
+              aria-pressed={period === p.key}
+              className={`px-4 py-2 text-xs font-extrabold transition-colors min-h-[40px] flex items-center ${
+                period === p.key ? 'bg-[#B8D8F8] text-[#2A2A2A]' : 'bg-[#FFFDF8] text-[#5C5C5C] hover:bg-[#F0ECE4]'
               }`}
             >
               {p.label}
@@ -2246,37 +2255,12 @@ export default function ExpensesPage() {
 
       {period === 'monthly' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
-        <NeoCard color="#DCCEF5">
-          <SectionTitle icon={<TrendingUp size={15} />} title={`Spending by Category · ${range.label}`} />
-          {breakdown.list.length === 0 ? (
-            <p className="text-sm font-medium text-[#5C5C5C]">No spending logged in this period yet.</p>
-          ) : (
-            <div className="space-y-2.5">
-              {breakdown.list.slice(0, 6).map((c) => (
-                <div key={c.key} className="flex items-center gap-3">
-                  <div
-                    className="w-8 h-8 rounded-lg border-[2px] border-[#2D2D2D] flex items-center justify-center shrink-0"
-                    style={{ backgroundColor: c.color }}
-                  >
-                    {c.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-bold">{c.label}</span>
-                      <span className="text-xs font-extrabold">{money(c.total)}</span>
-                    </div>
-                    <div className="h-2 rounded-full bg-[#F0ECE4] border-[2px] border-[#2D2D2D] overflow-hidden">
-                      <div
-                        className="h-full rounded-full"
-                        style={{ width: `${breakdown.max ? (c.total / breakdown.max) * 100 : 0}%`, backgroundColor: c.color }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </NeoCard>
+        <BreakdownCard
+          title={`Spending by Category · ${range.label}`}
+          color="#DCCEF5"
+          rows={breakdown.list}
+          max={breakdown.max}
+        />
 
         <NeoCard color="#FFD8BE">
           <SectionTitle icon={<Target size={15} />} title={`Category Budgets · ${format(anchor, 'MMMM')}`} />
@@ -2460,10 +2444,9 @@ export default function ExpensesPage() {
 </button>
                                <button
                                  onClick={() => {
-                                   setDeleteId(t.id);
-                                   setShowDeleteConfirm(true);
+                                   setDeleteTarget({ kind: 'expense', id: t.id, label: t.title });
                                  }}
-                                 className="p-1.5 rounded-lg text-[#5C5C5C] hover:text-[#B85042] hover:bg-[#F0ECE4] transition-colors"
+                                 className="p-1.5 rounded-lg text-[#5C5C5C] hover:text-[#B85042] hover:bg-[#F0ECE4] transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                                  aria-label="Delete transaction"
                                >
                                  <X size={14} />
@@ -2498,6 +2481,54 @@ export default function ExpensesPage() {
           <p className="text-sm text-[#5C5C5C] font-medium">Log your first income or expense to get started</p>
         </div>
       )}
+
+      <Dialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+      >
+        <DialogContent showCloseButton={false} className="sm:max-w-sm p-0 overflow-hidden">
+          <div className="neo-card p-5 tint-pink">
+            <div className="flex items-center gap-3 mb-3">
+              <span className="w-10 h-10 rounded-xl border-[3px] border-[#2D2D2D] bg-[#F8C8C8] flex items-center justify-center shrink-0">
+                <Trash2 size={18} />
+              </span>
+              <div className="min-w-0">
+                <h2 className="text-base font-extrabold">
+                  Delete {deleteTarget?.kind === 'loan' ? 'loan' : 'transaction'}?
+                </h2>
+                <p className="text-xs font-bold text-[#5C5C5C] truncate">{deleteTarget?.label}</p>
+              </div>
+            </div>
+            <p className="text-xs font-medium text-[#5C5C5C] mb-4">
+              This action can&apos;t be undone.
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                className="neo-button flex-1 px-4 py-3 text-sm bg-[#FFFDF8] min-h-[48px]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  triggerHapticFeedback();
+                  if (!deleteTarget) return;
+                  if (deleteTarget.kind === 'loan') deleteLoan(deleteTarget.id);
+                  else deleteExpense(deleteTarget.id);
+                  setDeleteTarget(null);
+                }}
+                className="neo-button flex-1 px-4 py-3 text-sm bg-[#F8C8C8] tint-pink font-extrabold min-h-[48px]"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

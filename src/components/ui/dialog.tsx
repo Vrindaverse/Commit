@@ -11,8 +11,28 @@ function Dialog({ ...props }: DialogPrimitive.Root.Props) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />
 }
 
-function DialogTrigger({ ...props }: DialogPrimitive.Trigger.Props) {
-  return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />
+function DialogTrigger({ 
+  asChild,
+  ...props 
+}: DialogPrimitive.Trigger.Props & { 
+  asChild?: boolean 
+}) {
+  if (asChild) {
+    // We expect a single child
+    const childrenArray = React.Children.toArray(props.children);
+    if (childrenArray.length === 1) {
+      const child = childrenArray[0] as React.ReactElement;
+      return React.cloneElement(child, {
+        ...props,
+      });
+    } else {
+      // If there are not exactly one child, we fall back to the default trigger
+      console.warn('DialogTrigger with asChild expects exactly one child');
+      return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />;
+    }
+  }
+
+  return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />;
 }
 
 function DialogPortal({ ...props }: DialogPrimitive.Portal.Props) {

@@ -258,7 +258,7 @@
   }
   
   /* Stat cards on mobile */
-  .sm\\:grid-cols-2 > div {
+  .sm\:grid-cols-2 > div {
     min-height: 60px;
   }
   
@@ -279,12 +279,12 @@
   }
   
   /* Form layout adjustments */
-  form .flex.flex-col.sm\\:flex-row {
+  form .flex.flex-col.sm\:flex-row {
     flex-direction: column;
     gap: 0.75rem;
   }
   
-  form .flex.flex-col.sm\\:flex-row > * {
+  form .flex.flex-col.sm\:flex-row > * {
     width: 100%;
   }
 }

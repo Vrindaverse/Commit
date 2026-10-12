@@ -45,41 +45,54 @@ const moneyShort = (v: string | number) => {
 };
 
 const CATEGORY_META: Record<ExpenseCategory, { label: string; color: string; icon: React.ReactNode; kind: 'expense' | 'income' | 'both' }> = {
-  food: { label: 'Food', color: '#FFD8BE', icon: <Utensils size={16} />, kind: 'expense' },
-  transport: { label: 'Transport', color: '#B8D8F8', icon: <Car size={16} />, kind: 'expense' },
-  shopping: { label: 'Shopping', color: '#DCCEF5', icon: <ShoppingBag size={16} />, kind: 'expense' },
-  bills: { label: 'Bills', color: '#F8C8C8', icon: <Receipt size={16} />, kind: 'expense' },
-  entertainment: { label: 'Fun', color: '#F7E8A4', icon: <Film size={16} />, kind: 'expense' },
-  health: { label: 'Health', color: '#CDEAC0', icon: <HeartPulse size={16} />, kind: 'expense' },
-  education: { label: 'Education', color: '#BFE3E0', icon: <GraduationCap size={16} />, kind: 'expense' },
-  salary: { label: 'Salary', color: '#CDEAC0', icon: <Briefcase size={16} />, kind: 'income' },
-  freelance: { label: 'Freelance', color: '#BFE3E0', icon: <Laptop size={16} />, kind: 'income' },
-  investment: { label: 'Investment', color: '#B8D8F8', icon: <TrendingUp size={16} />, kind: 'income' },
-  gift: { label: 'Gift', color: '#F7E8A4', icon: <Gift size={16} />, kind: 'income' },
-  refund: { label: 'Refund', color: '#DCCEF5', icon: <RotateCcw size={16} />, kind: 'income' },
-  other: { label: 'Other', color: '#E4DED4', icon: <Package size={16} />, kind: 'both' },
+   food: { label: 'Food', color: '#FFD8BE', icon: <Utensils size={16} />, kind: 'expense' },
+   transport: { label: 'Transport', color: '#B8D8F8', icon: <Car size={16} />, kind: 'expense' },
+   shopping: { label: 'Shopping', color: '#DCCEF5', icon: <ShoppingBag size={16} />, kind: 'expense' },
+   bills: { label: 'Bills', color: '#F8C8C8', icon: <Receipt size={16} />, kind: 'expense' },
+   entertainment: { label: 'Fun', color: '#F7E8A4', icon: <Film size={16} />, kind: 'expense' },
+   health: { label: 'Health', color: '#CDEAC0', icon: <HeartPulse size={16} />, kind: 'expense' },
+   education: { label: 'Education', color: '#BFE3E0', icon: <GraduationCap size={16} />, kind: 'expense' },
+   salary: { label: 'Salary', color: '#CDEAC0', icon: <Briefcase size={16} />, kind: 'income' },
+   freelance: { label: 'Freelance', color: '#BFE3E0', icon: <Laptop size={16} />, kind: 'income' },
+   investment: { label: 'Investment', color: '#B8D8F8', icon: <TrendingUp size={16} />, kind: 'income' },
+   gift: { label: 'Gift', color: '#F7E8A4', icon: <Gift size={16} />, kind: 'income' },
+   refund: { label: 'Refund', color: '#DCCEF5', icon: <RotateCcw size={16} />, kind: 'income' },
+   other: { label: 'Other', color: '#E4DED4', icon: <Package size={16} />, kind: 'both' },
 };
 
 const EXPENSE_CATS: ExpenseCategory[] = ['food', 'transport', 'shopping', 'bills', 'entertainment', 'health', 'education', 'other'];
 const INCOME_CATS: ExpenseCategory[] = ['salary', 'freelance', 'investment', 'gift', 'refund', 'other'];
 
 const ACCOUNT_META: Record<Account, { label: string; color: string; icon: React.ReactNode }> = {
-  cash: { label: 'Cash', color: '#CDEAC0', icon: <Banknote size={14} /> },
-  bank: { label: 'Bank', color: '#B8D8F8', icon: <Landmark size={14} /> },
-  card: { label: 'Card', color: '#DCCEF5', icon: <CreditCard size={14} /> },
-  upi: { label: 'UPI', color: '#F7E8A4', icon: <Smartphone size={14} /> },
-  other: { label: 'Other', color: '#E4DED4', icon: <Wallet size={14} /> },
+   cash: { label: 'Cash', color: '#CDEAC0', icon: <Banknote size={14} /> },
+   bank: { label: 'Bank', color: '#B8D8F8', icon: <Landmark size={14} /> },
+   card: { label: 'Card', color: '#DCCEF5', icon: <CreditCard size={14} /> },
+   upi: { label: 'UPI', color: '#F7E8A4', icon: <Smartphone size={14} /> },
+   other: { label: 'Other', color: '#E4DED4', icon: <Wallet size={14} /> },
 };
 
 const ACCOUNTS: Account[] = ['cash', 'bank', 'card', 'upi', 'other'];
 
 const LOAN_META: Record<LoanKind, { label: string; color: string; icon: React.ReactNode }> = {
-  borrowed: { label: 'Borrowed', color: '#F8C8C8', icon: <ArrowDownRight size={14} /> },
-  lent: { label: 'Lent', color: '#CDEAC0', icon: <ArrowUpRight size={14} /> },
+   borrowed: { label: 'Borrowed', color: '#F8C8C8', icon: <ArrowDownRight size={14} /> },
+   lent: { label: 'Lent', color: '#CDEAC0', icon: <ArrowUpRight size={14} /> },
 };
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const HEAT_COLORS = ['#F0ECE4', '#CDEAC0', '#F7E8A4', '#FFD8BE', '#F8C8C8'];
+
+// Haptic feedback helper
+const triggerHapticFeedback = () => {
+   // Check if Vibration API is available and supported
+   if ('vibrate' in navigator) {
+      try {
+         navigator.vibrate(10); // 10ms vibration
+      } catch (e) {
+         // Vibration API might not be available or permitted
+         console.warn('Vibration API not available:', e);
+      }
+   }
+};
 
 type SortKey = 'date-desc' | 'date-asc' | 'amount-desc' | 'amount-asc';
 type Period = 'daily' | 'weekly' | 'monthly';
@@ -739,80 +752,50 @@ export default function ExpensesPage() {
   const [filterType, setFilterType] = useState<'all' | TransactionType>('all');
   const [filterCategory, setFilterCategory] = useState<ExpenseCategory | ''>('');
   const [sort, setSort] = useState<SortKey>('date-desc');
-  // Touch state for swipe-to-dismiss modal
-  const [touchStartY, setTouchStartY] = useState<number>(0);
-  const [dragOffset, setDragOffset] = useState<number>(0);
-  const [isDragging, setIsDragging] = useState<boolean>(false);
-  
-  // Touch state for budgets dialog swipe-to-dismiss
-  const [budgetTouchStartY, setBudgetTouchStartY] = useState<number>(0);
-  const [budgetDragOffset, setBudgetDragOffset] = useState<number>(0);
-  const [budgetIsDragging, setBudgetIsDragging] = useState<boolean>(false);
-  
-  // Touch state for loans dialog swipe-to-dismiss
-  const [loansTouchStartY, setLoansTouchStartY] = useState<number>(0);
-  const [loansDragOffset, setLoansDragOffset] = useState<number>(0);
-  const [loansIsDragging, setLoansIsDragging] = useState<boolean>(false);
 
-  const resetTouchState = () => {
-    setIsDragging(false);
-    setDragOffset(0);
-  };
-  
-  const resetBudgetTouchState = () => {
-    setBudgetIsDragging(false);
-    setBudgetDragOffset(0);
-  };
-  
-  const resetLoansTouchState = () => {
-    setLoansIsDragging(false);
-    setLoansDragOffset(0);
-  };
+   // Touch state for swipe-to-dismiss modal
+   const [touchStartY, setTouchStartY] = useState<number>(0);
+   const [dragOffset, setDragOffset] = useState<number>(0);
+   const [isDragging, setIsDragging] = useState<boolean>(false);
+   
+   // Touch state for budgets dialog swipe-to-dismiss
+   const [budgetTouchStartY, setBudgetTouchStartY] = useState<number>(0);
+   const [budgetDragOffset, setBudgetDragOffset] = useState<number>(0);
+   const [budgetIsDragging, setBudgetIsDragging] = useState<boolean>(false);
+   
+   // Touch state for loans dialog swipe-to-dismiss
+   const [loansTouchStartY, setLoansTouchStartY] = useState<number>(0);
+   const [loansDragOffset, setLoansDragOffset] = useState<number>(0);
+   const [loansIsDragging, setLoansIsDragging] = useState<boolean>(false);
 
-  // Haptic feedback helper
-  const triggerHapticFeedback = () => {
-    // Check if Vibration API is available and supported
-    if ('vibrate' in navigator) {
-      try {
-        navigator.vibrate(10); // 10ms vibration
-      } catch (e) {
-        // Vibration API might not be available or permitted
-        console.warn('Vibration API not available:', e);
-      }
-    }
-  };
-  // Touch state for swipe-to-dismiss modal
-  const [touchStartY, setTouchStartY] = useState<number>(0);
-  const [dragOffset, setDragOffset] = useState<number>(0);
-  const [isDragging, setIsDragging] = useState<boolean>(false);
+   const resetTouchState = () => {
+     setIsDragging(false);
+     setDragOffset(0);
+   };
+   
+   const resetBudgetTouchState = () => {
+     setBudgetIsDragging(false);
+     setBudgetDragOffset(0);
+   };
+   
+   const resetLoansTouchState = () => {
+     setLoansIsDragging(false);
+     setLoansDragOffset(0);
+   };
 
-  const resetTouchState = () => {
-    setIsDragging(false);
-    setDragOffset(0);
-  };
-
-  // Haptic feedback helper
-  const triggerHapticFeedback = () => {
-    // Check if Vibration API is available and supported
-    if ('vibrate' in navigator) {
-      try {
-        navigator.vibrate(10); // 10ms vibration
-      } catch (e) {
-        // Vibration API might not be available or permitted
-        console.warn('Vibration API not available:', e);
-      }
-    }
-  };
-  // Touch state for swipe-to-dismiss modal
-  const [touchStartY, setTouchStartY] = useState<number>(0);
-  const [dragOffset, setDragOffset] = useState<number>(0);
-  const [isDragging, setIsDragging] = useState<boolean>(false);
-
-  const resetTouchState = () => {
-    setIsDragging(false);
-    setDragOffset(0);
-  };
-
+   // Haptic feedback helper
+   const triggerHapticFeedback = () => {
+     // Check if Vibration API is available and supported
+     if ('vibrate' in navigator) {
+       try {
+         navigator.vibrate(10); // 10ms vibration
+       } catch (e) {
+         // Vibration API might not be available or permitted
+         console.warn('Vibration API not available:', e);
+       }
+     }
+   };
+ 
   const range = useMemo(() => rangeFor(period, anchor), [period, anchor]);
   const prevRange = useMemo(
     () => rangeFor(period, shiftAnchor(period, anchor, -1)),
@@ -1268,11 +1251,9 @@ export default function ExpensesPage() {
                           <X size={14} />
                         </button>
                       </div>
-                    </div>
-                    </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                       </div>
+                     </div>
+                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                       <div className="rounded-xl border-[2px] border-[#2D2D2D] bg-[#FFFDF8] p-3 tint-pink">
                         <p className="text-[10px] font-bold uppercase tracking-wide text-[#5C5C5C]">I owe</p>
                         <p className="text-lg font-extrabold text-[#B85042]">{money(loanStats.borrowedOut)}</p>
@@ -1379,13 +1360,12 @@ export default function ExpensesPage() {
         }}
         onCancel={() => { setShowLoanForm(false); setEditingLoan(null); }}
       />
-    </motion.div>
-  )}
-</AnimatePresence>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            )}
+     </motion.div>
+   )}
+ </AnimatePresence>
+               </DialogContent>
+             </Dialog>
+           )}
             {showBudgets && (
               <Dialog
                 open={showBudgets}

@@ -361,6 +361,7 @@ function SidebarContent({
 export default function Sidebar() {
   const { streak, loggedInToday, logs } = useLoginStreak();
   const [showStreak, setShowStreak] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
@@ -438,16 +439,17 @@ export default function Sidebar() {
             </button>
           </div>
         )}
-            {/* Mobile hamburger — opens the navigation drawer */}
-      <button
-        onClick={() => setMobileOpen(true)}
-        aria-label="Open navigation menu"
-        aria-expanded={mobileOpen}
-        aria-controls="mobile-sidebar"
-        className="md:hidden fixed top-4 left-4 z-40 w-11 h-11 min-h-[44px] min-w-[44px] rounded-xl border-[3px] border-[#2D2D2D] bg-[#FFFDF8] flex items-center justify-center shadow-[2px_2px_0px_0px_var(--neo-shadow)] hover:bg-[#F0ECE4] transition-colors"
-      >
-        <Menu size={18} />
-      </button>
+            {/* Mobile avatar — opens profile popup */}
+      {mounted && (
+        <div className="md:hidden top-4 left-4 z-40">
+          <button
+            onClick={() => setProfileOpen(true)}
+            aria-label="Open profile"
+            className="relative rounded-full w-10 h-10 bg-[#CDEAC0] flex items-center justify-center shadow-[2px_2px_0px_0px_var(--neo-shadow)] hover:bg-[#b8d8b0] transition-colors">
+            <div className="w-8 h-8 rounded-full bg-[#2D2D2D] flex items-center justify-center text-[2xl] font-bold">C</div>
+          </button>
+        </div>
+      )}
 
       {/* Desktop sidebar - bottom bar */}
       <aside className="hidden md:flex flex-col border-[3px] border-[#2D2D2D] bg-[#FFFDF8] fixed right-0 top-0 bottom-0 w-64 z-40 rounded-[20px] shadow-[6px_6px_0px_0px_var(--neo-shadow)] tint-purple overflow-y-auto">

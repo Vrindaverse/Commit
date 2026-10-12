@@ -8,6 +8,7 @@ import {
   Briefcase, Laptop, Gift, RotateCcw, Banknote, Landmark, CreditCard, Smartphone,
   ArrowUpRight, ArrowDownRight, Download, PiggyBank, Repeat, SlidersHorizontal,
   ChevronLeft, ChevronRight, CalendarDays, HandCoins, Check, Scale, Trophy, Target, Sparkles,
+  Loader2,
 } from 'lucide-react';
 import NeoCard from '@/components/shared/neo-card';
 import PageHeader from '@/components/shared/page-header';
@@ -146,11 +147,15 @@ function TransactionForm({
   defaultDate,
   onSubmit,
   onCancel,
+  isLoading,
+  setIsLoading,
 }: {
   initial?: Expense;
   defaultDate?: string;
   onSubmit: (expense: Expense) => void;
   onCancel: () => void;
+  isLoading: boolean;
+  setIsLoading: (loading: boolean) => void;
 }) {
   const [type, setType] = useState<TransactionType>(initial?.type ?? 'expense');
   const [title, setTitle] = useState(initial?.title ?? '');
@@ -162,6 +167,44 @@ function TransactionForm({
   const [date, setDate] = useState(initial?.date ?? defaultDate ?? format(new Date(), 'yyyy-MM-dd'));
   const [notes, setNotes] = useState(initial?.notes ?? '');
   const [recurring, setRecurring] = useState(initial?.recurring ?? false);
+  const [titleError, setTitleError] = useState<string>('');
+  const [amountError, setAmountError] = useState<string>('');
+  const [dateError, setDateError] = useState<string>('');
+
+  const validate = () => {
+    let valid = true;
+    let newTitleError = '';
+    let newAmountError = '';
+    let newDateError = '';
+
+    if (!title.trim()) {
+      newTitleError = 'Title is required';
+      valid = false;
+    }
+
+    const parsedAmount = Number(amount);
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      newAmountError = 'Please enter a valid amount greater than 0';
+      valid = false;
+    }
+
+    if (!date) {
+      newDateError = 'Date is required';
+      valid = false;
+    } else {
+      // Basic date validation (could be more robust)
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        newDateError = 'Invalid date format';
+        valid = false;
+      }
+    }
+
+    setTitleError(newTitleError);
+    setAmountError(newAmountError);
+    setDateError(newDateError);
+
+    return valid;
+  };
 
   const cats = type === 'income' ? INCOME_CATS : EXPENSE_CATS;
 
@@ -172,32 +215,40 @@ function TransactionForm({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const parsed = Number(amount);
-    if (!title.trim() || !Number.isFinite(parsed) || parsed <= 0) return;
-    onSubmit({
-      id: initial?.id ?? genId(),
-      title: title.trim(),
-      amount: parsed.toFixed(2),
-      type,
-      category,
-      account,
-      date,
-      notes: notes.trim(),
-      recurring,
-    });
-    onCancel();
-  };
+   const handleSubmit = (e: React.FormEvent) => {
+     e.preventDefault();
+     if (!validate()) {
+       return;
+     }
+     setIsLoading(true);
+     try {
+       const parsed = Number(amount);
+       onSubmit({
+         id: initial?.id ?? genId(),
+         title: title.trim(),
+         amount: parsed.toFixed(2),
+         type,
+         category,
+         account,
+         date,
+         notes: notes.trim(),
+         recurring,
+       });
+     } finally {
+       setIsLoading(false);
+       onCancel();
+     }
+   };
 
 return (
     <form onSubmit={handleSubmit} className="neo-card p-4 sm:p-6 tint-peach">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-extrabold">{initial ? 'Edit Transaction' : 'New Transaction'}</h2>
-        <Button variant="outline" size="xs" onClick={(e) => {
-    triggerHapticFeedback();
-    onCancel();
-  }}>
+         <Button variant="outline" size="xs" onClick={(e) => {
+     triggerHapticFeedback();
+     setIsLoading(false);
+     onCancel();
+   }}>
           <X size={14} />
         </Button>
       </div>
@@ -248,36 +299,48 @@ return (
 
       <div className="space-y-3">
         <div className="flex flex-col gap-3">
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder={type === 'income' ? 'Where did it come from?' : 'What did you spend on?'}
-            className="neo-input flex-1 text-sm font-bold min-h-[48px]"
-            required
-            autoFocus
-          />
-          <input
-            type="number"
-            inputMode="decimal"
-            min="0"
-            step="0.01"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="0.00"
-            className="neo-input w-full text-sm font-bold min-h-[48px]"
-            required
-          />
+           <input
+             value={title}
+             onChange={(e) => {
+               setTitle(e.target.value);
+               validate();
+             }}
+             placeholder={type === 'income' ? 'Where did it come from?' : 'What did you spend on?'}
+             className="neo-input flex-1 text-sm font-bold min-h-[48px]"
+             required
+             autoFocus
+           />
+           {titleError && <span className="text-xs block mb-2" style={{ color: '#EF4444' }}>{titleError}</span>}
+           <input
+             type="number"
+             inputMode="decimal"
+             min="0"
+             step="0.01"
+             value={amount}
+             onChange={(e) => {
+               setAmount(e.target.value);
+               validate();
+             }}
+             placeholder="0.00"
+             className="neo-input w-full text-sm font-bold min-h-[48px]"
+             required
+           />
+           {amountError && <span className="text-xs block mb-2" style={{ color: '#EF4444' }}>{amountError}</span>}
         </div>
 
-        <div className="flex flex-col gap-3">
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="neo-input text-sm font-bold w-full min-h-[48px]"
-            required
-          />
-          <div className="w-full">
+         <div className="flex flex-col gap-3">
+           <input
+             type="date"
+             value={date}
+             onChange={(e) => {
+               setDate(e.target.value);
+               validate();
+             }}
+             className="neo-input text-sm font-bold w-full min-h-[48px]"
+             required
+           />
+           {dateError && <span className="text-xs block mb-2" style={{ color: '#EF4444' }}>{dateError}</span>}
+           <div className="w-full">
             <Select
               value={account}
               onValueChange={(value) => setAccount(value as Account)}
@@ -309,15 +372,23 @@ return (
           </span>
         </label>
 
-        <Button
-          type="submit"
-          variant="default"
-          size="default"
-          className={`px-6 py-3 text-sm w-full min-h-[48px] ${type === 'income' ? 'bg-[#CDEAC0] tint-green' : 'bg-[#F7E8A4] tint-yellow'}`}
-          onClick={triggerHapticFeedback}
-        >
-          {initial ? 'Save Changes' : type === 'income' ? 'Add Income' : 'Add Expense'}
-        </Button>
+         <Button
+           type="submit"
+           variant="default"
+           size="default"
+           className={`px-6 py-3 text-sm w-full min-h-[48px] ${type === 'income' ? 'bg-[#CDEAC0] tint-green' : 'bg-[#F7E8A4] tint-yellow'}`}
+           disabled={isLoading}
+           onClick={triggerHapticFeedback}
+         >
+           {isLoading ? (
+             <>
+               <Loader2 size={16} className="mr-2 animate-spin-slow" />
+               Adding...
+             </>
+           ) : (
+             initial ? 'Save Changes' : type === 'income' ? 'Add Income' : 'Add Expense'
+           )}
+         </Button>
       </div>
     </form>
   );
@@ -763,10 +834,17 @@ export default function ExpensesPage() {
    const [budgetDragOffset, setBudgetDragOffset] = useState<number>(0);
    const [budgetIsDragging, setBudgetIsDragging] = useState<boolean>(false);
    
-   // Touch state for loans dialog swipe-to-dismiss
-   const [loansTouchStartY, setLoansTouchStartY] = useState<number>(0);
-   const [loansDragOffset, setLoansDragOffset] = useState<number>(0);
-   const [loansIsDragging, setLoansIsDragging] = useState<boolean>(false);
+    // Touch state for loans dialog swipe-to-dismiss
+    const [loansTouchStartY, setLoansTouchStartY] = useState<number>(0);
+    const [loansDragOffset, setLoansDragOffset] = useState<number>(0);
+    const [loansIsDragging, setLoansIsDragging] = useState<boolean>(false);
+
+    // Loading state for form submission
+    const [isAdding, setIsAdding] = useState(false);
+
+    // Confirmation dialog for deletion
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleteId, setDeleteId] = useState<string | null>(null);
 
    const resetTouchState = () => {
      setIsDragging(false);
@@ -1131,19 +1209,21 @@ export default function ExpensesPage() {
     updateSettings({ budgets: next });
   };
 
-  const startAdd = (date?: string) => {
-    if (showForm) {
-      setShowForm(false);
-      setEditing(null);
-      setPrefillDate(undefined);
-    } else {
-      setEditing(null);
-      setPrefillDate(date);
-      setShowBudgets(false);
-      setShowLoans(false);
-      setShowForm(true);
-    }
-  };
+   const startAdd = (date?: string) => {
+     if (showForm) {
+       setShowForm(false);
+       setEditing(null);
+       setPrefillDate(undefined);
+       setIsAdding(false);
+     } else {
+       setEditing(null);
+       setPrefillDate(date);
+       setShowBudgets(false);
+       setShowLoans(false);
+       setShowForm(true);
+       setIsAdding(false);
+     }
+   };
 
   const exportCsv = () => {
     const rows = [['Date', 'Title', 'Type', 'Category', 'Account', 'Amount', 'Notes']];
@@ -1328,13 +1408,16 @@ export default function ExpensesPage() {
 >
   <Pencil size={14} />
 </button>
-            <button
-              onClick={() => deleteLoan(l.id)}
-              className="p-1.5 rounded-lg text-[#5C5C5C] hover:text-[#B85042] hover:bg-[#F0ECE4] transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
-              aria-label="Delete loan"
-            >
-              <X size={14} />
-            </button>
+             <button
+               onClick={() => {
+                 setDeleteId(l.id);
+                 setShowDeleteConfirm(true);
+               }}
+               className="p-1.5 rounded-lg text-[#5C5C5C] hover:text-[#B85042] hover:bg-[#F0ECE4] transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+               aria-label="Delete loan"
+             >
+               <X size={14} />
+             </button>
           </div>
         </div>
       );
@@ -1431,17 +1514,18 @@ export default function ExpensesPage() {
                 setPrefillDate(undefined);
               }
             }}>
-              <DialogTrigger asChild>
-                <button
-                  onClick={() => {
-                    triggerHapticFeedback();
-                    startAdd();
-                  }}
-                  className="neo-button px-4 py-2 text-sm bg-[#CDEAC0] flex items-center gap-2 whitespace-nowrap tint-green"
-                >
-                  <Plus size={16} /> Add
-                </button>
-              </DialogTrigger>
+               <DialogTrigger asChild>
+                 <button
+                   onClick={() => {
+                     triggerHapticFeedback();
+                     startAdd();
+                   }}
+                   className="neo-button px-6 py-3 text-base font-bold bg-[#CDEAC0] flex items-center gap-2 whitespace-nowrap tint-green text-[#2A2A2A]"
+                   aria-label="Add new transaction"
+                 >
+                   <Plus size={16} /> Add
+                 </button>
+               </DialogTrigger>
               <DialogContent 
                 className="sm:max-w-lg max-w-[95vw] p-0 overflow-hidden"
                 style={{ transform: `translateY(${dragOffset}px)` }}
@@ -1478,22 +1562,25 @@ export default function ExpensesPage() {
                 }}
                 onTouchCancel={resetTouchState}
               >
-                <TransactionForm
-                  initial={editing ?? undefined}
-                  defaultDate={prefillDate}
-                  onSubmit={(expense) => {
-                    if (editing) updateExpense(editing.id, expense);
-                    else addExpense(expense);
-                    setShowForm(false);
-                    setEditing(null);
-                    setPrefillDate(undefined);
-                  }}
-                  onCancel={() => {
-                    setShowForm(false);
-                    setEditing(null);
-                    setPrefillDate(undefined);
-                  }}
-                />
+               <TransactionForm
+                   initial={editing ?? undefined}
+                   defaultDate={prefillDate}
+                   isLoading={isAdding}
+                   setIsLoading={setIsAdding}
+                   onSubmit={(expense) => {
+                     if (editing) updateExpense(editing.id, expense);
+                     else addExpense(expense);
+                     setShowForm(false);
+                     setEditing(null);
+                     setPrefillDate(undefined);
+                   }}
+                   onCancel={() => {
+                     setShowForm(false);
+                     setEditing(null);
+                     setPrefillDate(undefined);
+                   }}
+                  />
+                <div className="text-xs text-center text-[#5C5C5C] mt-4">Swipe to dismiss</div>
               </DialogContent>
             </Dialog>
           </div>
@@ -2371,13 +2458,16 @@ export default function ExpensesPage() {
 >
   <Pencil size={14} />
 </button>
-                              <button
-                                onClick={() => deleteExpense(t.id)}
-                                className="p-1.5 rounded-lg text-[#5C5C5C] hover:text-[#B85042] hover:bg-[#F0ECE4] transition-colors"
-                                aria-label="Delete transaction"
-                              >
-                                <X size={14} />
-                              </button>
+                               <button
+                                 onClick={() => {
+                                   setDeleteId(t.id);
+                                   setShowDeleteConfirm(true);
+                                 }}
+                                 className="p-1.5 rounded-lg text-[#5C5C5C] hover:text-[#B85042] hover:bg-[#F0ECE4] transition-colors"
+                                 aria-label="Delete transaction"
+                               >
+                                 <X size={14} />
+                               </button>
                             </div>
                           </div>
                         </motion.div>

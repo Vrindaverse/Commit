@@ -220,11 +220,11 @@
 
 /* Mobile-first improvements */
 @media (max-width: 768px) {
-  /* Larger touch targets for mobile */
-  .neo-button {
-    min-height: 44px;
-    min-width: 44px;
-  }
+   /* Larger touch targets for mobile */
+   .neo-button {
+     min-height: 48px;
+     min-width: 48px;
+   }
   
   .neo-input {
     min-height: 48px;

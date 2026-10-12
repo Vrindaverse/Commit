@@ -208,25 +208,30 @@ function HabitCalendar({ habits }: { habits: { id: string; name: string; color: 
     <div>
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
-          <button onClick={() => setViewDate(new Date(year, month - 1, 1))} className="neo-button p-1.5 bg-[#FFFDF8]" aria-label="Previous month"><ChevronLeft size={16} /></button>
+          <button onClick={() => setViewDate(new Date(year, month - 1, 1))} className="rounded-sm border-[2px] border-[#2D2D2D] bg-[#FFFDF8] px-2 py-1.5 text-[10px] font-bold hover:bg-[#F0ECE4] transition-colors" aria-label="Previous month">
+            <ChevronLeft size={16} />
+          </button>
           <h3 className="text-base font-extrabold min-w-[130px] sm:min-w-[180px] text-center">{monthName}</h3>
-          <button onClick={() => setViewDate(new Date(year, month + 1, 1))} className="neo-button p-1.5 bg-[#FFFDF8]" aria-label="Next month"><ChevronRight size={16} /></button>
+          <button onClick={() => setViewDate(new Date(year, month + 1, 1))} className="rounded-sm border-[2px] border-[#2D2D2D] bg-[#FFFDF8] px-2 py-1.5 text-[10px] font-bold hover:bg-[#F0ECE4] transition-colors" aria-label="Next month">
+            <ChevronRight size={16} />
+          </button>
         </div>
         {isCurrentMonth ? (
-          <span className="neo-button px-3 py-1 text-xs bg-[#F7E8A4] font-extrabold flex items-center gap-1.5 pointer-events-none">
+          <span className="rounded-sm border-[2px] border-[#2D2D2D] bg-[#F7E8A4] px-3 py-1 text-xs font-bold flex items-center gap-1.5 pointer-events-none">
             <Check size={12} /> Today
           </span>
         ) : (
-          <button onClick={() => setViewDate(new Date(today.getFullYear(), today.getMonth(), 1))} className="neo-button px-3 py-1 text-xs bg-[#F7E8A4] font-extrabold">Jump to today</button>
+          <button onClick={() => setViewDate(new Date(today.getFullYear(), today.getMonth(), 1))} className="rounded-sm border-[2px] border-[#2D2D2D] bg-[#F7E8A4] px-3 py-1 text-xs font-bold">Jump to today</button>
         )}
       </div>
-      <p className="text-xs font-bold text-[#5C5C5C] mb-3">Today is {todayLabel}</p>
-      <div className="grid grid-cols-7 gap-1 mb-1">
+      <p className="text-xs font-bold text-[#5C5C5C] mb-2">Today is {todayLabel}</p>
+<div className="grid grid-cols-7 gap-1.5 mb-2">
         {['S', 'M', 'T', 'W', 'Th', 'F', 'S'].map((d, i) => (
-          <div key={`h-${i}`} className="text-center text-[10px] font-extrabold text-[#5C5C5C] py-1">{d}</div>
+          <div key={`h-${i}`} className="text-center text-[10px] font-extrabold text-[#5C5C5C] py-1.5 select-none">{d}</div>
         ))}
       </div>
-      <div className="grid grid-cols-7 gap-1 mb-4">
+      <p className="text-xs font-bold text-[#5C5C5C] mb-1">Today is {todayLabel}</p>
+      <div className="grid grid-cols-7 gap-1.5 mb-4">
         {Array.from({ length: firstDay }).map((_, i) => <div key={`e-${i}`} />)}
         {days.map(day => {
           const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;

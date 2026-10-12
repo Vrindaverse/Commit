@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Dock from "@/components/layout/dock";
+import Sidebar from "@/components/layout/sidebar";
 import MainContent from "@/components/layout/main-content";
 import HydrateStore from "@/components/layout/hydrate-store";
-import MobileProfileButton from "@/components/layout/mobile-profile-button";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -22,8 +22,9 @@ export default function AppLayout({
       >
         Skip to content
       </a>
-      <MobileProfileButton />
+      <Sidebar />
       <MainContent>{children}</MainContent>
+      <Dock />
     </HydrateStore>
   );
 }

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Sidebar from "@/components/layout/sidebar";
+import Dock from "@/components/layout/dock";
 import MainContent from "@/components/layout/main-content";
 import HydrateStore from "@/components/layout/hydrate-store";
 
@@ -15,13 +15,7 @@ export default function AppLayout({
 }>) {
   return (
     <HydrateStore>
-      <a
-        href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:z-[100] focus:top-3 focus:left-3 neo-button px-4 py-2 text-sm bg-[#F7E8A4]"
-      >
-        Skip to content
-      </a>
-      <Sidebar />
+      <Dock />
       <MainContent>{children}</MainContent>
     </HydrateStore>
   );

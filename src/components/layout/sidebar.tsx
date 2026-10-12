@@ -14,7 +14,7 @@ import {
 
   GraduationCap, Flame, Trophy, BarChart3, Settings,
 
-  NotebookPen, FlameIcon, X, Check, CheckCircle2, ChevronLeft, ChevronRight, Wallet, Menu,
+  NotebookPen, FlameIcon, X, Check, CheckCircle2, ChevronLeft, ChevronRight, Wallet, Menu, User,
 
 } from 'lucide-react';
 
@@ -364,6 +364,7 @@ function SidebarContent({
   showStreak,
 
   setShowStreak,
+  setProfileOpen,
 
 }: {
 
@@ -376,6 +377,7 @@ function SidebarContent({
   showStreak: boolean;
 
   setShowStreak: React.Dispatch<React.SetStateAction<boolean>>;
+  setProfileOpen: React.Dispatch<React.SetStateAction<boolean>>;
 
 }) {
 
@@ -481,6 +483,17 @@ function SidebarContent({
 
       </div>
 
+      <div className="p-4 border-t [3px] solid #[2D2D2D]">
+        <button
+          onClick={() => setProfileOpen(true)}
+          className="w-full rounded-xl border-[3px] border-[#2D2D2D] bg-[#F7E8A4] p-3 hover:bg-[#e8d890] transition-colors text-left"
+        >
+          <div className="flex items-center gap-2">
+            <User size={16} />
+            <p className="text-xs font-extrabold text-[#2A2A2A]">Profile</p>
+          </div>
+        </button>
+      </div>
 
 
       <AnimatePresence>
@@ -642,6 +655,8 @@ export default function Sidebar() {
           showStreak={showStreak}
 
           setShowStreak={setShowStreak}
+
+          setProfileOpen={setProfileOpen}
 
         />
 

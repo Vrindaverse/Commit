@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Target, CheckSquare, Flame, NotebookPen,
-  Rocket, BookOpen, GraduationCap, Trophy, BarChart3, Settings, Wallet,
+  Rocket, BookOpen, GraduationCap, Trophy, BarChart3, Settings, Wallet, User,
 } from 'lucide-react';
 import './dock.css';
 
@@ -22,6 +22,8 @@ const ITEMS = [
   { href: '/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
+
+const PROFILE_ITEM = { label: 'Profile', icon: User };
 
 export default function Dock() {
   const router = useRouter();
@@ -70,6 +72,17 @@ export default function Dock() {
                 </button>
               );
             })}
+            <button
+              onClick={() => router.push('/settings')}
+              className="dock-item"
+              aria-label="Profile"
+              title="Profile"
+            >
+              <span className="dock-item-icon">
+                <User size={16} />
+              </span>
+              <span className="dock-item-label">Profile</span>
+            </button>
           </div>
         </div>
       </div>

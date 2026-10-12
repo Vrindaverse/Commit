@@ -13,6 +13,7 @@ import {
 import NeoCard from '@/components/shared/neo-card';
 import PageHeader from '@/components/shared/page-header';
 import { useLifeStore, genId } from '@/store/use-store';
+import { formatMoney, formatMoneyShort } from '@/lib/currency';
 import type { Expense, ExpenseCategory, TransactionType, Account, BudgetMap, Loan, LoanKind } from '@/types';
 import {
   format, subMonths, addMonths, subWeeks, addWeeks, subDays, addDays, parse,
@@ -29,21 +30,9 @@ import {
   DialogContent,
 } from '@/components/ui/dialog';
 
-const CURRENCY = '₹';
+const money = (v: string | number, currency?: string) => formatMoney(v, currency);
 
-const money = (v: string | number) =>
-  CURRENCY +
-  Number(v).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-const moneyShort = (v: string | number) => {
-  const n = Number(v);
-  const sign = n < 0 ? '-' : '';
-  const a = Math.abs(n);
-  if (a >= 10000000) return `${sign}${CURRENCY}${(a / 10000000).toFixed(2)}Cr`;
-  if (a >= 100000) return `${sign}${CURRENCY}${(a / 100000).toFixed(2)}L`;
-  if (a >= 1000) return `${sign}${CURRENCY}${(a / 1000).toFixed(1)}k`;
-  return `${sign}${CURRENCY}${a.toFixed(0)}`;
-};
+const moneyShort = (v: string | number, currency?: string) => formatMoneyShort(v, currency);
 
 const CATEGORY_META: Record<ExpenseCategory, { label: string; color: string; icon: React.ReactNode; kind: 'expense' | 'income' | 'both' }> = {
    food: { label: 'Food', color: '#FFD8BE', icon: <Utensils size={16} />, kind: 'expense' },
@@ -1096,16 +1085,24 @@ export default function ExpensesPage() {
       if (t.type === 'income') income.set(day, (income.get(day) ?? 0) + amt);
       else spend.set(day, (spend.get(day) ?? 0) + amt);
     }
-    const max = Math.max(1, ...Array.from(spend.values()));
+    const totals = new Map<number, number>();
+    for (let d = 1; d <= days; d++) {
+      totals.set(d, (income.get(d) ?? 0) + (spend.get(d) ?? 0));
+    }
+    const max = Math.max(1, ...Array.from(totals.values()));
     const today = dayKey(new Date());
-    const cells: ({ day: number; spend: number; income: number; isToday: boolean } | null)[] = [];
+    const cells: ({ day: number; spend: number; income: number; isToday: boolean; level: number } | null)[] = [];
     for (let i = 0; i < offset; i++) cells.push(null);
     for (let d = 1; d <= days; d++) {
+      const total = totals.get(d) ?? 0;
+      const ratio = max ? total / max : 0;
+      const level = total === 0 ? 0 : ratio > 0.75 ? 4 : ratio > 0.5 ? 3 : ratio > 0.25 ? 2 : 1;
       cells.push({
         day: d,
         spend: spend.get(d) ?? 0,
         income: income.get(d) ?? 0,
         isToday: dayKey(new Date(calMonth.getFullYear(), calMonth.getMonth(), d)) === today,
+        level,
       });
     }
     return { cells, max, monthKey };
@@ -1932,64 +1929,61 @@ export default function ExpensesPage() {
 
       
 
-      {period === 'monthly' && (
+{period === 'monthly' && (
         <>
-          {/* Calendar + day detail */}
-          <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-5 mb-5">
+           {/* Calendar + day detail */}
+           <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-5 mb-5">
         <NeoCard color="#B8D8F8">
-<SectionTitle
-             icon={<CalendarDays size={15} />}
-             title={`Calendar · ${format(calMonth, 'MMMM yyyy')}`}
-             action={
-               <div className="flex items-center gap-1">
-                 <button onClick={() => {
-                   triggerHapticFeedback();
-                   setCalMonth((m) => addMonths(m, -1)); }} className="neo-button p-1.5 bg-[#FFFDF8]" aria-label="Previous month">
-                   <ChevronLeft size={13} />
-                 </button>
-                 <button
-                   onClick={() => {
-                     triggerHapticFeedback();
-                     setCalMonth(startOfMonth(new Date())); setSelectedDay(dayKey(new Date())); }}
-                   className="neo-button px-2.5 py-1.5 text-[11px] bg-[#FFFDF8]"
-                 >
-                   Today
-                 </button>
-                 <button onClick={() => {
-                   triggerHapticFeedback();
-                   setCalMonth((m) => addMonths(m, 1)); }} className="neo-button p-1.5 bg-[#FFFDF8]" aria-label="Next month">
-                   <ChevronRight size={13} />
-                 </button>
-               </div>
-             }
-           />
+<div className="p-4 border-b-[2px] border-[#2D2D2D] bg-[#FFFDF8]">
+           <div className="flex items-center gap-2">
+             <CalendarDays size={16} className="text-[#5C5C5C]" />
+             <span className="text-[11px] font-bold text-[#2A2A2A]">
+               {format(calMonth, 'MMMM yyyy')}
+             </span>
+           </div>
+           <div className="flex items-center gap-2 ml-auto">
+             <button onClick={() => {
+               triggerHapticFeedback();
+               setCalMonth((m) => addMonths(m, -1)); }} className="flex items-center gap-1.5 px-3 py-2 text-sm font-bold border-[2px] border-[#303030] rounded-[12px] bg-[#FFFDF8] hover:bg-[#F0ECE4] transition-colors hover:text-[#2A2A2A]" aria-label="Previous month">
+               <ChevronLeft size={12} />
+             </button>
+             <button onClick={() => {
+               triggerHapticFeedback();
+               setCalMonth(startOfMonth(new Date())); setSelectedDay(dayKey(new Date())); }} className="flex items-center gap-1.5 px-3 py-2 text-sm font-bold border-[2px] border-[#303030] rounded-[12px] bg-[#FFFDF8] hover:bg-[#F0ECE4] transition-colors hover:text-[#2A2A2A]" aria-label="Today">
+               Today
+             </button>
+             <button onClick={() => {
+               triggerHapticFeedback();
+               setCalMonth((m) => addMonths(m, 1)); }} className="flex items-center gap-1.5 px-3 py-2 text-sm font-bold border-[2px] border-[#303030] rounded-[12x] bg-[#FFFDF8] hover:bg-[#F0ECE4] transition-colors hover:text-[#2A2A2A]" aria-label="Next month">
+               <ChevronRight size={12} />
+             </button>
+           </div>
+         </div>
 
-          <div className="grid grid-cols-7 gap-1 mb-1">
-            {WEEKDAYS.map((d, i) => (
-              <div key={i} className="text-center text-[10px] font-extrabold text-[#5C5C5C]">{d}</div>
-            ))}
-          </div>
-<div className="grid grid-cols-7 gap-1">
-             {calendar.cells.map((cell, i) => {
-               if (!cell) return <div key={`blank-${i}`} />;
-               const dateKey = dayKey(new Date(calMonth.getFullYear(), calMonth.getMonth(), cell.day));
-               const ratio = calendar.max ? cell.spend / calendar.max : 0;
-               const level = cell.spend === 0 ? 0 : ratio > 0.75 ? 4 : ratio > 0.5 ? 3 : ratio > 0.25 ? 2 : 1;
-               const active = selectedDay === dateKey;
-               const hasActivity = cell.spend > 0 || cell.income > 0;
-               return (
-                 <button
-                   key={dateKey}
-                   onClick={() => {
-                     triggerHapticFeedback();
-                     setSelectedDay(active ? null : dateKey);
-                   }}
-                    className={`h-10 sm:h-11 rounded-lg border-[2px] flex flex-col items-center justify-center gap-0.5 transition-all ${
-                      active ? 'border-[#2D2D2D] shadow-[2px_2px_0px_0px_var(--neo-shadow)] -translate-y-0.5' : 'border-[#2D2D2D]/40 hover:-translate-y-0.5'
-                    }`}
-                    style={{ backgroundColor: active ? '#FFFDF8' : HEAT_COLORS[level] }}
-                    title={hasActivity ? `${format(parse(dateKey, 'yyyy-MM-dd', new Date()), 'dd MMM')} · out ${money(cell.spend)} · in ${money(cell.income)}` : undefined}
-                  >
+<div className="grid grid-cols-7 gap-1.5 mb-1">
+             {WEEKDAYS.map((d, i) => (
+               <div key={i} className="text-center flex h-full items-center text-[10px] font-extrabold text-[#5C5C5C]">{d}</div>
+             ))}
+           </div>
+<div className="grid grid-cols-7 gap-2">
+{calendar.cells.map((cell, i) => {
+                if (!cell) return <div key={`blank-${i}`} />;
+                const dateKey = dayKey(new Date(calMonth.getFullYear(), calMonth.getMonth(), cell.day));
+                const active = selectedDay === dateKey;
+                const hasActivity = cell.spend > 0 || cell.income > 0;
+                return (
+                  <button
+                    key={dateKey}
+                    onClick={() => {
+                      triggerHapticFeedback();
+                      setSelectedDay(active ? null : dateKey);
+                    }}
+                     className={`h-10 sm:h-11 rounded-lg border-[2px] flex flex-col items-center justify-center gap-0.5 transition-all ${
+                       active ? 'border-[#2D2D2D] shadow-[2px_2px_0px_0px_var(--neo-shadow)] -translate-y-0.5' : 'border-[#2D2D2D]/40 hover:-translate-y-0.5'
+                     }`}
+                     style={{ backgroundColor: active ? '#FFFDF8' : HEAT_COLORS[cell.level] }}
+                     title={hasActivity ? `${format(parse(dateKey, 'yyyy-MM-dd', new Date()), 'dd MMM')} · out ${money(cell.spend)} · in ${money(cell.income)}` : undefined}
+                   >
                     <span className={`text-[10px] font-extrabold leading-none ${cell.isToday ? 'text-[#B85042]' : 'text-[#2A2A2A]'}`}>
                       {cell.day}
                     </span>
@@ -2002,19 +1996,22 @@ export default function ExpensesPage() {
              })}
            </div>
 
-          <div className="flex items-center justify-between mt-4 pt-3 border-t-[2px] border-[#2D2D2D]">
-            <span className="text-[11px] font-bold text-[#5C5C5C]">Less</span>
-            <div className="flex items-center gap-1">
-              {HEAT_COLORS.map((c) => (
-                <span key={c} className="w-3.5 h-3.5 rounded-sm border-[2px] border-[#2D2D2D]" style={{ backgroundColor: c }} />
-              ))}
+          <div className="grid grid-cols-2 gap-2 mt-2 text-[10px] font-bold text-[#5C5C5C]">
+              <div>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-sm border-[2px] border-[#2D2D2D]" style={{ backgroundColor: HEAT_COLORS[0] }} />
+                  Less
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-sm border-[2px] border-[#2D2D2D]" style={{ backgroundColor: HEAT_COLORS[4] }} />
+                  More
+                </span>
+              </div>
+              <div>
+                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#4C8C4A] border-[1px] border-[#2D2D2D]" /> Earnings</span>
+                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#B85042] border-[1px] border-[#2D2D2D]" /> Spending</span>
+              </div>
             </div>
-            <span className="text-[11px] font-bold text-[#5C5C5C]">More</span>
-          </div>
-          <div className="flex items-center gap-4 mt-2 text-[10px] font-bold text-[#5C5C5C]">
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#4C8C4A] border-[1px] border-[#2D2D2D]" /> Earnings</span>
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#B85042] border-[1px] border-[#2D2D2D]" /> Spending</span>
-          </div>
         </NeoCard>
 
         {/* Day detail */}

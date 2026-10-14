@@ -40,17 +40,28 @@ export default function SettingsPage() {
 
   const handleReset = async () => {
     if (!confirm('Are you sure you want to clear all data? This cannot be undone.')) return;
-    const endpoints = ['tasks', 'goals', 'projects', 'habits', 'learning', 'subjects', 'exams', 'journal', 'login-logs'];
+    const endpoints = ['tasks', 'goals', 'projects', 'habits', 'learning', 'subjects', 'exams', 'journal', 'expenses', 'loans'];
+    let failed = 0;
     for (const ep of endpoints) {
       try {
         const res = await fetch(`/api/${ep}`);
         if (!res.ok) throw new Error(`Reset ${ep} failed: ${res.status}`);
-        const items: { id: string }[] = await res.json();
-        await Promise.all(items.map(item => fetch(`/api/${ep}/${item.id}`, { method: 'DELETE' })));
-      } catch { /* skip */ }
+        const payload: unknown = await res.json();
+        const items: { id: string }[] = Array.isArray(payload) ? payload : [];
+        const results = await Promise.all(items.map(item => fetch(`/api/${ep}/${item.id}`, { method: 'DELETE' })));
+        if (results.some(r => !r.ok)) failed += 1;
+      } catch {
+        failed += 1;
+      }
+    }
+    try {
+      const res = await fetch('/api/login-logs', { method: 'DELETE' });
+      if (!res.ok) failed += 1;
+    } catch {
+      failed += 1;
     }
     clearStore();
-    toast.success('All data cleared');
+    toast.success(failed ? 'Data cleared, but some items could not be removed' : 'All data cleared');
     setTimeout(() => window.location.reload(), 700);
   };
 

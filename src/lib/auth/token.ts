@@ -24,29 +24,3 @@ export async function verifySessionToken(token?: string): Promise<SessionTokenPa
     return null;
   }
 }
-
-export type ChallengePurpose = 'email_verification' | 'login' | 'password_reset';
-
-export interface ChallengeTokenPayload {
-  uid: string;
-  purpose: ChallengePurpose;
-}
-
-export async function signChallengeToken(payload: ChallengeTokenPayload, ttlMs: number): Promise<string> {
-  return new SignJWT({ uid: payload.uid, purpose: payload.purpose })
-    .setProtectedHeader({ alg: 'HS256' })
-    .setIssuedAt()
-    .setExpirationTime(Math.floor((Date.now() + ttlMs) / 1000))
-    .sign(getSessionSecret());
-}
-
-export async function verifyChallengeToken(token?: string): Promise<ChallengeTokenPayload | null> {
-  if (!token) return null;
-  try {
-    const { payload } = await jwtVerify(token, getSessionSecret(), { algorithms: ['HS256'] });
-    if (typeof payload.uid !== 'string' || typeof payload.purpose !== 'string') return null;
-    return { uid: payload.uid, purpose: payload.purpose as ChallengePurpose };
-  } catch {
-    return null;
-  }
-}

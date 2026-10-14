@@ -61,3 +61,17 @@ export async function POST(req: NextRequest) {
     return errorResponse(error);
   }
 }
+
+export async function DELETE() {
+  const userId = await requireUserId();
+  if (!userId) return unauthorized();
+  try {
+    const deleted = await db
+      .delete(loginLogs)
+      .where(eq(loginLogs.userId, userId))
+      .returning({ id: loginLogs.id });
+    return NextResponse.json({ success: true, deleted: deleted.length });
+  } catch (error) {
+    return errorResponse(error);
+  }
+}

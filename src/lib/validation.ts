@@ -13,11 +13,6 @@ export const passwordField = z
   .regex(/[a-zA-Z]/, { error: 'Must include at least one letter.' })
   .regex(/[0-9]/, { error: 'Must include at least one number.' });
 
-export const otpField = z
-  .string()
-  .trim()
-  .regex(/^\d{6}$/, { error: 'Enter the 6-digit code.' });
-
 export const signupSchema = z.object({
   name: z.string().trim().min(2, { error: 'Name must be at least 2 characters.' }),
   email: emailField,
@@ -27,21 +22,6 @@ export const signupSchema = z.object({
 export const loginSchema = z.object({
   email: emailField,
   password: z.string().min(1, { error: 'Enter your password.' }),
-});
-
-export const otpFormSchema = z.object({ code: otpField });
-
-export const verifyEmailSchema = z.object({ code: otpField });
-
-export const forgotSchema = z.object({ email: emailField });
-
-export const resetSchema = z.object({
-  code: otpField,
-  password: passwordField,
-});
-
-export const accountUpdateSchema = z.object({
-  name: z.string().trim().min(2, { error: 'Name must be at least 2 characters.' }),
 });
 
 const milestoneSchema = z.object({

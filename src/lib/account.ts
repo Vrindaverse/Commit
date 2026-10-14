@@ -21,7 +21,7 @@ export async function logout(router?: RouterLike): Promise<void> {
   }
 }
 
-const EXPORT_ENDPOINTS = ['tasks', 'goals', 'projects', 'habits', 'learning', 'subjects', 'exams', 'journal', 'login-logs'];
+const EXPORT_ENDPOINTS = ['tasks', 'goals', 'projects', 'habits', 'learning', 'subjects', 'exams', 'journal', 'expenses', 'loans', 'login-logs'];
 
 export async function exportAllData(): Promise<void> {
   const data: Record<string, unknown> = {};

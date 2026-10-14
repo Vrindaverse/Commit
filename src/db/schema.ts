@@ -12,19 +12,6 @@ export const users = pgTable('users', {
   uniqueIndex('users_email_unique').on(t.email),
 ]);
 
-export const otpCodes = pgTable('otp_codes', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  codeHash: text('code_hash').notNull(),
-  purpose: text('purpose', { enum: ['email_verification', 'login', 'password_reset'] }).notNull(),
-  expiresAt: timestamp('expires_at').notNull(),
-  attempts: integer('attempts').default(0).notNull(),
-  consumedAt: timestamp('consumed_at'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-}, (t) => [
-  index('otp_codes_user_purpose_idx').on(t.userId, t.purpose),
-]);
-
 export const sessions = pgTable('sessions', {
   id: uuid('id').defaultRandom().primaryKey(),
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),

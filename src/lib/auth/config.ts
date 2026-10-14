@@ -1,8 +1,6 @@
 export const SESSION_COOKIE = 'lifeos_session';
-export const CHALLENGE_COOKIE = 'lifeos_challenge';
 
 export const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7;
-export const CHALLENGE_TTL_MS = 1000 * 60 * 15;
 
 export const IS_PROD = process.env.NODE_ENV === 'production';
 

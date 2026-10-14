@@ -6,17 +6,12 @@ import { db } from '@/db';
 import { sessions, users } from '@/db/schema';
 import {
   SESSION_COOKIE,
-  CHALLENGE_COOKIE,
   SESSION_TTL_MS,
-  CHALLENGE_TTL_MS,
   IS_PROD,
 } from './config';
 import {
   signSessionToken,
   verifySessionToken,
-  signChallengeToken,
-  verifyChallengeToken,
-  type ChallengePurpose,
 } from './token';
 
 export interface AuthenticatedUser {
@@ -39,7 +34,6 @@ export async function createSession(userId: string): Promise<void> {
     sameSite: 'lax',
     path: '/',
   });
-  cookieStore.delete(CHALLENGE_COOKIE);
 }
 
 export async function destroySession(): Promise<void> {
@@ -85,31 +79,4 @@ export async function getSession(): Promise<{ sessionId: string; user: Authentic
       createdAt: row.createdAt,
     },
   };
-}
-
-export async function setChallengeCookie(userId: string, purpose: ChallengePurpose): Promise<void> {
-  const token = await signChallengeToken({ uid: userId, purpose }, CHALLENGE_TTL_MS);
-  const cookieStore = await cookies();
-  cookieStore.set(CHALLENGE_COOKIE, token, {
-    httpOnly: true,
-    secure: IS_PROD,
-    expires: new Date(Date.now() + CHALLENGE_TTL_MS),
-    sameSite: 'lax',
-    path: '/',
-  });
-}
-
-export async function getChallenge(): Promise<{ uid: string; purpose: ChallengePurpose } | null> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(CHALLENGE_COOKIE)?.value;
-  return verifyChallengeToken(token);
-}
-
-export async function clearChallengeCookie(): Promise<void> {
-  const cookieStore = await cookies();
-  cookieStore.delete(CHALLENGE_COOKIE);
-}
-
-export async function deleteAllSessionsForUser(userId: string): Promise<void> {
-  await db.delete(sessions).where(eq(sessions.userId, userId));
 }

@@ -1,23 +1,27 @@
 .dock-nav {
+  min-height: var(--dock-height, 4.75rem);
   padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
-  padding-left: env(safe-area-inset-left, 0px);
-  padding-right: env(safe-area-inset-right, 0px);
+  padding-left: calc(0.75rem + env(safe-area-inset-left, 0px));
+  padding-right: calc(0.75rem + env(safe-area-inset-right, 0px));
 }
 
 .dock-panel {
   display: flex;
   align-items: center;
   gap: 0.25rem;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
   border-radius: 16px;
   background-color: #FFFDF8;
   border: 3px solid #2D2D2D;
   box-shadow: 4px 4px 0px 0px #2D2D2D;
   padding: 0.35rem 0.5rem;
-  max-width: calc(100vw - 1.5rem);
 }
 
 .dock-scroll {
   display: flex;
+  min-width: 0;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;

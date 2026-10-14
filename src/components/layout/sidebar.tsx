@@ -559,7 +559,7 @@ function ProfilePanel({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="fixed inset-0 z-40 cursor-default bg-black/30 md:bg-transparent"
+        className="fixed inset-0 z-[80] cursor-default bg-black/30 md:bg-transparent"
       />
 
       <motion.div
@@ -578,7 +578,7 @@ function ProfilePanel({
         role="dialog"
         aria-modal="true"
         aria-label="Profile"
-        className="fixed inset-x-0 bottom-0 z-50 flex max-h-[85vh] w-full flex-col overflow-hidden rounded-t-2xl border-[3px] border-[#2D2D2D] bg-[#FFFDF8] shadow-[0_-4px_0px_0px_var(--neo-shadow)] md:inset-x-auto md:bottom-auto md:top-4 md:right-[17rem] md:max-h-[calc(100vh-2rem)] md:w-80 md:rounded-2xl md:shadow-[6px_6px_0px_0px_var(--neo-shadow)]"
+        className="fixed inset-x-0 bottom-0 z-[90] flex max-h-[calc(100dvh-10rem)] w-full flex-col overflow-hidden rounded-t-2xl border-[3px] border-[#2D2D2D] bg-[#FFFDF8] shadow-[0_-4px_0px_0px_var(--neo-shadow)] md:inset-x-auto md:bottom-auto md:top-4 md:right-[17rem] md:max-h-[calc(100vh-2rem)] md:w-80 md:rounded-2xl md:shadow-[6px_6px_0px_0px_var(--neo-shadow)]"
       >
         <div
           className="mx-auto mt-3 mb-1 h-1.5 w-12 shrink-0 touch-none rounded-full bg-[#D8D2C8] md:hidden"

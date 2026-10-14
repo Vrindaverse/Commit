@@ -47,6 +47,10 @@
 
 :root {
   color-scheme: light;
+  /* Height reserved for the fixed mobile bottom dock, including the iOS home
+     indicator inset. Shared by the dock and the main content bottom padding so
+     the two can never drift apart. */
+  --dock-height: calc(4.75rem + env(safe-area-inset-bottom, 0px));
   --background: #F8F5F0;
   --foreground: #2A2A2A;
   --card: #FFFDF8;

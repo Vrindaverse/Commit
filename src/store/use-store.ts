@@ -56,6 +56,7 @@ function enqueue(key: string, task: () => Promise<void>): Promise<void> {
   const previous = writeQueues.get(key) ?? Promise.resolve();
   const run = previous.then(task, task);
   writeQueues.set(key, run.catch(() => {}));
+  run.catch(() => {});
   return run;
 }
 

@@ -128,6 +128,7 @@ export interface Settings {
   id: string;
   displayName: string;
   email: string;
+  bio: string;
   dailyReminder: boolean;
   goalAlerts: boolean;
   accentColor: string;

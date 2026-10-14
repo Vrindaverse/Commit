@@ -161,6 +161,7 @@ export const settings = pgTable('settings', {
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   displayName: text('display_name').default('').notNull(),
   email: text('email').default('').notNull(),
+  bio: text('bio').default('').notNull(),
   dailyReminder: boolean('daily_reminder').default(true).notNull(),
   goalAlerts: boolean('goal_alerts').default(true).notNull(),
   accentColor: text('accent_color').default('#F7E8A4').notNull(),

@@ -4,11 +4,11 @@
 
 import Link from 'next/link';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 import { motion, AnimatePresence } from 'framer-motion';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 
 import {
 
@@ -17,6 +17,8 @@ import {
   GraduationCap, Flame, Trophy, BarChart3, Settings,
 
   NotebookPen, FlameIcon, X, Check, CheckCircle2, Wallet, User,
+
+  Pencil, Save, LogOut, Download, ChevronRight, Mail,
 
 } from 'lucide-react';
 
@@ -29,6 +31,12 @@ import { useLifeStore } from '@/store/use-store';
 import { useUIStore } from '@/store/ui-store';
 
 import ProgressBar from '@/components/shared/progress-bar';
+
+import { toast } from '@/components/shared/toast';
+
+import { useAchievements } from '@/lib/achievements';
+
+import { logout, exportAllData } from '@/lib/account';
 
 
 
@@ -471,66 +479,147 @@ function MetricTile({ icon: Icon, label, value, sub, color }: {
   );
 }
 
-function ProfilePopup({
+function useIsMobile() {
+  return useSyncExternalStore(
+    (cb) => {
+      const mq = window.matchMedia('(max-width: 767px)');
+      mq.addEventListener('change', cb);
+      return () => mq.removeEventListener('change', cb);
+    },
+    () => window.matchMedia('(max-width: 767px)').matches,
+    () => false,
+  );
+}
 
-  isOpen,
+function initialsOf(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return 'U';
+  if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
 
+function ProfilePanel({
   onClose,
-
-}: { isOpen: boolean; onClose: () => void }) {
-
+  loginLogs,
+  loginStreak,
+}: {
+  onClose: () => void;
+  loginLogs: string[];
+  loginStreak: number;
+}) {
   const m = useProfileMetrics();
+  const updateSettings = useLifeStore(s => s.updateSettings);
+  const router = useRouter();
+  const isMobile = useIsMobile();
+  const achievements = useAchievements({ logs: loginLogs, streak: loginStreak });
+
+  const unlocked = achievements.filter(a => a.check());
+  const total = achievements.length;
+  const completionRate = total > 0 ? Math.round((unlocked.length / total) * 100) : 0;
+  const preview = unlocked.slice(0, 4);
+
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [draftName, setDraftName] = useState('');
+  const [draftEmail, setDraftEmail] = useState('');
+  const [draftBio, setDraftBio] = useState('');
 
   const memberSince = m.settings.createdAt
     ? new Date(m.settings.createdAt).getFullYear()
     : null;
 
+  const startEdit = () => {
+    setDraftName(m.settings.displayName || '');
+    setDraftEmail(m.settings.email || '');
+    setDraftBio(m.settings.bio || '');
+    setEditing(true);
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await updateSettings({
+        displayName: draftName.trim(),
+        email: draftEmail.trim(),
+        bio: draftBio.trim(),
+      });
+      toast.success('Profile updated');
+      setEditing(false);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not save profile');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
+    <>
+      <motion.button
+        type="button"
+        aria-label="Close profile"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="fixed inset-0 z-40 cursor-default bg-black/30 md:bg-transparent"
+      />
 
-    <AnimatePresence mode='wait'>
+      <motion.div
+        initial={{ opacity: 0, y: isMobile ? 60 : 10, scale: isMobile ? 1 : 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: isMobile ? 60 : 10, scale: isMobile ? 1 : 0.98 }}
+        transition={{ type: 'spring', stiffness: 320, damping: 32 }}
+        drag={isMobile ? 'y' : false}
+        dragConstraints={{ top: 0, bottom: 0 }}
+        dragElastic={{ top: 0, bottom: 0.5 }}
+        onDragEnd={(_, info) => {
+          if (info.offset.y > 120 || info.velocity.y > 900) onClose();
+        }}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Profile"
+        className="fixed inset-x-0 bottom-0 z-50 max-h-[85vh] w-full overflow-y-auto rounded-t-2xl border-[3px] border-[#2D2D2D] bg-[#FFFDF8] p-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-[0_-4px_0px_0px_var(--neo-shadow)] md:inset-x-auto md:bottom-auto md:top-4 md:right-[17rem] md:max-h-[calc(100vh-2rem)] md:w-80 md:rounded-2xl md:p-4 md:pb-4 md:shadow-[6px_6px_0px_0px_var(--neo-shadow)]"
+      >
+        <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-[#D8D2C8] md:hidden" />
 
-      {isOpen && (
-
-        <>
-
-          <motion.button
-            type="button"
-            aria-label="Close profile"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 z-40 cursor-default"
-          />
-
-          <motion.div
-
-            initial={{ opacity: 0, y: 10, scale: 0.98 }}
-
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-
-            exit={{ opacity: 0, y: 10, scale: 0.98 }}
-
-            className="fixed top-4 right-4 md:right-[16.5rem] z-50 w-80 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl border-[3px] border-[#2D2D2D] bg-[#FFFDF8] p-4 shadow-[6px_6px_0px_0px_var(--neo-shadow)]"
-
-          >
-
+        {editing ? (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="text-sm font-extrabold">Edit Profile</h3>
+              <button onClick={() => setEditing(false)} aria-label="Cancel editing" className="neo-button p-1.5 bg-[#FFFDF8]"><X size={12} /></button>
+            </div>
+            <label className="block">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#5C5C5C]">Name</span>
+              <input value={draftName} onChange={e => setDraftName(e.target.value)} placeholder="Your name" className="neo-input w-full text-sm mt-1" />
+            </label>
+            <label className="block">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#5C5C5C]">Email</span>
+              <input value={draftEmail} onChange={e => setDraftEmail(e.target.value)} placeholder="you@example.com" type="email" className="neo-input w-full text-sm mt-1" />
+            </label>
+            <label className="block">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#5C5C5C]">Bio</span>
+              <textarea value={draftBio} onChange={e => setDraftBio(e.target.value)} placeholder="A short line about you..." rows={2} maxLength={500} className="neo-input w-full text-xs resize-none mt-1" />
+            </label>
+            <div className="flex gap-2 pt-1">
+              <button onClick={handleSave} disabled={saving} className="neo-button flex-1 text-[11px] font-extrabold px-4 py-2 bg-[#CDEAC0] flex items-center justify-center gap-1.5 disabled:opacity-60">
+                <Save size={12} /> {saving ? 'Saving...' : 'Save'}
+              </button>
+              <button onClick={() => setEditing(false)} className="neo-button text-[11px] font-extrabold px-4 py-2 bg-[#FFFDF8]">Cancel</button>
+            </div>
+          </div>
+        ) : (
+          <>
             <div className="flex items-center gap-3 mb-3">
-
-              <div className="w-10 h-10 rounded-full bg-[#F7E8A4] border-[3px] border-[#2D2D2D] flex items-center justify-center text-lg font-bold flex-shrink-0">C</div>
-
+              <div className="w-10 h-10 rounded-full bg-[#F7E8A4] border-[3px] border-[#2D2D2D] flex items-center justify-center text-sm font-extrabold flex-shrink-0">{initialsOf(m.settings.displayName)}</div>
               <div className="min-w-0 flex-1">
-
                 <h3 className="text-sm font-extrabold truncate">{m.settings.displayName || 'User'}</h3>
-
-                <p className="text-[10px] text-[#5C5C5C] truncate">{m.settings.email || 'No email set'}</p>
-
+                <p className="text-[10px] text-[#5C5C5C] truncate flex items-center gap-1"><Mail size={10} className="flex-shrink-0" />{m.settings.email || 'No email set'}</p>
               </div>
-
+              <button onClick={startEdit} aria-label="Edit profile" className="neo-button p-1.5 bg-[#F7E8A4] flex-shrink-0"><Pencil size={12} /></button>
               <button onClick={onClose} aria-label="Close profile" className="neo-button p-1.5 bg-[#FFFDF8] flex-shrink-0"><X size={12} /></button>
-
             </div>
 
+            {m.settings.bio && <p className="text-[11px] text-[#5C5C5C] font-medium mb-2 leading-snug">{m.settings.bio}</p>}
             {memberSince && <p className="text-[9px] font-bold text-[#5C5C5C] uppercase tracking-wider mb-3">Member since {memberSince}</p>}
 
             {!m.hydrated ? (
@@ -548,6 +637,42 @@ function ProfilePopup({
                   </div>
                 </div>
 
+                <div className="rounded-xl border-[2px] border-[#2D2D2D] bg-[#F7E8A4] p-3 mb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-1.5">
+                      <Trophy size={13} />
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider">Achievements</span>
+                    </div>
+                    <Link href="/achievements" onClick={onClose} className="text-[10px] font-extrabold flex items-center gap-0.5 underline decoration-2 underline-offset-2">
+                      View all <ChevronRight size={11} />
+                    </Link>
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] font-bold mb-1">
+                    <span>{unlocked.length}/{total} unlocked</span>
+                    <span>{completionRate}%</span>
+                  </div>
+                  <ProgressBar value={completionRate} color="#2D2D2D" height={8} showLabel={false} />
+                  {preview.length > 0 && (
+                    <div className="flex items-center gap-1.5 mt-2.5">
+                      {preview.map(a => {
+                        const IconComp = a.icon;
+                        return (
+                          <div key={a.id} title={a.title} className="w-8 h-8 rounded-lg border-[2px] border-[#2D2D2D] bg-[#FFFDF8] flex items-center justify-center shadow-[1px_1px_0px_0px_var(--neo-shadow)]">
+                            <IconComp size={15} />
+                          </div>
+                        );
+                      })}
+                      {unlocked.length > preview.length && (
+                        <span className="text-[10px] font-extrabold text-[#5C5C5C]">+{unlocked.length - preview.length}</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-1.5 mb-2">
+                  <BarChart3 size={13} />
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#5C5C5C]">Activity</span>
+                </div>
                 <div className="grid grid-cols-2 gap-2">
                   <MetricTile icon={CheckCircle2} label="Tasks Done" value={m.stats.tasksDone} sub={`${m.stats.tasksPending} pending`} color="#CDEAC0" />
                   <MetricTile icon={Target} label="Completion" value={`${m.stats.completionRate}%`} sub={`${m.stats.tasksTotal} total`} color="#B8D8F8" />
@@ -569,22 +694,44 @@ function ProfilePopup({
                   </div>
                 )}
 
-                <button onClick={onClose} className="neo-button w-full text-[10px] font-extrabold px-4 py-2 bg-[#2D2D2D] text-[#FFFDF8] mt-4">Close</button>
+                <div className="flex items-center gap-1.5 mt-4 mb-2">
+                  <User size={13} />
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#5C5C5C]">Account</span>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => { void exportAllData(); }} className="neo-button flex-1 text-[10px] font-extrabold px-3 py-2 bg-[#B8D8F8] flex items-center justify-center gap-1.5">
+                    <Download size={12} /> Export
+                  </button>
+                  <button onClick={() => { onClose(); void logout(router); }} className="neo-button flex-1 text-[10px] font-extrabold px-3 py-2 bg-[#F8C8C8] flex items-center justify-center gap-1.5">
+                    <LogOut size={12} /> Sign out
+                  </button>
+                </div>
               </>
             )}
-
-          </motion.div>
-
-        </>
-
-      )}
-
-    </AnimatePresence>
-
+          </>
+        )}
+      </motion.div>
+    </>
   );
-
 }
 
+function ProfilePopup({
+  isOpen,
+  onClose,
+  loginLogs,
+  loginStreak,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  loginLogs: string[];
+  loginStreak: number;
+}) {
+  return (
+    <AnimatePresence mode="wait">
+      {isOpen && <ProfilePanel key="profile" onClose={onClose} loginLogs={loginLogs} loginStreak={loginStreak} />}
+    </AnimatePresence>
+  );
+}
 
 
 function SidebarContent({
@@ -826,7 +973,7 @@ export default function Sidebar() {
 
       {/* Profile popup */}
 
-      <ProfilePopup isOpen={profileOpen} onClose={closeProfile} />
+      <ProfilePopup isOpen={profileOpen} onClose={closeProfile} loginLogs={logs} loginStreak={streak} />
 
 
 
@@ -842,7 +989,7 @@ export default function Sidebar() {
 
       {/* Desktop sidebar - bottom bar */}
 
-      <aside className="hidden md:flex flex-col border-[3px] border-[#2D2D2D] bg-[#FFFDF8] fixed right-0 top-0 bottom-0 w-64 z-40 rounded-[20px] shadow-[6px_6px_0px_0px_var(--neo-shadow)] tint-purple overflow-y-auto">
+      <aside className="hidden md:flex flex-col border-[3px] border-[#2D2D2D] bg-[#FFFDF8] fixed right-2 top-2 bottom-2 w-64 z-40 rounded-[20px] shadow-[6px_6px_0px_0px_var(--neo-shadow)] tint-purple overflow-y-auto">
 
         <SidebarContent
 

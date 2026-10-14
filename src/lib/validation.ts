@@ -188,6 +188,7 @@ export const loanCreateSchema = z.object({
 export const settingsUpdateSchema = z.object({
   displayName: z.string().optional(),
   email: z.string().optional(),
+  bio: z.string().max(500).optional(),
   dailyReminder: z.boolean().optional(),
   goalAlerts: z.boolean().optional(),
   accentColor: colorField.optional(),

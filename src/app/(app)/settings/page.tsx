@@ -8,6 +8,7 @@ import { useLifeStore } from '@/store/use-store';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/components/shared/toast';
 import { CURRENCIES, DEFAULT_CURRENCY } from '@/lib/currency';
+import { logout, exportAllData } from '@/lib/account';
 
 const accentColors = ['#F7E8A4', '#B8D8F8', '#CDEAC0', '#F8C8C8', '#DCCEF5', '#FFD8BE'];
 
@@ -30,43 +31,11 @@ export default function SettingsPage() {
   const router = useRouter();
 
   const handleLogout = async () => {
-    try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-      clearStore();
-      router.push('/login');
-      router.refresh();
-    } catch {
-      // fallback
-      clearStore();
-      window.location.href = '/login';
-    }
+    await logout(router);
   };
 
   const handleExport = async () => {
-    const endpoints = ['tasks', 'goals', 'projects', 'habits', 'learning', 'subjects', 'exams', 'journal', 'login-logs'];
-    const data: Record<string, unknown> = {};
-    let failed = 0;
-    for (const ep of endpoints) {
-      try {
-        const res = await fetch(`/api/${ep}`);
-        if (!res.ok) throw new Error(`Export ${ep} failed: ${res.status}`);
-        data[ep] = await res.json();
-      } catch {
-        failed += 1;
-      }
-    }
-    if (failed === endpoints.length) {
-      toast.error('Export failed. Please try again.');
-      return;
-    }
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `commit-export-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success(failed ? 'Export ready (some data skipped)' : 'Export downloaded');
+    await exportAllData();
   };
 
   const handleReset = async () => {

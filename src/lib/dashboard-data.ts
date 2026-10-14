@@ -132,6 +132,7 @@ function toSettings(row: SettingsRow): Settings {
     id: row.id,
     displayName: row.displayName,
     email: row.email,
+    bio: row.bio,
     dailyReminder: row.dailyReminder,
     goalAlerts: row.goalAlerts,
     accentColor: row.accentColor,

@@ -26,6 +26,8 @@ import { computeDashboardStats, parseDateKey } from '@/lib/dashboard-stats';
 
 import { useLifeStore } from '@/store/use-store';
 
+import { useUIStore } from '@/store/ui-store';
+
 import ProgressBar from '@/components/shared/progress-bar';
 
 
@@ -509,7 +511,7 @@ function ProfilePopup({
 
             exit={{ opacity: 0, y: 10, scale: 0.98 }}
 
-            className="fixed top-4 right-[16.5rem] z-50 w-80 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl border-[3px] border-[#2D2D2D] bg-[#FFFDF8] p-4 shadow-[6px_6px_0px_0px_var(--neo-shadow)]"
+            className="fixed top-4 right-4 md:right-[16.5rem] z-50 w-80 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl border-[3px] border-[#2D2D2D] bg-[#FFFDF8] p-4 shadow-[6px_6px_0px_0px_var(--neo-shadow)]"
 
           >
 
@@ -592,7 +594,7 @@ function SidebarContent({
   loggedInToday,
 
   setShowStreak,
-  setProfileOpen,
+  onOpenProfile,
 
 }: {
 
@@ -601,7 +603,7 @@ function SidebarContent({
   loggedInToday: boolean;
 
   setShowStreak: React.Dispatch<React.SetStateAction<boolean>>;
-  setProfileOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  onOpenProfile: () => void;
 
 }) {
 
@@ -711,7 +713,7 @@ function SidebarContent({
 
       <div className="p-4 border-t [3px] solid #[2D2D2D]">
         <button
-          onClick={() => setProfileOpen(true)}
+          onClick={onOpenProfile}
           className="w-full rounded-xl border-[3px] border-[#2D2D2D] bg-[#F7E8A4] p-3 hover:bg-[#e8d890] transition-colors text-left"
         >
           <div className="flex items-center gap-2">
@@ -736,7 +738,11 @@ export default function Sidebar() {
 
   const [showStreak, setShowStreak] = useState(false);
 
-  const [profileOpen, setProfileOpen] = useState(false);
+  const profileOpen = useUIStore(s => s.profileOpen);
+
+  const openProfile = useUIStore(s => s.openProfile);
+
+  const closeProfile = useUIStore(s => s.closeProfile);
 
 
 
@@ -750,7 +756,7 @@ export default function Sidebar() {
 
       if (e.key === 'Escape') {
 
-        setProfileOpen(false);
+        closeProfile();
 
         return;
 
@@ -766,7 +772,7 @@ export default function Sidebar() {
 
     };
 
-  }, [profileOpen]);
+  }, [profileOpen, closeProfile]);
 
 
 
@@ -820,7 +826,7 @@ export default function Sidebar() {
 
       {/* Profile popup */}
 
-      <ProfilePopup isOpen={profileOpen} onClose={() => setProfileOpen(false)} />
+      <ProfilePopup isOpen={profileOpen} onClose={closeProfile} />
 
 
 
@@ -846,7 +852,7 @@ export default function Sidebar() {
 
           setShowStreak={setShowStreak}
 
-          setProfileOpen={setProfileOpen}
+          onOpenProfile={openProfile}
 
         />
 

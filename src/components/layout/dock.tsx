@@ -6,6 +6,7 @@ import {
   LayoutDashboard, Target, CheckSquare, Flame, NotebookPen,
   Rocket, BookOpen, GraduationCap, Trophy, BarChart3, Settings, Wallet, User,
 } from 'lucide-react';
+import { useUIStore } from '@/store/ui-store';
 import './dock.css';
 
 const ITEMS = [
@@ -23,11 +24,12 @@ const ITEMS = [
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
-const PROFILE_ITEM = { label: 'Profile', icon: User };
-
 export default function Dock() {
   const router = useRouter();
   const pathname = usePathname();
+  const openProfile = useUIStore(s => s.openProfile);
+  const closeProfile = useUIStore(s => s.closeProfile);
+  const profileOpen = useUIStore(s => s.profileOpen);
   const scrollRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef<HTMLButtonElement>(null);
 
@@ -59,7 +61,7 @@ export default function Dock() {
                 <button
                   key={item.href}
                   ref={active ? activeRef : undefined}
-                  onClick={() => router.push(item.href)}
+                  onClick={() => { closeProfile(); router.push(item.href); }}
                   className={`dock-item ${active ? 'dock-item--active' : ''}`}
                   aria-label={item.label}
                   aria-current={active ? 'page' : undefined}
@@ -73,9 +75,10 @@ export default function Dock() {
               );
             })}
             <button
-              onClick={() => router.push('/settings')}
-              className="dock-item"
+              onClick={openProfile}
+              className={`dock-item ${profileOpen ? 'dock-item--active' : ''}`}
               aria-label="Profile"
+              aria-current={profileOpen ? 'page' : undefined}
               title="Profile"
             >
               <span className="dock-item-icon">

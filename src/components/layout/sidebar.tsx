@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 import { usePathname, useRouter } from 'next/navigation';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 
 import { useEffect, useState, useSyncExternalStore } from 'react';
 
@@ -511,6 +511,7 @@ function ProfilePanel({
   const updateSettings = useLifeStore(s => s.updateSettings);
   const router = useRouter();
   const isMobile = useIsMobile();
+  const dragControls = useDragControls();
   const achievements = useAchievements({ logs: loginLogs, streak: loginStreak });
 
   const unlocked = achievements.filter(a => a.check());
@@ -567,6 +568,8 @@ function ProfilePanel({
         exit={{ opacity: 0, y: isMobile ? 60 : 10, scale: isMobile ? 1 : 0.98 }}
         transition={{ type: 'spring', stiffness: 320, damping: 32 }}
         drag={isMobile ? 'y' : false}
+        dragControls={dragControls}
+        dragListener={false}
         dragConstraints={{ top: 0, bottom: 0 }}
         dragElastic={{ top: 0, bottom: 0.5 }}
         onDragEnd={(_, info) => {
@@ -575,9 +578,15 @@ function ProfilePanel({
         role="dialog"
         aria-modal="true"
         aria-label="Profile"
-        className="fixed inset-x-0 bottom-0 z-50 max-h-[85vh] w-full overflow-y-auto rounded-t-2xl border-[3px] border-[#2D2D2D] bg-[#FFFDF8] p-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-[0_-4px_0px_0px_var(--neo-shadow)] md:inset-x-auto md:bottom-auto md:top-4 md:right-[17rem] md:max-h-[calc(100vh-2rem)] md:w-80 md:rounded-2xl md:p-4 md:pb-4 md:shadow-[6px_6px_0px_0px_var(--neo-shadow)]"
+        className="fixed inset-x-0 bottom-0 z-50 flex max-h-[85vh] w-full flex-col overflow-hidden rounded-t-2xl border-[3px] border-[#2D2D2D] bg-[#FFFDF8] shadow-[0_-4px_0px_0px_var(--neo-shadow)] md:inset-x-auto md:bottom-auto md:top-4 md:right-[17rem] md:max-h-[calc(100vh-2rem)] md:w-80 md:rounded-2xl md:shadow-[6px_6px_0px_0px_var(--neo-shadow)]"
       >
-        <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-[#D8D2C8] md:hidden" />
+        <div
+          className="mx-auto mt-3 mb-1 h-1.5 w-12 shrink-0 touch-none rounded-full bg-[#D8D2C8] md:hidden"
+          style={{ cursor: 'grab' }}
+          onPointerDown={(e) => dragControls.start(e)}
+        />
+
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 pt-2 pb-[calc(1.5rem+env(safe-area-inset-bottom))] md:p-4 md:pb-4">
 
         {editing ? (
           <div className="space-y-3">
@@ -702,6 +711,7 @@ function ProfilePanel({
             )}
           </>
         )}
+        </div>
       </motion.div>
     </>
   );

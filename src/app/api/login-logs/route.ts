@@ -5,7 +5,15 @@ import { loginLogs } from '@/db/schema';
 import { requireUserId } from '@/lib/auth/dal';
 import { errorResponse, unauthorized } from '@/lib/api';
 import { calcLoginStreak } from '@/lib/streak';
-import { isDateKey, todayKey } from '@/lib/date';
+import { addDaysToKey, daysBetweenKeys, isDateKey, todayKey } from '@/lib/date';
+
+function serverDateKey(requested: unknown): string {
+  const today = todayKey();
+  if (!isDateKey(requested)) return today;
+  const diff = daysBetweenKeys(today, requested);
+  if (diff < -1 || diff > 1) return today;
+  return addDaysToKey(today, diff);
+}
 
 async function getAllDates(userId: string): Promise<string[]> {
   const rows = await db.select({ date: loginLogs.date }).from(loginLogs).where(eq(loginLogs.userId, userId));
@@ -17,7 +25,7 @@ export async function GET(req: NextRequest) {
   if (!userId) return unauthorized();
   try {
     const requested = req.nextUrl.searchParams.get('today');
-    const today = isDateKey(requested) ? requested : todayKey();
+    const today = serverDateKey(requested);
     const rows = await db.select().from(loginLogs).where(eq(loginLogs.userId, userId)).orderBy(loginLogs.createdAt);
     const dates = rows.map(r => r.date);
     const streak = calcLoginStreak(dates, today);
@@ -37,7 +45,7 @@ export async function POST(req: NextRequest) {
     } catch {
       requested = undefined;
     }
-    const date = isDateKey(requested) ? requested : todayKey();
+    const date = serverDateKey(requested);
 
     const inserted = await db
       .insert(loginLogs)

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isDateKey } from './date';
 
 export const emailField = z
   .string()
@@ -25,122 +26,134 @@ export const loginSchema = z.object({
 });
 
 const milestoneSchema = z.object({
-  id: z.string(),
-  title: z.string(),
+  id: z.string().max(100),
+  title: z.string().trim().min(1, { error: 'Title is required.' }).max(200),
   completed: z.boolean(),
 });
 
 const moduleSchema = z.object({
-  id: z.string(),
-  name: z.string(),
+  id: z.string().max(100),
+  name: z.string().trim().min(1, { error: 'Name is required.' }).max(200),
   completed: z.boolean(),
 });
 
 const assignmentSchema = z.object({
-  title: z.string(),
-  due: z.string(),
+  title: z.string().trim().min(1, { error: 'Title is required.' }).max(200),
+  due: z.string().max(40),
   submitted: z.boolean(),
 });
 
 const habitLogSchema = z.object({
-  date: z.string(),
-  count: z.number().int().min(0),
+  date: z.string().max(40),
+  count: z.number().int().min(0).max(100),
 });
 
 const projectTaskSchema = z.object({
-  id: z.string(),
-  title: z.string(),
-  description: z.string(),
+  id: z.string().max(100),
+  title: z.string().trim().min(1, { error: 'Title is required.' }).max(200),
+  description: z.string().max(5_000),
   status: z.enum(['todo', 'in-progress', 'done']),
   priority: z.enum(['low', 'medium', 'high', 'urgent']),
-  dueDate: z.string(),
-  time: z.string().optional(),
-  tags: z.array(z.string()),
-  projectId: z.string().optional(),
+  dueDate: z.string().max(40),
+  time: z.string().max(40).optional(),
+  tags: z.array(z.string().max(50)).max(50),
+  projectId: z.string().max(100).optional(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
 });
 
-const dueDateField = z.string();
+const dateField = z
+  .string()
+  .trim()
+  .refine((v) => v === '' || isDateKey(v), { error: 'Enter a valid date.' });
+const dueDateField = dateField;
 const colorField = z.string().regex(/^#[0-9a-fA-F]{6}$/, { error: 'Enter a valid hex color.' });
 
 export const taskCreateSchema = z.object({
-  title: z.string().trim().min(1, { error: 'Title is required.' }),
-  description: z.string().optional(),
+  title: z.string().trim().min(1, { error: 'Title is required.' }).max(200),
+  description: z.string().max(5_000).optional(),
   status: z.enum(['todo', 'in-progress', 'done']).optional(),
   priority: z.enum(['low', 'medium', 'high', 'urgent']).optional(),
   dueDate: dueDateField,
-  time: z.string().optional(),
-  tags: z.array(z.string()).optional(),
-  projectId: z.string().optional(),
+  time: z.string().max(40).optional(),
+  tags: z.array(z.string().max(50)).max(50).optional(),
+  projectId: z.string().max(100).optional(),
 });
 
 export const goalCreateSchema = z.object({
-  title: z.string().trim().min(1, { error: 'Title is required.' }),
-  description: z.string().optional(),
+  title: z.string().trim().min(1, { error: 'Title is required.' }).max(200),
+  description: z.string().max(5_000).optional(),
   category: z.enum(['long-term', 'medium-term', 'short-term']),
-  deadline: z.string(),
+  deadline: dateField,
   progress: z.number().int().min(0).max(100).optional(),
-  milestones: z.array(milestoneSchema).optional(),
+  milestones: z.array(milestoneSchema).max(200).optional(),
   color: colorField.optional(),
 });
 
 export const projectCreateSchema = z.object({
-  title: z.string().trim().min(1, { error: 'Title is required.' }),
-  description: z.string().optional(),
+  title: z.string().trim().min(1, { error: 'Title is required.' }).max(200),
+  description: z.string().max(5_000).optional(),
   progress: z.number().int().min(0).max(100).optional(),
-  tasks: z.array(projectTaskSchema).optional(),
-  milestones: z.array(milestoneSchema).optional(),
+  tasks: z.array(projectTaskSchema).max(500).optional(),
+  milestones: z.array(milestoneSchema).max(200).optional(),
   color: colorField.optional(),
 });
 
 export const habitCreateSchema = z.object({
-  name: z.string().trim().min(1, { error: 'Name is required.' }),
-  icon: z.string().optional(),
+  name: z.string().trim().min(1, { error: 'Name is required.' }).max(200),
+  icon: z.string().max(100).optional(),
   color: colorField.optional(),
   category: z.enum(['compulsory', 'when-free', 'other']).optional(),
   streak: z.number().int().min(0).optional(),
-  logs: z.array(habitLogSchema).optional(),
+  logs: z.array(habitLogSchema).max(2_000).optional(),
 });
 
 export const learningCreateSchema = z.object({
-  title: z.string().trim().min(1, { error: 'Title is required.' }),
-  description: z.string().optional(),
-  category: z.string().trim().min(1, { error: 'Category is required.' }),
+  title: z.string().trim().min(1, { error: 'Title is required.' }).max(200),
+  description: z.string().max(5_000).optional(),
+  category: z.string().trim().min(1, { error: 'Category is required.' }).max(100),
   progress: z.number().int().min(0).max(100).optional(),
-  modules: z.array(moduleSchema).optional(),
+  modules: z.array(moduleSchema).max(500).optional(),
   color: colorField.optional(),
 });
 
 export const subjectCreateSchema = z.object({
-  name: z.string().trim().min(1, { error: 'Name is required.' }),
-  code: z.string(),
+  name: z.string().trim().min(1, { error: 'Name is required.' }).max(200),
+  code: z.string().max(50),
   attendance: z.number().int().min(0).max(100).optional(),
-  assignments: z.array(assignmentSchema).optional(),
-  grade: z.string().optional(),
+  assignments: z.array(assignmentSchema).max(500).optional(),
+  grade: z.string().max(20).optional(),
   color: colorField.optional(),
 });
 
 export const examCreateSchema = z.object({
-  subject: z.string().trim().min(1, { error: 'Subject is required.' }),
-  date: z.string(),
-  time: z.string().optional(),
-  syllabus: z.array(z.string()).optional(),
+  subject: z.string().trim().min(1, { error: 'Subject is required.' }).max(200),
+  date: dateField,
+  time: z.string().max(40).optional(),
+  syllabus: z.array(z.string().max(200)).max(200).optional(),
   color: colorField.optional(),
 });
 
 export const journalCreateSchema = z.object({
-  date: z.string(),
-  title: z.string().trim().min(1, { error: 'Title is required.' }),
-  content: z.string().trim().min(1, { error: 'Content is required.' }),
+  date: dateField,
+  title: z.string().trim().min(1, { error: 'Title is required.' }).max(200),
+  content: z.string().trim().min(1, { error: 'Content is required.' }).max(20_000),
   mood: z.enum(['great', 'good', 'okay', 'bad', 'awful']),
-  tags: z.array(z.string()).optional(),
+  tags: z.array(z.string().max(50)).max(50).optional(),
 });
 
-const moneyField = z.union([z.string(), z.number()]).transform((v) => String(v));
+const moneyField = z
+  .union([z.string(), z.number()])
+  .transform((v) => (typeof v === 'string' ? v.trim() : v))
+  .refine((v) => v !== '', { error: 'Amount is required.' })
+  .transform((v) => Number(v))
+  .refine((n) => Number.isFinite(n), { error: 'Enter a valid amount.' })
+  .refine((n) => n >= 0, { error: 'Amount cannot be negative.' })
+  .refine((n) => n <= 1_000_000_000, { error: 'Amount is too large.' })
+  .transform((n) => n.toFixed(2));
 
 export const expenseCreateSchema = z.object({
-  title: z.string().trim().min(1, { error: 'Title is required.' }),
+  title: z.string().trim().min(1, { error: 'Title is required.' }).max(200),
   amount: moneyField,
   type: z.enum(['income', 'expense']).optional(),
   category: z.enum([
@@ -148,26 +161,26 @@ export const expenseCreateSchema = z.object({
     'salary', 'freelance', 'investment', 'gift', 'refund', 'other',
   ]),
   account: z.enum(['cash', 'bank', 'card', 'upi', 'other']).optional(),
-  date: z.string(),
-  notes: z.string().optional(),
+  date: dateField,
+  notes: z.string().max(5_000).optional(),
   recurring: z.boolean().optional(),
 });
 
 export const loanCreateSchema = z.object({
-  title: z.string().trim().min(1, { error: 'Title is required.' }),
-  counterparty: z.string().optional(),
+  title: z.string().trim().min(1, { error: 'Title is required.' }).max(200),
+  counterparty: z.string().max(200).optional(),
   kind: z.enum(['borrowed', 'lent']).optional(),
   principal: moneyField,
   paid: moneyField.optional(),
-  date: z.string(),
-  dueDate: z.string().optional(),
-  notes: z.string().optional(),
+  date: dateField,
+  dueDate: dueDateField.optional(),
+  notes: z.string().max(5_000).optional(),
   settled: z.boolean().optional(),
 });
 
 export const settingsUpdateSchema = z.object({
-  displayName: z.string().optional(),
-  email: z.string().optional(),
+  displayName: z.string().max(100).optional(),
+  email: z.union([emailField, z.literal('')]).optional(),
   dailyReminder: z.boolean().optional(),
   goalAlerts: z.boolean().optional(),
   accentColor: colorField.optional(),
@@ -175,12 +188,14 @@ export const settingsUpdateSchema = z.object({
   budgets: z.record(z.string(), z.number()).optional(),
 });
 
+const versionField = z.number().int().positive().optional();
+
 export const taskUpdateSchema = taskCreateSchema.partial();
-export const goalUpdateSchema = goalCreateSchema.partial();
-export const projectUpdateSchema = projectCreateSchema.partial();
-export const habitUpdateSchema = habitCreateSchema.partial();
-export const learningUpdateSchema = learningCreateSchema.partial();
-export const subjectUpdateSchema = subjectCreateSchema.partial();
+export const goalUpdateSchema = goalCreateSchema.partial().extend({ version: versionField });
+export const projectUpdateSchema = projectCreateSchema.partial().extend({ version: versionField });
+export const habitUpdateSchema = habitCreateSchema.partial().extend({ version: versionField });
+export const learningUpdateSchema = learningCreateSchema.partial().extend({ version: versionField });
+export const subjectUpdateSchema = subjectCreateSchema.partial().extend({ version: versionField });
 export const examUpdateSchema = examCreateSchema.partial();
 export const journalUpdateSchema = journalCreateSchema.partial();
 export const expenseUpdateSchema = expenseCreateSchema.partial();

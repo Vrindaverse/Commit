@@ -49,6 +49,7 @@ export const goals = pgTable('goals', {
   progress: integer('progress').default(0).notNull(),
   milestones: jsonb('milestones').default([]).notNull(),
   color: text('color').default('#F7E8A4').notNull(),
+  version: integer('version').default(1).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (t) => [
@@ -64,6 +65,7 @@ export const projects = pgTable('projects', {
   tasks: jsonb('tasks').default([]).notNull(),
   milestones: jsonb('milestones').default([]).notNull(),
   color: text('color').default('#B8D8F8').notNull(),
+  version: integer('version').default(1).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (t) => [
@@ -79,6 +81,7 @@ export const habits = pgTable('habits', {
   category: text('category').default('when-free').notNull(),
   streak: integer('streak').default(0).notNull(),
   logs: jsonb('logs').default([]).notNull(),
+  version: integer('version').default(1).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (t) => [
@@ -94,6 +97,7 @@ export const learningPaths = pgTable('learning_paths', {
   progress: integer('progress').default(0).notNull(),
   modules: jsonb('modules').default([]).notNull(),
   color: text('color').default('#DCCEF5').notNull(),
+  version: integer('version').default(1).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (t) => [
@@ -109,6 +113,7 @@ export const subjects = pgTable('subjects', {
   assignments: jsonb('assignments').default([]).notNull(),
   grade: text('grade').default('').notNull(),
   color: text('color').default('#FFD8BE').notNull(),
+  version: integer('version').default(1).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (t) => [
@@ -203,4 +208,12 @@ export const loans = pgTable('loans', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (t) => [
   index('loans_user_idx').on(t.userId),
+]);
+
+export const authRateLimits = pgTable('auth_rate_limits', {
+  key: text('key').primaryKey(),
+  count: integer('count').default(0).notNull(),
+  resetAt: timestamp('reset_at', { withTimezone: true }).notNull(),
+}, (t) => [
+  index('auth_rate_limits_reset_at_idx').on(t.resetAt),
 ]);

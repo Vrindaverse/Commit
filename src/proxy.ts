@@ -9,18 +9,15 @@ const PUBLIC_ROUTES = new Set([
 
 export default async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const token = req.cookies.get(SESSION_COOKIE)?.value;
-  const payload = await verifySessionToken(token);
-  const isAuthenticated = Boolean(payload?.uid);
 
   if (PUBLIC_ROUTES.has(pathname)) {
-    if (isAuthenticated) {
-      return NextResponse.redirect(new URL('/', req.nextUrl));
-    }
     return NextResponse.next();
   }
 
-  if (!isAuthenticated) {
+  const token = req.cookies.get(SESSION_COOKIE)?.value;
+  const payload = await verifySessionToken(token);
+
+  if (!payload?.uid) {
     const url = new URL('/login', req.nextUrl);
     if (pathname !== '/') {
       url.searchParams.set('next', pathname);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLifeStore } from '@/store/use-store';
 import { computeDashboardStats, type DashboardDataset, type DashboardStats } from '@/lib/dashboard-stats';
@@ -27,6 +27,11 @@ interface DashboardViewProps {
   quote: MotivationalQuote;
 }
 
+const subscribeNoop = () => () => {};
+const clientBootNow = typeof window === 'undefined' ? null : new Date();
+const readClientNow = () => clientBootNow;
+const readServerNow = () => null;
+
 export default function DashboardView({ initialData, initialStats, currency: initialCurrency, quote }: DashboardViewProps) {
   const router = useRouter();
 
@@ -47,10 +52,14 @@ export default function DashboardView({ initialData, initialStats, currency: ini
     [hydrated, tasks, goals, projects, habits, learningPaths, expenses, loans, initialData],
   );
 
+  // The server renders in its own timezone; swap to the visitor's local clock once
+  // hydrated so the greeting, today label and month are correct.
+  const clientNow = useSyncExternalStore(subscribeNoop, readClientNow, readServerNow);
+
   // Recomputes the (potentially expensive) derived values only when inputs change.
   const stats = useMemo<DashboardStats>(
-    () => (hydrated ? computeDashboardStats(dataset) : initialStats),
-    [hydrated, dataset, initialStats],
+    () => (clientNow ? computeDashboardStats(dataset, clientNow) : initialStats),
+    [clientNow, dataset, initialStats],
   );
 
   const activeCurrency = hydrated ? currency : initialCurrency;

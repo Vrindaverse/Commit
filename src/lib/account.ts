@@ -21,6 +21,22 @@ export async function logout(router?: RouterLike): Promise<void> {
   }
 }
 
+export async function logoutAll(router?: RouterLike): Promise<void> {
+  try {
+    await fetch('/api/auth/logout-all', { method: 'POST' });
+    useLifeStore.getState().clearStore();
+    if (router) {
+      router.push('/login');
+      router.refresh();
+    } else {
+      window.location.href = '/login';
+    }
+  } catch {
+    useLifeStore.getState().clearStore();
+    window.location.href = '/login';
+  }
+}
+
 const EXPORT_ENDPOINTS = ['tasks', 'goals', 'projects', 'habits', 'learning', 'subjects', 'exams', 'journal', 'expenses', 'loans', 'login-logs'];
 
 export async function exportAllData(): Promise<void> {

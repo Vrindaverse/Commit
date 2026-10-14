@@ -179,14 +179,14 @@ function PathCard({ path, compact }: { path: LearningPath; compact?: boolean }) 
             {/* Modules + add/manage control share one vertical stack so spacing stays consistent */}
             <div className="flex flex-col gap-3">
               <AnimatePresence>
-                {visibleModules.map((module, i) => (
+                {visibleModules.map((module) => (
                   <motion.div key={module.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
                     <div className="flex items-center gap-2 rounded-sm border border-[#2D2D2D] bg-[#FFFDF8] px-2 py-1 group">
-                      <button onClick={() => toggleModule(path.id, i)} aria-label={module.completed ? 'Mark module incomplete' : 'Mark module complete'} className="shrink-0">
+                      <button onClick={() => toggleModule(path.id, module.id)} aria-label={module.completed ? 'Mark module incomplete' : 'Mark module complete'} className="shrink-0">
                         {module.completed ? <CheckCircle2 size={16} className="text-[#CDEAC0]" /> : <Circle size={16} className="text-[#5C5C5C]" />}
                       </button>
                       <span className={`text-xs font-medium flex-1 min-w-0 truncate ${module.completed ? 'line-through text-[#5C5C5C]' : ''}`}>{module.name}</span>
-                      <button onClick={() => deleteModule(path.id, i)} aria-label="Delete module" className="shrink-0 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 text-[#5C5C5C] hover:text-[#F8C8C8] transition-all">X</button>
+                      <button onClick={() => deleteModule(path.id, module.id)} aria-label="Delete module" className="shrink-0 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 text-[#5C5C5C] hover:text-[#F8C8C8] transition-all">X</button>
                     </div>
                   </motion.div>
                 ))}

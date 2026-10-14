@@ -33,6 +33,7 @@ export interface Goal {
   progress: number;
   milestones: Milestone[];
   color: string;
+  version?: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -51,6 +52,7 @@ export interface Project {
   tasks: Task[];
   milestones: Milestone[];
   color: string;
+  version?: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -63,6 +65,7 @@ export interface LearningPath {
   progress: number;
   modules: { id: string; name: string; completed: boolean }[];
   color: string;
+  version?: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -75,6 +78,7 @@ export interface Subject {
   assignments: { title: string; due: string; submitted: boolean }[];
   grade: string;
   color: string;
+  version?: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -100,6 +104,7 @@ export interface Habit {
   category: HabitCategory;
   streak: number;
   logs: { date: string; count: number }[];
+  version?: number;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -1,9 +1,9 @@
-import { localDateKey, todayKey } from '@/lib/date';
+import { dateFromKey, localDateKey, todayKey } from '@/lib/date';
 
 export function calcLoginStreak(dates: string[], today: string = todayKey()): number {
   if (dates.length === 0) return 0;
   const logSet = new Set(dates);
-  const current = new Date();
+  const current = dateFromKey(today);
   if (!logSet.has(today)) {
     current.setDate(current.getDate() - 1);
   }

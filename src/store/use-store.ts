@@ -1,12 +1,21 @@
 'use client';
 
 import { create } from 'zustand';
-import { Task, Goal, Project, Habit, JournalEntry, Milestone, LearningPath, Subject, Exam, Settings, Expense, Loan } from '@/types';
+import { Task, Goal, Project, Habit, JournalEntry, LearningPath, Subject, Exam, Settings, Expense, Loan } from '@/types';
 import { toast } from '@/components/shared/toast';
 import { calcStreak, habitCountOn, isHabitDoneOn } from '@/lib/habits';
+import { computeProgress } from '@/lib/progress';
 
-let idCounter = 100;
-export const genId = () => `gen_${++idCounter}`;
+export const genId = () => crypto.randomUUID();
+
+class ClientApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = 'ClientApiError';
+    this.status = status;
+  }
+}
 
 async function handleResponse<T>(r: Response): Promise<T> {
   if (!r.ok) {
@@ -14,11 +23,23 @@ async function handleResponse<T>(r: Response): Promise<T> {
       if (typeof window !== 'undefined') {
         window.location.href = '/login';
       }
-      throw new Error('Unauthorized');
+      throw new ClientApiError('Unauthorized', 401);
     }
-    const body = await r.text().catch(() => '(unable to read body)');
-    throw new Error(`API error: ${r.status} ${r.statusText} — ${body}`);
+    let message = `Request failed (${r.status}). Please try again.`;
+    try {
+      const body = await r.json();
+      if (typeof body?.error === 'string' && body.error) {
+        message = body.error;
+      } else if (body?.error?.message) {
+        message = body.error.message;
+      }
+    } catch {
+      // keep the fallback message
+    }
+    toast.error(message);
+    throw new ClientApiError(message, r.status);
   }
+  if (r.status === 204) return undefined as T;
   return r.json();
 }
 
@@ -28,6 +49,39 @@ const api = {
   put: <T>(url: string, body: unknown): Promise<T> => fetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(r => handleResponse<T>(r)),
   del: <T>(url: string): Promise<T> => fetch(url, { method: 'DELETE' }).then(r => handleResponse<T>(r)),
 };
+
+const writeQueues = new Map<string, Promise<unknown>>();
+
+function enqueue(key: string, task: () => Promise<void>): Promise<void> {
+  const previous = writeQueues.get(key) ?? Promise.resolve();
+  const run = previous.then(task, task);
+  writeQueues.set(key, run.catch(() => {}));
+  return run;
+}
+
+interface PersistOptions<T> {
+  key: string;
+  read: () => T | undefined;
+  url: string;
+  build: (current: T) => Record<string, unknown>;
+  apply: (row: T) => void;
+  resync: () => Promise<void>;
+}
+
+function persistArray<T extends { id: string; version?: number }>(opts: PersistOptions<T>): Promise<void> {
+  return enqueue(opts.key, async () => {
+    const current = opts.read();
+    if (!current) return;
+    try {
+      const row = await api.put<T>(opts.url, { ...opts.build(current), version: current.version });
+      opts.apply(row);
+    } catch (error) {
+      if (error instanceof ClientApiError && error.status === 409) {
+        await opts.resync();
+      }
+    }
+  });
+}
 
 interface LifeStore {
   hydrated: boolean;
@@ -84,9 +138,9 @@ interface LifeStore {
   deleteLearningPath: (id: string) => Promise<void>;
   updateLearningPath: (id: string, updates: Partial<LearningPath>) => Promise<void>;
   addModule: (pathId: string, name: string) => Promise<void>;
-  deleteModule: (pathId: string, index: number) => Promise<void>;
-  renameModule: (pathId: string, index: number, name: string) => Promise<void>;
-  toggleModule: (pathId: string, moduleIndex: number) => Promise<void>;
+  deleteModule: (pathId: string, moduleId: string) => Promise<void>;
+  renameModule: (pathId: string, moduleId: string, name: string) => Promise<void>;
+  toggleModule: (pathId: string, moduleId: string) => Promise<void>;
 
   // Journal
   addEntry: (entry: JournalEntry) => Promise<void>;
@@ -198,10 +252,6 @@ export const useLifeStore = create<LifeStore>((set, get) => ({
       });
     } catch (e) {
       console.error('Failed to hydrate store from API:', e);
-      const message = e instanceof Error ? e.message : 'Unknown error';
-      if (!message.includes('Unauthorized')) {
-        toast.error('Could not load your data. Please refresh the page.');
-      }
     }
   },
 
@@ -241,44 +291,46 @@ export const useLifeStore = create<LifeStore>((set, get) => ({
 
   reorderGoals: (goals) => set(() => ({ goals })),
 
-  addMilestone: async (goalId, title) => {
-    const goal = get().goals.find(g => g.id === goalId);
-    if (!goal) return;
-    const milestone: Milestone = { id: crypto.randomUUID(), title, completed: false };
-    const milestones = [...goal.milestones, milestone];
-    const completed = milestones.filter(m => m.completed).length;
-    const progress = Math.round((completed / milestones.length) * 100);
-    await api.put(`/api/goals/${goalId}`, { milestones, progress });
-    set(s => ({
-      goals: s.goals.map(g => g.id === goalId ? { ...g, milestones, progress } : g),
-    }));
-  },
+  addMilestone: (goalId, title) =>
+    persistArray<Goal>({
+      key: `goal:${goalId}`,
+      read: () => get().goals.find(g => g.id === goalId),
+      url: `/api/goals/${goalId}`,
+      build: (goal) => {
+        const milestones = [...goal.milestones, { id: crypto.randomUUID(), title, completed: false }];
+        return { milestones, progress: computeProgress(milestones) };
+      },
+      apply: (row) => set(s => ({ goals: s.goals.map(g => g.id === goalId ? row : g) })),
+      resync: () => get().hydrate(),
+    }),
 
-  deleteMilestone: async (goalId, milestoneId) => {
-    const goal = get().goals.find(g => g.id === goalId);
-    if (!goal) return;
-    const milestones = goal.milestones.filter(m => m.id !== milestoneId);
-    const completed = milestones.filter(m => m.completed).length;
-    const progress = milestones.length > 0 ? Math.round((completed / milestones.length) * 100) : 0;
-    await api.put(`/api/goals/${goalId}`, { milestones, progress });
-    set(s => ({
-      goals: s.goals.map(g => g.id === goalId ? { ...g, milestones, progress } : g),
-    }));
-  },
+  deleteMilestone: (goalId, milestoneId) =>
+    persistArray<Goal>({
+      key: `goal:${goalId}`,
+      read: () => get().goals.find(g => g.id === goalId),
+      url: `/api/goals/${goalId}`,
+      build: (goal) => {
+        const milestones = goal.milestones.filter(m => m.id !== milestoneId);
+        return { milestones, progress: computeProgress(milestones) };
+      },
+      apply: (row) => set(s => ({ goals: s.goals.map(g => g.id === goalId ? row : g) })),
+      resync: () => get().hydrate(),
+    }),
 
-  toggleMilestone: async (goalId, milestoneId) => {
-    const goal = get().goals.find(g => g.id === goalId);
-    if (!goal) return;
-    const milestones = goal.milestones.map(m =>
-      m.id === milestoneId ? { ...m, completed: !m.completed } : m
-    );
-    const completed = milestones.filter(m => m.completed).length;
-    const progress = Math.round((completed / milestones.length) * 100);
-    await api.put(`/api/goals/${goalId}`, { milestones, progress });
-    set(s => ({
-      goals: s.goals.map(g => g.id === goalId ? { ...g, milestones, progress } : g),
-    }));
-  },
+  toggleMilestone: (goalId, milestoneId) =>
+    persistArray<Goal>({
+      key: `goal:${goalId}`,
+      read: () => get().goals.find(g => g.id === goalId),
+      url: `/api/goals/${goalId}`,
+      build: (goal) => {
+        const milestones = goal.milestones.map(m =>
+          m.id === milestoneId ? { ...m, completed: !m.completed } : m
+        );
+        return { milestones, progress: computeProgress(milestones) };
+      },
+      apply: (row) => set(s => ({ goals: s.goals.map(g => g.id === goalId ? row : g) })),
+      resync: () => get().hydrate(),
+    }),
 
   // --- Projects ---
   addProject: async (project) => {
@@ -297,74 +349,75 @@ export const useLifeStore = create<LifeStore>((set, get) => ({
     set(s => ({ projects: s.projects.map(p => p.id === id ? updated : p) }));
   },
 
-  addProjectTask: async (projectId, task) => {
-    const project = get().projects.find(p => p.id === projectId);
-    if (!project) return;
-    const tasks = [...project.tasks, task];
-    await api.put(`/api/projects/${projectId}`, { tasks });
-    set(s => ({
-      projects: s.projects.map(p => p.id === projectId ? { ...p, tasks } : p),
-    }));
-  },
+  addProjectTask: (projectId, task) =>
+    persistArray<Project>({
+      key: `project:${projectId}`,
+      read: () => get().projects.find(p => p.id === projectId),
+      url: `/api/projects/${projectId}`,
+      build: (project) => ({ tasks: [...project.tasks, task] }),
+      apply: (row) => set(s => ({ projects: s.projects.map(p => p.id === projectId ? row : p) })),
+      resync: () => get().hydrate(),
+    }),
 
-  deleteProjectTask: async (projectId, taskId) => {
-    const project = get().projects.find(p => p.id === projectId);
-    if (!project) return;
-    const tasks = project.tasks.filter(t => t.id !== taskId);
-    await api.put(`/api/projects/${projectId}`, { tasks });
-    set(s => ({
-      projects: s.projects.map(p => p.id === projectId ? { ...p, tasks } : p),
-    }));
-  },
+  deleteProjectTask: (projectId, taskId) =>
+    persistArray<Project>({
+      key: `project:${projectId}`,
+      read: () => get().projects.find(p => p.id === projectId),
+      url: `/api/projects/${projectId}`,
+      build: (project) => ({ tasks: project.tasks.filter(t => t.id !== taskId) }),
+      apply: (row) => set(s => ({ projects: s.projects.map(p => p.id === projectId ? row : p) })),
+      resync: () => get().hydrate(),
+    }),
 
-  updateProjectTask: async (projectId, taskId, updates) => {
-    const project = get().projects.find(p => p.id === projectId);
-    if (!project) return;
-    const tasks = project.tasks.map(t => t.id === taskId ? { ...t, ...updates } : t);
-    await api.put(`/api/projects/${projectId}`, { tasks });
-    set(s => ({
-      projects: s.projects.map(p => p.id === projectId ? { ...p, tasks } : p),
-    }));
-  },
+  updateProjectTask: (projectId, taskId, updates) =>
+    persistArray<Project>({
+      key: `project:${projectId}`,
+      read: () => get().projects.find(p => p.id === projectId),
+      url: `/api/projects/${projectId}`,
+      build: (project) => ({
+        tasks: project.tasks.map(t => t.id === taskId ? { ...t, ...updates } : t),
+      }),
+      apply: (row) => set(s => ({ projects: s.projects.map(p => p.id === projectId ? row : p) })),
+      resync: () => get().hydrate(),
+    }),
 
-  addProjectMilestone: async (projectId, title) => {
-    const project = get().projects.find(p => p.id === projectId);
-    if (!project) return;
-    const milestone: Milestone = { id: crypto.randomUUID(), title, completed: false };
-    const milestones = [...project.milestones, milestone];
-    const completed = milestones.filter(m => m.completed).length;
-    const progress = Math.round((completed / milestones.length) * 100);
-    await api.put(`/api/projects/${projectId}`, { milestones, progress });
-    set(s => ({
-      projects: s.projects.map(p => p.id === projectId ? { ...p, milestones, progress } : p),
-    }));
-  },
+  addProjectMilestone: (projectId, title) =>
+    persistArray<Project>({
+      key: `project:${projectId}`,
+      read: () => get().projects.find(p => p.id === projectId),
+      url: `/api/projects/${projectId}`,
+      build: (project) => ({
+        milestones: [...project.milestones, { id: crypto.randomUUID(), title, completed: false }],
+      }),
+      apply: (row) => set(s => ({ projects: s.projects.map(p => p.id === projectId ? row : p) })),
+      resync: () => get().hydrate(),
+    }),
 
-  deleteProjectMilestone: async (projectId, milestoneId) => {
-    const project = get().projects.find(p => p.id === projectId);
-    if (!project) return;
-    const milestones = project.milestones.filter(m => m.id !== milestoneId);
-    const completed = milestones.filter(m => m.completed).length;
-    const progress = milestones.length > 0 ? Math.round((completed / milestones.length) * 100) : 0;
-    await api.put(`/api/projects/${projectId}`, { milestones, progress });
-    set(s => ({
-      projects: s.projects.map(p => p.id === projectId ? { ...p, milestones, progress } : p),
-    }));
-  },
+  deleteProjectMilestone: (projectId, milestoneId) =>
+    persistArray<Project>({
+      key: `project:${projectId}`,
+      read: () => get().projects.find(p => p.id === projectId),
+      url: `/api/projects/${projectId}`,
+      build: (project) => ({
+        milestones: project.milestones.filter(m => m.id !== milestoneId),
+      }),
+      apply: (row) => set(s => ({ projects: s.projects.map(p => p.id === projectId ? row : p) })),
+      resync: () => get().hydrate(),
+    }),
 
-  toggleProjectMilestone: async (projectId, milestoneId) => {
-    const project = get().projects.find(p => p.id === projectId);
-    if (!project) return;
-    const milestones = project.milestones.map(m =>
-      m.id === milestoneId ? { ...m, completed: !m.completed } : m
-    );
-    const completed = milestones.filter(m => m.completed).length;
-    const progress = Math.round((completed / milestones.length) * 100);
-    await api.put(`/api/projects/${projectId}`, { milestones, progress });
-    set(s => ({
-      projects: s.projects.map(p => p.id === projectId ? { ...p, milestones, progress } : p),
-    }));
-  },
+  toggleProjectMilestone: (projectId, milestoneId) =>
+    persistArray<Project>({
+      key: `project:${projectId}`,
+      read: () => get().projects.find(p => p.id === projectId),
+      url: `/api/projects/${projectId}`,
+      build: (project) => ({
+        milestones: project.milestones.map(m =>
+          m.id === milestoneId ? { ...m, completed: !m.completed } : m
+        ),
+      }),
+      apply: (row) => set(s => ({ projects: s.projects.map(p => p.id === projectId ? row : p) })),
+      resync: () => get().hydrate(),
+    }),
 
   // --- Habits ---
   addHabit: async (habit) => {
@@ -378,22 +431,21 @@ export const useLifeStore = create<LifeStore>((set, get) => ({
     set(s => ({ habits: s.habits.filter(h => h.id !== id) }));
   },
 
-  toggleHabitLog: async (habitId, date) => {
-    const habit = get().habits.find(h => h.id === habitId);
-    if (!habit) return;
-    const existing = habit.logs.find(l => l.date === date);
-    let logs: { date: string; count: number }[];
-    if (existing) {
-      logs = habit.logs.map(l => l.date === date ? { ...l, count: l.count === 0 ? 1 : 0 } : l);
-    } else {
-      logs = [...habit.logs, { date, count: 1 }];
-    }
-    const streak = calcStreak(logs);
-    await api.put(`/api/habits/${habitId}`, { logs, streak });
-    set(s => ({
-      habits: s.habits.map(h => h.id === habitId ? { ...h, logs, streak } : h),
-    }));
-  },
+  toggleHabitLog: (habitId, date) =>
+    persistArray<Habit>({
+      key: `habit:${habitId}`,
+      read: () => get().habits.find(h => h.id === habitId),
+      url: `/api/habits/${habitId}`,
+      build: (habit) => {
+        const existing = habit.logs.find(l => l.date === date);
+        const logs = existing
+          ? habit.logs.map(l => l.date === date ? { ...l, count: l.count === 0 ? 1 : 0 } : l)
+          : [...habit.logs, { date, count: 1 }];
+        return { logs, streak: calcStreak(logs) };
+      },
+      apply: (row) => set(s => ({ habits: s.habits.map(h => h.id === habitId ? row : h) })),
+      resync: () => get().hydrate(),
+    }),
 
   updateHabit: async (id, updates) => {
     const updated = await api.put<Habit>(`/api/habits/${id}`, updates);
@@ -417,53 +469,59 @@ export const useLifeStore = create<LifeStore>((set, get) => ({
     set(s => ({ learningPaths: s.learningPaths.map(lp => lp.id === id ? updated : lp) }));
   },
 
-  addModule: async (pathId, name) => {
-    const path = get().learningPaths.find(lp => lp.id === pathId);
-    if (!path) return;
-    const modules = [...path.modules, { id: crypto.randomUUID(), name, completed: false }];
-    const completed = modules.filter(m => m.completed).length;
-    const progress = Math.round((completed / modules.length) * 100);
-    await api.put(`/api/learning/${pathId}`, { modules, progress });
-    set(s => ({
-      learningPaths: s.learningPaths.map(lp => lp.id === pathId ? { ...lp, modules, progress } : lp),
-    }));
-  },
+  addModule: (pathId, name) =>
+    persistArray<LearningPath>({
+      key: `learning:${pathId}`,
+      read: () => get().learningPaths.find(lp => lp.id === pathId),
+      url: `/api/learning/${pathId}`,
+      build: (path) => ({
+        modules: [...path.modules, { id: crypto.randomUUID(), name, completed: false }],
+      }),
+      apply: (row) => set(s => ({
+        learningPaths: s.learningPaths.map(lp => lp.id === pathId ? row : lp),
+      })),
+      resync: () => get().hydrate(),
+    }),
 
-  deleteModule: async (pathId, index) => {
-    const path = get().learningPaths.find(lp => lp.id === pathId);
-    if (!path) return;
-    const modules = path.modules.filter((_, i) => i !== index);
-    const completed = modules.filter(m => m.completed).length;
-    const progress = modules.length > 0 ? Math.round((completed / modules.length) * 100) : 0;
-    await api.put(`/api/learning/${pathId}`, { modules, progress });
-    set(s => ({
-      learningPaths: s.learningPaths.map(lp => lp.id === pathId ? { ...lp, modules, progress } : lp),
-    }));
-  },
+  deleteModule: (pathId, moduleId) =>
+    persistArray<LearningPath>({
+      key: `learning:${pathId}`,
+      read: () => get().learningPaths.find(lp => lp.id === pathId),
+      url: `/api/learning/${pathId}`,
+      build: (path) => ({ modules: path.modules.filter(m => m.id !== moduleId) }),
+      apply: (row) => set(s => ({
+        learningPaths: s.learningPaths.map(lp => lp.id === pathId ? row : lp),
+      })),
+      resync: () => get().hydrate(),
+    }),
 
-  renameModule: async (pathId, index, name) => {
-    const path = get().learningPaths.find(lp => lp.id === pathId);
-    if (!path) return;
-    const modules = path.modules.map((m, i) => i === index ? { ...m, name } : m);
-    await api.put(`/api/learning/${pathId}`, { modules });
-    set(s => ({
-      learningPaths: s.learningPaths.map(lp => lp.id === pathId ? { ...lp, modules } : lp),
-    }));
-  },
+  renameModule: (pathId, moduleId, name) =>
+    persistArray<LearningPath>({
+      key: `learning:${pathId}`,
+      read: () => get().learningPaths.find(lp => lp.id === pathId),
+      url: `/api/learning/${pathId}`,
+      build: (path) => ({
+        modules: path.modules.map(m => m.id === moduleId ? { ...m, name } : m),
+      }),
+      apply: (row) => set(s => ({
+        learningPaths: s.learningPaths.map(lp => lp.id === pathId ? row : lp),
+      })),
+      resync: () => get().hydrate(),
+    }),
 
-  toggleModule: async (pathId, moduleIndex) => {
-    const path = get().learningPaths.find(lp => lp.id === pathId);
-    if (!path) return;
-    const modules = path.modules.map((m, i) =>
-      i === moduleIndex ? { ...m, completed: !m.completed } : m
-    );
-    const completed = modules.filter(m => m.completed).length;
-    const progress = Math.round((completed / modules.length) * 100);
-    await api.put(`/api/learning/${pathId}`, { modules, progress });
-    set(s => ({
-      learningPaths: s.learningPaths.map(lp => lp.id === pathId ? { ...lp, modules, progress } : lp),
-    }));
-  },
+  toggleModule: (pathId, moduleId) =>
+    persistArray<LearningPath>({
+      key: `learning:${pathId}`,
+      read: () => get().learningPaths.find(lp => lp.id === pathId),
+      url: `/api/learning/${pathId}`,
+      build: (path) => ({
+        modules: path.modules.map(m => m.id === moduleId ? { ...m, completed: !m.completed } : m),
+      }),
+      apply: (row) => set(s => ({
+        learningPaths: s.learningPaths.map(lp => lp.id === pathId ? row : lp),
+      })),
+      resync: () => get().hydrate(),
+    }),
 
   // --- Journal ---
   addEntry: async (entry) => {
@@ -494,27 +552,35 @@ export const useLifeStore = create<LifeStore>((set, get) => ({
     set(s => ({ subjects: s.subjects.map(sub => sub.id === id ? updated : sub) }));
   },
 
-  toggleAssignment: async (subjectId, assignmentIndex) => {
-    const subject = get().subjects.find(sub => sub.id === subjectId);
-    if (!subject) return;
-    const assignments = subject.assignments.map((a, i) =>
-      i === assignmentIndex ? { ...a, submitted: !a.submitted } : a
-    );
-    await api.put(`/api/subjects/${subjectId}`, { assignments });
-    set(s => ({
-      subjects: s.subjects.map(sub => sub.id === subjectId ? { ...sub, assignments } : sub),
-    }));
-  },
+  toggleAssignment: (subjectId, assignmentIndex) =>
+    persistArray<Subject>({
+      key: `subject:${subjectId}`,
+      read: () => get().subjects.find(sub => sub.id === subjectId),
+      url: `/api/subjects/${subjectId}`,
+      build: (subject) => ({
+        assignments: subject.assignments.map((a, i) =>
+          i === assignmentIndex ? { ...a, submitted: !a.submitted } : a
+        ),
+      }),
+      apply: (row) => set(s => ({
+        subjects: s.subjects.map(sub => sub.id === subjectId ? row : sub),
+      })),
+      resync: () => get().hydrate(),
+    }),
 
-  addAssignment: async (subjectId, title, due) => {
-    const subject = get().subjects.find(sub => sub.id === subjectId);
-    if (!subject) return;
-    const assignments = [...subject.assignments, { title, due, submitted: false }];
-    await api.put(`/api/subjects/${subjectId}`, { assignments });
-    set(s => ({
-      subjects: s.subjects.map(sub => sub.id === subjectId ? { ...sub, assignments } : sub),
-    }));
-  },
+  addAssignment: (subjectId, title, due) =>
+    persistArray<Subject>({
+      key: `subject:${subjectId}`,
+      read: () => get().subjects.find(sub => sub.id === subjectId),
+      url: `/api/subjects/${subjectId}`,
+      build: (subject) => ({
+        assignments: [...subject.assignments, { title, due, submitted: false }],
+      }),
+      apply: (row) => set(s => ({
+        subjects: s.subjects.map(sub => sub.id === subjectId ? row : sub),
+      })),
+      resync: () => get().hydrate(),
+    }),
 
   addExam: async (exam) => {
     const created = await api.post<Exam>('/api/exams', exam);

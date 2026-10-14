@@ -252,15 +252,15 @@ function useLoginStreak() {
 
       try {
 
-        const res = await fetch('/api/login-logs');
+        const today = localDateKey();
+
+        const res = await fetch(`/api/login-logs?today=${today}`);
 
         if (!res.ok) throw new Error(`Failed to fetch login logs: ${res.status}`);
 
         const data: { logs: { date: string }[]; streak: number } = await res.json();
 
         const existing = data.logs.map(d => d.date);
-
-        const today = localDateKey();
 
         if (existing.includes(today)) {
 

@@ -8,7 +8,7 @@ import { useLifeStore } from '@/store/use-store';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/components/shared/toast';
 import { CURRENCIES, DEFAULT_CURRENCY } from '@/lib/currency';
-import { logout, exportAllData } from '@/lib/account';
+import { logout, logoutAll, exportAllData } from '@/lib/account';
 
 const accentColors = ['#F7E8A4', '#B8D8F8', '#CDEAC0', '#F8C8C8', '#DCCEF5', '#FFD8BE'];
 
@@ -32,6 +32,11 @@ export default function SettingsPage() {
 
   const handleLogout = async () => {
     await logout(router);
+  };
+
+  const handleLogoutAll = async () => {
+    if (!confirm('Sign out of all devices and browsers?')) return;
+    await logoutAll(router);
   };
 
   const handleExport = async () => {
@@ -142,6 +147,11 @@ export default function SettingsPage() {
           <SettingRow label="Sign Out" description="Log out of your account">
             <button onClick={handleLogout} className="neo-button min-h-[44px] px-4 py-1.5 text-xs bg-[#B8D8F8] flex items-center gap-1">
               <LogOut size={12} /> Sign out
+            </button>
+          </SettingRow>
+          <SettingRow label="Sign Out Everywhere" description="Log out of all devices and browsers">
+            <button onClick={handleLogoutAll} className="neo-button min-h-[44px] px-4 py-1.5 text-xs bg-[#F8C8C8] flex items-center gap-1">
+              <LogOut size={12} /> Sign out all
             </button>
           </SettingRow>
         </NeoCard>

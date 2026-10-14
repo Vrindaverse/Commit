@@ -47,4 +47,16 @@ export function unauthorized(message = 'You must be signed in.'): NextResponse {
   return NextResponse.json({ error: message, code: 'UNAUTHORIZED' }, { status: 401 });
 }
 
+export function notFound(message = 'Not found.'): NextResponse {
+  return NextResponse.json({ error: message, code: 'NOT_FOUND' }, { status: 404 });
+}
+
+export function conflict(message = 'The record changed since you loaded it. Please refresh and try again.'): NextResponse {
+  return NextResponse.json({ error: message, code: 'CONFLICT' }, { status: 409 });
+}
+
+export function isUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+}
+
 

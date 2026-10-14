@@ -10,5 +10,22 @@ export function todayKey(): string {
 }
 
 export function isDateKey(value: unknown): value is string {
-  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  return localDateKey(dateFromKey(value)) === value;
+}
+
+export function dateFromKey(key: string): Date {
+  const [year, month, day] = key.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+export function addDaysToKey(key: string, days: number): string {
+  const date = dateFromKey(key);
+  date.setDate(date.getDate() + days);
+  return localDateKey(date);
+}
+
+export function daysBetweenKeys(from: string, to: string): number {
+  const ms = dateFromKey(to).getTime() - dateFromKey(from).getTime();
+  return Math.round(ms / 86_400_000);
 }

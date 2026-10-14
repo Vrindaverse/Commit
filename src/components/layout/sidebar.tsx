@@ -2,11 +2,13 @@
 
 
 
+import Link from 'next/link';
+
 import { usePathname } from 'next/navigation';
 
 import { motion, AnimatePresence } from 'framer-motion';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
 
@@ -14,7 +16,7 @@ import {
 
   GraduationCap, Flame, Trophy, BarChart3, Settings,
 
-  NotebookPen, FlameIcon, X, Check, CheckCircle2, ChevronLeft, ChevronRight, Wallet, Menu, User,
+  NotebookPen, FlameIcon, X, Check, CheckCircle2, Wallet, User,
 
 } from 'lucide-react';
 
@@ -224,15 +226,85 @@ function MandalaSVG() {
 
 function useLoginStreak() {
 
-  const [mounted, setMounted] = useState(false);
-
   const [logs, setLogs] = useState<string[]>([]);
 
   const [loggedInToday, setLoggedInToday] = useState(false);
 
+  const [streak, setStreak] = useState(0);
 
 
-  return { streak: 0, loggedInToday, logs };
+
+  useEffect(() => {
+
+    let cancelled = false;
+
+    (async () => {
+
+      try {
+
+        const res = await fetch('/api/login-logs');
+
+        if (!res.ok) throw new Error(`Failed to fetch login logs: ${res.status}`);
+
+        const data: { logs: { date: string }[]; streak: number } = await res.json();
+
+        const existing = data.logs.map(d => d.date);
+
+        const today = localDateKey();
+
+        if (existing.includes(today)) {
+
+          if (cancelled) return;
+
+          setLogs(existing);
+
+          setLoggedInToday(true);
+
+          setStreak(data.streak);
+
+          return;
+
+        }
+
+        const postRes = await fetch('/api/login-logs', {
+
+          method: 'POST',
+
+          headers: { 'Content-Type': 'application/json' },
+
+          body: JSON.stringify({ date: today }),
+
+        });
+
+        if (!postRes.ok) throw new Error(`Failed to post login log: ${postRes.status}`);
+
+        const postData: { log?: { date: string }; streak: number } = await postRes.json();
+
+        if (cancelled) return;
+
+        const date = postData.log?.date ?? today;
+
+        setLogs(existing.includes(date) ? existing : [...existing, date]);
+
+        setLoggedInToday(true);
+
+        setStreak(postData.streak);
+
+      } catch {
+
+        // Keep defaults (0 streak) when the API is unavailable.
+
+      }
+
+    })();
+
+    return () => { cancelled = true; };
+
+  }, []);
+
+
+
+  return { streak, loggedInToday, logs };
 
 }
 
@@ -265,40 +337,81 @@ function StreakPopup({ logs, streak, onClose }: { logs: string[]; streak: number
     });
   }
 
-  const weekRows: { day: number; date: string; logged: boolean; isToday: boolean }[][] = [];
-  let currentRow: { day: number; date: string; logged: boolean; isToday: boolean }[] = [];
-  cells.forEach((cell, i) => {
-    if (currentRow.length === 7) {
-      weekRows.push(currentRow);
-      currentRow = [];
-    }
-    currentRow.push(cell);
-    if (cells.length > 0 && i === cells.length - 1) {
-      weekRows.push(currentRow);
-    }
-  });
+  const grid: (typeof cells[number] | null)[] = [
+    ...Array<null>(firstDow).fill(null),
+    ...cells,
+  ];
+  const weekRows: (typeof cells[number] | null)[][] = [];
+  for (let i = 0; i < grid.length; i += 7) {
+    weekRows.push(grid.slice(i, i + 7));
+  }
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
 
   return (
-    <div className="space-y-2">
-      {weekRows.map((row, rowIndex) => (
-        <div key={rowIndex} className="flex gap-2">
-          {row.map((cell) => (
-            <motion.div
-              key={cell.day}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.95 }}
-              className={`rounded-sm border-[1.5px] border-[#2D2D2D] p-1.5 text-center text-[9px] font-bold transition-colors ${
-                cell.isToday ? 'bg-[#F7E8A4]' : cell.logged ? "#B8D8F8" : 'bg-[#F0ECE4]'
-              }`}
-              style={{ backgroundColor: cell.logged ? "#B8D8F8" : '#F0ECE4' }}
-            >
-              {cell.logged && <Check size={8} strokeWidth={3} />}
-              {cell.day}
-            </motion.div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 backdrop-blur-sm p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.95, y: 10 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.95, y: 10 }}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Login activity"
+        className="w-full max-w-xs rounded-2xl border-[3px] border-[#2D2D2D] bg-[#FFFDF8] p-4 shadow-[6px_6px_0px_0px_var(--neo-shadow)]"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg border-[2px] border-[#2D2D2D] bg-[#CDEAC0] flex items-center justify-center">
+              <FlameIcon size={14} />
+            </div>
+            <div>
+              <h3 className="text-sm font-extrabold">Login Activity</h3>
+              <p className="text-[9px] font-medium text-[#5C5C5C]">{streak} day streak · {logs.length} total</p>
+            </div>
+          </div>
+          <button onClick={onClose} aria-label="Close login activity" className="neo-button p-1.5 bg-[#F0ECE4]"><X size={12} /></button>
+        </div>
+        <div className="flex items-center justify-between mb-2">
+          <button onClick={() => setMonthOffset(o => o - 1)} aria-label="Previous month" className="neo-button px-2 py-1 text-[10px] font-extrabold bg-[#F0ECE4]">&lt;</button>
+          <p className="text-[10px] font-extrabold uppercase tracking-wider">{monthName}</p>
+          <button onClick={() => setMonthOffset(o => Math.min(0, o + 1))} aria-label="Next month" className="neo-button px-2 py-1 text-[10px] font-extrabold bg-[#F0ECE4]">&gt;</button>
+        </div>
+        <div className="space-y-1">
+          {weekRows.map((row, rowIndex) => (
+            <div key={rowIndex} className="flex gap-1">
+              {row.map((cell, cellIndex) =>
+                cell ? (
+                  <motion.div
+                    key={cell.day}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="w-6 h-6 rounded-sm border-[1.5px] border-[#2D2D2D] flex flex-col items-center justify-center text-[9px] font-bold transition-colors"
+                    style={{ backgroundColor: cell.logged ? "#B8D8F8" : cell.isToday ? '#F7E8A4' : '#F0ECE4' }}
+                  >
+                    {cell.logged ? <Check size={9} strokeWidth={3} /> : cell.day}
+                  </motion.div>
+                ) : (
+                  <div key={`blank-${cellIndex}`} className="w-6 h-6" />
+                )
+              )}
+            </div>
           ))}
         </div>
-      ))}
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -478,10 +591,6 @@ function SidebarContent({
 
   loggedInToday,
 
-  logs,
-
-  showStreak,
-
   setShowStreak,
   setProfileOpen,
 
@@ -490,10 +599,6 @@ function SidebarContent({
   streak: number;
 
   loggedInToday: boolean;
-
-  logs: string[];
-
-  showStreak: boolean;
 
   setShowStreak: React.Dispatch<React.SetStateAction<boolean>>;
   setProfileOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -538,31 +643,33 @@ function SidebarContent({
 
           return (
 
-            <motion.div
+            <Link key={item.href} href={item.href} aria-current={isActive ? 'page' : undefined} className="block">
 
-              whileHover={{ x: 2 }}
+              <motion.div
 
-              whileTap={{ scale: 0.97 }}
+                whileHover={{ x: 2 }}
 
-              key={item.href}
+                whileTap={{ scale: 0.97 }}
 
-              className={`flex items-center gap-3 px-3.5 py-2.5 min-h-[44px] rounded-xl border-[2px] transition-all duration-150 ${
+                className={`flex items-center gap-3 px-3.5 py-2.5 min-h-[44px] rounded-xl border-[2px] transition-all duration-150 ${
 
-                isActive
+                  isActive
 
-                  ? 'tint-yellow bg-[#F7E8A4] border-[#2D2D2D] text-[#2A2A2A] shadow-[2px_2px_0px_0px_var(--neo-shadow)]'
+                    ? 'tint-yellow bg-[#F7E8A4] border-[#2D2D2D] text-[#2A2A2A] shadow-[2px_2px_0px_0px_var(--neo-shadow)]'
 
-                  : 'border-transparent text-[#5C5C5C] hover:text-[#2A2A2A] hover:bg-[#F0ECE4]'
+                    : 'border-transparent text-[#5C5C5C] hover:text-[#2A2A2A] hover:bg-[#F0ECE4]'
 
-            }`}
+                }`}
 
-            >
+              >
 
-              <Icon size={18} />
+                <Icon size={18} />
 
-              <span className="text-sm font-medium">{item.label}</span>
+                <span className="text-sm font-medium">{item.label}</span>
 
-            </motion.div>
+              </motion.div>
+
+            </Link>
 
           );
 
@@ -586,7 +693,7 @@ function SidebarContent({
 
           <div className="flex items-center justify-between mt-1.5">
 
-            <p className="text-xl font-extrabold text-[#2A2A2A]">0d</p>
+            <p className="text-xl font-extrabold text-[#2A2A2A]">{streak}d</p>
 
             <div className={`flex items-center gap-1 text-[10px] font-extrabold ${loggedInToday ? 'text-[#2A2A2A]' : 'text-[#B85042]'}`}>
 
@@ -615,12 +722,6 @@ function SidebarContent({
       </div>
 
 
-      <AnimatePresence>
-
-        {showStreak && <StreakPopup logs={logs} streak={streak} onClose={() => setShowStreak(false)} />}
-
-      </AnimatePresence>
-
     </>
 
   );
@@ -636,18 +737,6 @@ export default function Sidebar() {
   const [showStreak, setShowStreak] = useState(false);
 
   const [profileOpen, setProfileOpen] = useState(false);
-
-  const pathname = usePathname();
-
-
-
-  // Close the drawer whenever the route changes (links, back button, etc.).
-
-  useEffect(() => {
-
-    setProfileOpen(false);
-
-  });
 
 
 
@@ -715,11 +804,11 @@ export default function Sidebar() {
 
         <div className="md:hidden absolute top-4 right-4 z-50">
 
-          <button onClick={() => setShowStreak(true)} aria-label="Login streak: 0 day" className="rounded-xl border-[3px] border-[#2D2D2D] bg-[#CDEAC0] px-3 py-1.5 flex items-center gap-1.5 shadow-[2px_2px_0px_0px_var(--neo-shadow)] hover:bg-[#b8d8b0] transition-colors">
+          <button onClick={() => setShowStreak(true)} aria-label={`Login streak: ${streak} day${streak === 1 ? '' : 's'}`} className="rounded-xl border-[3px] border-[#2D2D2D] bg-[#CDEAC0] px-3 py-1.5 flex items-center gap-1.5 shadow-[2px_2px_0px_0px_var(--neo-shadow)] hover:bg-[#b8d8b0] transition-colors">
 
             <FlameIcon size={14} />
 
-            <span className="text-xs font-extrabold">0</span>
+            <span className="text-xs font-extrabold">{streak}</span>
 
           </button>
 
@@ -735,6 +824,16 @@ export default function Sidebar() {
 
 
 
+      {/* Streak popup */}
+
+      <AnimatePresence>
+
+        {showStreak && <StreakPopup logs={logs} streak={streak} onClose={() => setShowStreak(false)} />}
+
+      </AnimatePresence>
+
+
+
       {/* Desktop sidebar - bottom bar */}
 
       <aside className="hidden md:flex flex-col border-[3px] border-[#2D2D2D] bg-[#FFFDF8] fixed right-0 top-0 bottom-0 w-64 z-40 rounded-[20px] shadow-[6px_6px_0px_0px_var(--neo-shadow)] tint-purple overflow-y-auto">
@@ -744,10 +843,6 @@ export default function Sidebar() {
           streak={streak}
 
           loggedInToday={loggedInToday}
-
-          logs={logs}
-
-          showStreak={showStreak}
 
           setShowStreak={setShowStreak}
 

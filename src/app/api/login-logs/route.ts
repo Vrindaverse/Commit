@@ -21,9 +21,9 @@ async function getAllDates(userId: string): Promise<string[]> {
 }
 
 export async function GET(req: NextRequest) {
-  const userId = await requireUserId();
-  if (!userId) return unauthorized();
   try {
+    const userId = await requireUserId();
+    if (!userId) return unauthorized();
     const requested = req.nextUrl.searchParams.get('today');
     const today = serverDateKey(requested);
     const rows = await db.select().from(loginLogs).where(eq(loginLogs.userId, userId)).orderBy(loginLogs.createdAt);
@@ -36,9 +36,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const userId = await requireUserId();
-  if (!userId) return unauthorized();
   try {
+    const userId = await requireUserId();
+    if (!userId) return unauthorized();
     let requested: unknown;
     try {
       requested = (await req.json())?.date;

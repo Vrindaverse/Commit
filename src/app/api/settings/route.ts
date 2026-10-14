@@ -7,9 +7,9 @@ import { readBody, errorResponse, unauthorized } from '@/lib/api';
 import { settingsUpdateSchema } from '@/lib/validation';
 
 export async function GET() {
-  const userId = await requireUserId();
-  if (!userId) return unauthorized();
   try {
+    const userId = await requireUserId();
+    if (!userId) return unauthorized();
     const rows = await db.select().from(settings).where(eq(settings.userId, userId)).limit(1);
     if (rows.length > 0) return NextResponse.json(rows[0]);
 

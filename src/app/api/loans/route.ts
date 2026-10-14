@@ -7,9 +7,9 @@ import { readBody, errorResponse, unauthorized } from '@/lib/api';
 import { loanCreateSchema } from '@/lib/validation';
 
 export async function GET() {
-  const userId = await requireUserId();
-  if (!userId) return unauthorized();
   try {
+    const userId = await requireUserId();
+    if (!userId) return unauthorized();
     const rows = await db
       .select()
       .from(loans)
@@ -22,9 +22,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const userId = await requireUserId();
-  if (!userId) return unauthorized();
   try {
+    const userId = await requireUserId();
+    if (!userId) return unauthorized();
     const data = await readBody(req, loanCreateSchema);
     const row = await db.insert(loans).values({ ...data, userId }).returning();
     return NextResponse.json(row[0], { status: 201 });

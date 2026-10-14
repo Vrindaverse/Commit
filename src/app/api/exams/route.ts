@@ -7,9 +7,9 @@ import { readBody, errorResponse, unauthorized } from '@/lib/api';
 import { examCreateSchema } from '@/lib/validation';
 
 export async function GET() {
-  const userId = await requireUserId();
-  if (!userId) return unauthorized();
   try {
+    const userId = await requireUserId();
+    if (!userId) return unauthorized();
     const rows = await db.select().from(exams).where(eq(exams.userId, userId)).orderBy(exams.createdAt);
     return NextResponse.json(rows);
   } catch (error) {
@@ -18,9 +18,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const userId = await requireUserId();
-  if (!userId) return unauthorized();
   try {
+    const userId = await requireUserId();
+    if (!userId) return unauthorized();
     const data = await readBody(req, examCreateSchema);
     const row = await db.insert(exams).values({ ...data, userId }).returning();
     return NextResponse.json(row[0], { status: 201 });

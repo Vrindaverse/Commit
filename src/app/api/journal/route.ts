@@ -7,9 +7,9 @@ import { readBody, errorResponse, unauthorized } from '@/lib/api';
 import { journalCreateSchema } from '@/lib/validation';
 
 export async function GET() {
-  const userId = await requireUserId();
-  if (!userId) return unauthorized();
   try {
+    const userId = await requireUserId();
+    if (!userId) return unauthorized();
     const rows = await db.select().from(journalEntries).where(eq(journalEntries.userId, userId)).orderBy(journalEntries.createdAt);
     return NextResponse.json(rows);
   } catch (error) {
@@ -18,9 +18,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const userId = await requireUserId();
-  if (!userId) return unauthorized();
   try {
+    const userId = await requireUserId();
+    if (!userId) return unauthorized();
     const data = await readBody(req, journalCreateSchema);
     const row = await db.insert(journalEntries).values({ ...data, userId }).returning();
     return NextResponse.json(row[0], { status: 201 });

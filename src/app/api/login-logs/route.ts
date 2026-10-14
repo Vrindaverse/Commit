@@ -71,9 +71,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE() {
-  const userId = await requireUserId();
-  if (!userId) return unauthorized();
   try {
+    const userId = await requireUserId();
+    if (!userId) return unauthorized();
     const deleted = await db
       .delete(loginLogs)
       .where(eq(loginLogs.userId, userId))

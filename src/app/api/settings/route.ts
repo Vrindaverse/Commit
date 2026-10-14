@@ -22,9 +22,9 @@ export async function GET() {
 }
 
 export async function PUT(req: NextRequest) {
-  const userId = await requireUserId();
-  if (!userId) return unauthorized();
   try {
+    const userId = await requireUserId();
+    if (!userId) return unauthorized();
     const data = await readBody(req, settingsUpdateSchema);
     const updated = await db
       .update(settings)

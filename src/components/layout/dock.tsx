@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Target, CheckSquare, Flame, NotebookPen,
   Rocket, BookOpen, GraduationCap, Trophy, BarChart3, Settings, Wallet, User,
@@ -25,13 +26,12 @@ const ITEMS = [
 ];
 
 export default function Dock() {
-  const router = useRouter();
   const pathname = usePathname();
   const openProfile = useUIStore(s => s.openProfile);
   const closeProfile = useUIStore(s => s.closeProfile);
   const profileOpen = useUIStore(s => s.profileOpen);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const activeRef = useRef<HTMLButtonElement>(null);
+  const activeRef = useRef<HTMLAnchorElement>(null);
 
   useEffect(() => {
     const el = activeRef.current;
@@ -58,10 +58,12 @@ export default function Dock() {
               const Icon = item.icon;
               const active = pathname === item.href;
               return (
-                <button
+                <Link
                   key={item.href}
+                  href={item.href}
+                  prefetch
                   ref={active ? activeRef : undefined}
-                  onClick={() => { closeProfile(); router.push(item.href); }}
+                  onClick={closeProfile}
                   className={`dock-item ${active ? 'dock-item--active' : ''}`}
                   aria-label={item.label}
                   aria-current={active ? 'page' : undefined}
@@ -71,7 +73,7 @@ export default function Dock() {
                     <Icon size={16} />
                   </span>
                   <span className="dock-item-label">{item.label}</span>
-                </button>
+                </Link>
               );
             })}
             <button

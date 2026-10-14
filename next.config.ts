@@ -6,6 +6,10 @@ const nextConfig: NextConfig = {
   experimental: {
     viewTransition: true,
     optimizePackageImports: ['framer-motion', '@base-ui/react'],
+    staleTimes: {
+      dynamic: 30,
+      static: 300,
+    },
   },
 };
 

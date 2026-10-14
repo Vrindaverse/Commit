@@ -64,6 +64,7 @@
   transition: background-color 0.15s ease, transform 0.1s ease;
   flex-shrink: 0;
   color: #2A2A2A;
+  text-decoration: none;
   scroll-snap-align: center;
 }
 

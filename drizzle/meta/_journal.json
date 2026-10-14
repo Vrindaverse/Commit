@@ -50,6 +50,13 @@
       "when": 1791791904101,
       "tag": "0006_marvelous_joshua_kane",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792011620677,
+      "tag": "0007_auth_and_versions",
+      "breakpoints": true
     }
   ]
 }

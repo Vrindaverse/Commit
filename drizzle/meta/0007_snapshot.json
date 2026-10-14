@@ -1,0 +1,7 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "id": "0007_auth_and_versions",
+  "prevId": "0006_marvelous_joshua_kane",
+  "tables": {}
+}

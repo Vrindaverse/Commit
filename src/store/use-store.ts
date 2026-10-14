@@ -85,6 +85,7 @@ function persistArray<T extends { id: string; version?: number }>(opts: PersistO
 
 interface LifeStore {
   hydrated: boolean;
+  error: string | null;
   tasks: Task[];
   goals: Goal[];
   projects: Project[];
@@ -175,6 +176,7 @@ interface LifeStore {
 
 export const useLifeStore = create<LifeStore>((set, get) => ({
   hydrated: false,
+  error: null,
   tasks: [],
   goals: [],
   projects: [],
@@ -249,9 +251,13 @@ export const useLifeStore = create<LifeStore>((set, get) => ({
         tasks, goals, projects, habits, learningPaths, subjects, exams, journalEntries, expenses, loans,
         settings: settingsData,
         hydrated: true,
+        error: null,
       });
     } catch (e) {
       console.error('Failed to hydrate store from API:', e);
+      const msg = e instanceof Error ? e.message : 'Failed to load data';
+      toast.error(msg);
+      set({ hydrated: true, error: msg });
     }
   },
 

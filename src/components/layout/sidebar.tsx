@@ -522,7 +522,6 @@ function ProfilePanel({
   const [saving, setSaving] = useState(false);
   const [draftName, setDraftName] = useState('');
   const [draftEmail, setDraftEmail] = useState('');
-  const [draftBio, setDraftBio] = useState('');
 
   const memberSince = m.settings.createdAt
     ? new Date(m.settings.createdAt).getFullYear()
@@ -531,7 +530,6 @@ function ProfilePanel({
   const startEdit = () => {
     setDraftName(m.settings.displayName || '');
     setDraftEmail(m.settings.email || '');
-    setDraftBio(m.settings.bio || '');
     setEditing(true);
   };
 
@@ -541,7 +539,6 @@ function ProfilePanel({
       await updateSettings({
         displayName: draftName.trim(),
         email: draftEmail.trim(),
-        bio: draftBio.trim(),
       });
       toast.success('Profile updated');
       setEditing(false);
@@ -596,10 +593,6 @@ function ProfilePanel({
               <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#5C5C5C]">Email</span>
               <input value={draftEmail} onChange={e => setDraftEmail(e.target.value)} placeholder="you@example.com" type="email" className="neo-input w-full text-sm mt-1" />
             </label>
-            <label className="block">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#5C5C5C]">Bio</span>
-              <textarea value={draftBio} onChange={e => setDraftBio(e.target.value)} placeholder="A short line about you..." rows={2} maxLength={500} className="neo-input w-full text-xs resize-none mt-1" />
-            </label>
             <div className="flex gap-2 pt-1">
               <button onClick={handleSave} disabled={saving} className="neo-button flex-1 text-[11px] font-extrabold px-4 py-2 bg-[#CDEAC0] flex items-center justify-center gap-1.5 disabled:opacity-60">
                 <Save size={12} /> {saving ? 'Saving...' : 'Save'}
@@ -619,7 +612,6 @@ function ProfilePanel({
               <button onClick={onClose} aria-label="Close profile" className="neo-button p-1.5 bg-[#FFFDF8] flex-shrink-0"><X size={12} /></button>
             </div>
 
-            {m.settings.bio && <p className="text-[11px] text-[#5C5C5C] font-medium mb-2 leading-snug">{m.settings.bio}</p>}
             {memberSince && <p className="text-[9px] font-bold text-[#5C5C5C] uppercase tracking-wider mb-3">Member since {memberSince}</p>}
 
             {!m.hydrated ? (

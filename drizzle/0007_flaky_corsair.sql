@@ -1,1 +1,0 @@
-ALTER TABLE "settings" ADD COLUMN "bio" text DEFAULT '' NOT NULL;

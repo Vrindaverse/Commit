@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 import { usePathname, useRouter } from 'next/navigation';
 
-import { motion, AnimatePresence, useDragControls } from 'framer-motion';
+import { motion, AnimatePresence, useDragControls, useReducedMotion } from 'framer-motion';
 
 import { useEffect, useState, useSyncExternalStore } from 'react';
 

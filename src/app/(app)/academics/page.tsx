@@ -204,7 +204,7 @@ function SubjectModal({ subjectId, onClose }: { subjectId: string; onClose: () =
 
 function SubjectCard({ subject, index, onSelect }: { subject: Subject; index: number; onSelect: (s: Subject) => void }) {
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(index * 0.05, 0.2) }}>
       <div onClick={() => onSelect(subject)} onKeyDown={e => e.key === 'Enter' && onSelect(subject)} role="button" tabIndex={0} className="w-full text-left cursor-pointer">
         <NeoCard color={subject.color}>
           <div className="flex items-center gap-3 mb-3">

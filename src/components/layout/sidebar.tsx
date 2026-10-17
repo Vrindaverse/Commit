@@ -830,7 +830,7 @@ function SidebarContent({
 
 
 
-      <div className="p-4 border-t [3px] solid #[2D2D2D] rounded-b-[20px]">
+      <div className="p-4 border-t-[3px] border-[#2D2D2D] rounded-b-[20px]">
 
         <button onClick={() => setShowStreak(true)} className="w-full rounded-xl border-[3px] border-[#2D2D2D] bg-[#CDEAC0] p-3 hover:bg-[#b8d8b0] transition-colors text-left">
 
@@ -860,7 +860,7 @@ function SidebarContent({
 
       </div>
 
-      <div className="p-4 border-t [3px] solid #[2D2D2D]">
+      <div className="p-4 border-t-[3px] border-[#2D2D2D]">
         <button
           onClick={onOpenProfile}
           className="w-full rounded-xl border-[3px] border-[#2D2D2D] bg-[#F7E8A4] p-3 hover:bg-[#e8d890] transition-colors text-left"

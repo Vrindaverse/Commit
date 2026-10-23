@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default async function SignupPage() {
   const user = await getCurrentUser();
   if (user) {
-    redirect('/');
+    redirect('/dashboard');
   }
   return (
     <AuthCard

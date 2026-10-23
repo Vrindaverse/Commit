@@ -11,7 +11,7 @@ import { useUIStore } from '@/store/ui-store';
 import './dock.css';
 
 const ITEMS = [
-  { href: '/', label: 'Home', icon: LayoutDashboard },
+  { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
   { href: '/tasks', label: 'Tasks', icon: CheckSquare },
   { href: '/habits', label: 'Habits', icon: Flame },
   { href: '/goals', label: 'Goals', icon: Target },

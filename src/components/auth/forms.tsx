@@ -122,7 +122,7 @@ export function LoginForm({ next }: { next?: string }) {
         return;
       }
       toast.success('Welcome back!');
-      router.push(safeNextPath(next) ?? '/');
+      router.push(safeNextPath(next) ?? '/dashboard');
       router.refresh();
     } catch {
       setError('Unable to reach the server. Please try again.');
@@ -185,7 +185,7 @@ export function SignupForm() {
         return;
       }
       toast.success('Account created. Welcome!');
-      router.push('/');
+      router.push('/dashboard');
       router.refresh();
     } catch {
       setError('Unable to reach the server. Please try again.');

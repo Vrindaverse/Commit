@@ -42,7 +42,7 @@ import { logout, exportAllData } from '@/lib/account';
 
 const navItems = [
 
-  { href: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
 
   { href: '/goals', label: 'Goals', icon: Target },
 

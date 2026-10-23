@@ -19,7 +19,7 @@ export default async function LoginPage({
   const { next } = await searchParams;
   const user = await getCurrentUser();
   if (user) {
-    redirect(safeNextPath(next) ?? '/');
+    redirect(safeNextPath(next) ?? '/dashboard');
   }
   return (
     <div className="min-h-screen w-full bg-[#F8F5F0] flex items-center justify-center p-4 md:p-8">

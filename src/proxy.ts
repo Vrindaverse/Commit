@@ -3,6 +3,7 @@ import { SESSION_COOKIE } from '@/lib/auth/config';
 import { verifySessionToken } from '@/lib/auth/token';
 
 const PUBLIC_ROUTES = new Set([
+  '/',
   '/login',
   '/signup',
 ]);
@@ -19,9 +20,7 @@ export default async function proxy(req: NextRequest) {
 
   if (!payload?.uid) {
     const url = new URL('/login', req.nextUrl);
-    if (pathname !== '/') {
-      url.searchParams.set('next', pathname);
-    }
+    url.searchParams.set('next', pathname);
     return NextResponse.redirect(url);
   }
 
